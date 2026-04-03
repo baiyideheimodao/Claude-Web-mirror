@@ -1,0 +1,152 @@
+/* 
+ * Claude AI 官网设计令牌
+ * 基于 https://claude.ai/new 像素级分析
+ * 最后更新：2026年4月2日
+ */
+
+:root {
+  /* ========== 颜色系统 ========== */
+  
+  /* 主品牌色 */
+  --brand-000: 15 54.2% 51.2%;      /* 主品牌色 */
+  --brand-100: 15 54.2% 51.2%;      /* 强调品牌色 */
+  --brand-200: 15 63.1% 59.6%;      /* 粘土色品牌色 */
+  --_brand-clay-emphasized: 15.1 54.2% 51.2%; /* 强调粘土色 */
+  --accent-brand: 15 63.1% 59.6%;   /* 品牌强调色 */
+  
+  /* 背景色 */
+  --bg-000: 0 0% 100%;              /* 纯白背景 */
+  --bg-100: 48 33.3% 97.1%;         /* 页面背景（浅米色） */
+  --bg-200: 53 28.6% 94.5%;         /* 卡片背景 */
+  --bg-300: 48 25% 92.2%;           /* 悬浮背景 */
+  --bg-400: 50 20.7% 88.6%;         /* 边框背景 */
+  
+  /* 文字色 */
+  --text-000: 60 2.6% 7.6%;         /* 主标题文字 */
+  --text-100: 60 2.6% 7.6%;         /* 正文文字 */
+  --text-200: 60 2.5% 23.3%;        /* 次要文字 */
+  --text-300: 60 2.5% 23.3%;        /* 禁用文字 */
+  --text-400: 51 3.1% 43.7%;        /* 占位符文字 */
+  --text-500: 51 3.1% 43.7%;        /* 辅助文字 */
+  
+  /* 边框色 */
+  --border-100: 30 3.3% 11.8%;      /* 主要边框 */
+  --border-200: 30 3.3% 11.8%;      /* 次要边框 */
+  --border-300: 30 3.3% 11.8%;      /* 分割线 */
+  --border-400: 30 3.3% 11.8%;      /* 卡片边框 */
+  
+  /* 状态色 */
+  --success-000: 125 100% 18%;      /* 成功色-深 */
+  --success-100: 103 72.3% 26.9%;   /* 成功色 */
+  --success-200: 103 72.3% 26.9%;   /* 成功色-浅 */
+  --success-900: 86 45.1% 90%;      /* 成功色-背景 */
+  
+  --warning-000: 45 91.8% 19%;      /* 警告色-深 */
+  --warning-100: 39 88.8% 28%;      /* 警告色 */
+  --warning-200: 39 88.8% 28%;      /* 警告色-浅 */
+  --warning-900: 38 65.9% 92%;      /* 警告色-背景 */
+  
+  --danger-000: 0 58.6% 34.1%;      /* 危险色-深 */
+  --danger-100: 0 56.2% 45.4%;      /* 危险色 */
+  --danger-200: 0 56.2% 45.4%;      /* 危险色-浅 */
+  --danger-900: 0 50% 95%;          /* 危险色-背景 */
+  
+  /* 强调色 */
+  --accent-100: 210 100% 50%;       /* 主要强调色（蓝色） */
+  --accent-200: 210 90% 40%;        /* 次要强调色 */
+  --accent-300: 210 80% 30%;        /* 三级强调色 */
+  
+  /* 遮罩色 */
+  --overlay-100: 0 0% 0% 0.5;       /* 遮罩背景 */
+  
+  /* ========== 字体系统 ========== */
+  
+  /* 字体系列 */
+  --font-sans-serif: "Inter", system-ui, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --font-serif: Georgia, "Times New Roman", serif;
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  --font-ui: "Inter", system-ui, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --font-ui-serif: Georgia, "Times New Roman", serif;
+  --font-system: system-ui, sans-serif;
+  --font-claude-response: Georgia, "Times New Roman", serif;
+  --font-user-message: "Inter", system-ui, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  
+  /* ========== 间距系统 ========== */
+  
+  /* 基础间距（基于4px网格） */
+  --spacing-0: 0px;
+  --spacing-0_5: 2px;
+  --spacing-1: 4px;
+  --spacing-1_5: 6px;
+  --spacing-2: 8px;
+  --spacing-2_5: 10px;
+  --spacing-3: 12px;
+  --spacing-4: 16px;
+  --spacing-5: 20px;
+  --spacing-6: 24px;
+  --spacing-8: 32px;
+  --spacing-10: 40px;
+  --spacing-12: 48px;
+  --spacing-16: 64px;
+  
+  /* ========== 圆角系统 ========== */
+  
+  --radius-none: 0px;
+  --radius-sm: 2px;
+  --radius-md: 6px;
+  --radius-lg: 8px;
+  --radius-xl: 12px;
+  --radius-2xl: 16px;
+  --radius-3xl: 24px;
+  --radius-4xl: 32px;
+  --radius-full: 9999px;
+  
+  /* ========== 阴影系统 ========== */
+  
+  --shadow-claude-soft: 0 1px 3px 0 rgb(0 0 0 / 0.05), 0 1px 2px -1px rgb(0 0 0 / 0.05);
+  --shadow-claude-md: 0 4px 6px -1px rgb(0 0 0 / 0.05), 0 2px 4px -2px rgb(0 0 0 / 0.05);
+  --shadow-claude-lg: 0 10px 15px -3px rgb(0 0 0 / 0.05), 0 4px 6px -4px rgb(0 0 0 / 0.05);
+  --shadow-claude-focus: 0 0 0 3px hsl(var(--accent-100) / 0.1);
+  
+  /* ========== 动画过渡 ========== */
+  
+  --duration-75: 75ms;
+  --duration-100: 100ms;
+  --duration-150: 150ms;
+  --duration-200: 200ms;
+  --duration-300: 300ms;
+  --duration-500: 500ms;
+  --duration-700: 700ms;
+  --duration-1000: 1000ms;
+  
+  --easing-claude-standard: cubic-bezier(0.165, 0.85, 0.45, 1);
+  --easing-claude-smooth: cubic-bezier(0.4, 0, 0.2, 1);
+  
+  /* ========== 组件尺寸 ========== */
+  
+  --nav-height: 64px;
+  --nav-width: 288px;
+  --button-height: 32px;
+  --input-height: 40px;
+  --textarea-min-height: 96px;
+  
+  /* ========== 响应式断点 ========== */
+  
+  --breakpoint-xs: 480px;
+  --breakpoint-sm: 640px;
+  --breakpoint-md: 768px;
+  --breakpoint-lg: 1024px;
+  --breakpoint-xl: 1280px;
+  --breakpoint-2xl: 1536px;
+}
+
+/* 深色模式（预留） */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg-000: 0 0% 7%;              /* 深色背景 */
+    --bg-100: 0 0% 10%;             /* 深色页面背景 */
+    --bg-200: 0 0% 14%;             /* 深色卡片背景 */
+    --text-000: 0 0% 98%;           /* 深色主文字 */
+    --text-100: 0 0% 90%;           /* 深色正文 */
+  }
+}
