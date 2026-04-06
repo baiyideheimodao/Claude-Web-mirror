@@ -152,7 +152,7 @@ export const useAppStore = defineStore('app', () => {
     
     // 监听系统主题变化
     const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)')
-    const handleSystemThemeChange = (e: MediaQueryListEvent) => {
+    const handleSystemThemeChange = (_e: MediaQueryListEvent) => {
       if (theme.value === 'system') {
         setTheme('system') // 重新应用系统主题
       }

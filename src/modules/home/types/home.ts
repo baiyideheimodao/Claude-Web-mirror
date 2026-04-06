@@ -208,25 +208,4 @@ export interface ExampleFilter {
   sortBy?: 'usage' | 'difficulty' | 'name'
 }
 
-/**
- * 导出类型集合
- */
-export type {
-  Feature,
-  Example,
-  HomeStats,
-  UserFeedback,
-  HomeConfig,
-  SearchParams,
-  SearchResults,
-  FeatureCategory,
-  ExampleCategory,
-  HomeApiResponse,
-  HomeErrorResponse,
-  PaginationParams,
-  PaginatedResponse,
-  CacheConfig,
-  LoadingState,
-  FeatureFilter,
-  ExampleFilter
-}
+// 这个文件已经导出了所有接口，不需要重复导出
