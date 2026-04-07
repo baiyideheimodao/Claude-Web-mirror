@@ -27,10 +27,27 @@
     scroll-behavior: smooth;
   }
   
-  /* 自定义滚动条 */
+  /* 自定义滚动条 - 导航栏专用细滚动条 */
+  .nav-scrollbar::-webkit-scrollbar {
+    width: 4px;
+  }
+  
+  .nav-scrollbar::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  
+  .nav-scrollbar::-webkit-scrollbar-thumb {
+    @apply bg-border-400/40 rounded-full;
+  }
+  
+  .nav-scrollbar::-webkit-scrollbar-thumb:hover {
+    @apply bg-border-400/60;
+  }
+
+  /* 全局滚动条 */
   ::-webkit-scrollbar {
-    width: 8px;
-    height: 8px;
+    width: 6px;
+    height: 6px;
   }
   
   ::-webkit-scrollbar-track {
