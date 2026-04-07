@@ -5,11 +5,20 @@
 /* 基础样式重置 */
 @layer base {
   * {
-    @apply border-border-400;
+    border-color: hsl(var(--border-300));
+  }
+  
+  html {
+    background-color: hsl(var(--bg-100));
+    color: hsl(var(--text-100));
   }
   
   body {
-    @apply bg-bg-100 text-text-100 font-sans antialiased;
+    background-color: hsl(var(--bg-100));
+    color: hsl(var(--text-100));
+    font-family: var(--font-sans-serif);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
     font-feature-settings: "rlig" 1, "calt" 1;
   }
   

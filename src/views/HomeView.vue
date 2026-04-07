@@ -1,45 +1,51 @@
 <template>
-  <div class="min-h-screen bg-bg-100">
+  <div class="min-h-screen bg-bg-000 text-text-100">
     <!-- 顶部导航栏 -->
     <AppNavigation />
     
     <!-- 主内容区域 -->
-    <main class="pl-0 md:pl-nav-width transition-all duration-300">
-      <div class="container-claude py-8 md:py-12">
+    <main class="flex-1 flex flex-col">
+      <div class="flex-1 flex flex-col max-w-5xl mx-auto w-full px-4 md:px-6 py-8 md:py-12">
         <!-- Hero 区域 -->
-        <section class="mb-12 md:mb-16">
-          <h1 class="font-serif text-4xl md:text-5xl text-text-100 mb-4">
+        <section class="mb-12 md:mb-16 text-center">
+          <h1 class="font-serif text-5xl md:text-6xl font-normal text-text-000 mb-6 leading-tight">
             What can I help you with today?
           </h1>
-          <p class="text-text-400 text-lg mb-8">
-            Evening, <span class="font-medium text-text-100">Visitor</span>. Let's create something amazing together.
+          <p class="text-text-200 text-lg mb-8">
+            <span class="font-medium text-text-100">Good evening</span>. Let's create something amazing together.
           </p>
-          
-          <!-- 输入区域 -->
-          <div class="max-w-3xl">
+        </section>
+        
+        <!-- 输入区域 -->
+        <section class="mb-12 md:mb-16">
+          <div class="max-w-3xl mx-auto">
             <div class="relative">
               <textarea 
-                class="textarea-base w-full"
-                placeholder="Type your message here..."
+                class="textarea-base w-full bg-bg-200 border border-border-300 rounded-xl p-4 text-text-100 placeholder-text-400 focus:outline-none focus:ring-2 focus:ring-brand-100 focus:border-transparent resize-none"
+                placeholder="Ask Claude anything..."
                 rows="4"
               ></textarea>
               <div class="absolute bottom-4 right-4 flex gap-2">
-                <button class="btn-text">Attach file</button>
-                <button class="btn-primary">Send message</button>
+                <button class="px-3 py-1.5 text-sm text-text-300 hover:text-text-100 hover:bg-bg-300 rounded-lg transition-colors">
+                  Attach
+                </button>
+                <button class="px-4 py-1.5 text-sm bg-brand-100 hover:bg-brand-200 text-white rounded-lg transition-colors">
+                  Send
+                </button>
               </div>
             </div>
             
-            <div class="mt-4 text-sm text-text-400">
-              <p>Claude can help with writing, analysis, coding, and more.</p>
+            <div class="mt-4 text-sm text-text-400 text-center">
+              <p>Claude can help with writing, analysis, coding, math, and more.</p>
             </div>
           </div>
         </section>
         
         <!-- 特性卡片区域 -->
-        <section class="mb-12">
-          <h2 class="text-2xl font-semibold text-text-100 mb-6">What can Claude do?</h2>
+        <section class="mb-12 md:mb-16">
+          <h2 class="text-2xl font-semibold text-text-100 mb-8 text-center">Capabilities</h2>
           
-          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             <FeatureCard 
               v-for="feature in features"
               :key="feature.id"
@@ -52,9 +58,9 @@
         
         <!-- 使用示例 -->
         <section class="mb-12">
-          <h2 class="text-2xl font-semibold text-text-100 mb-6">Try these examples</h2>
+          <h2 class="text-2xl font-semibold text-text-100 mb-8 text-center">Try asking Claude about...</h2>
           
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <ExampleCard 
               v-for="example in examples"
               :key="example.id"

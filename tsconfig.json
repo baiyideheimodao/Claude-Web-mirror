@@ -34,6 +34,5 @@
     "emitDecoratorMetadata": true,
     "types": ["vite/client", "vue/compiler-sfc"]
   },
-  "references": [{ "path": "./tsconfig.node.json" }],
-
+  "references": [{ "path": "./tsconfig.node.json" }]
 }
