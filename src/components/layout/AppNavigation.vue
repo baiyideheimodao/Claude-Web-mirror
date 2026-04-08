@@ -32,10 +32,10 @@
       <div class="p-2 shrink-0">
         <router-link
           to="/"
-          class="w-full py-[7px] px-3 bg-[#d97757] hover:bg-[#c96a4a] text-white rounded-lg transition-colors duration-150 flex items-center gap-2 text-[13px] font-medium"
+          class="nav-item-btn w-full"
           @click="handleNewChat"
         >
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+          <svg class="w-4 h-4 nav-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
             <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
           </svg>
           新建聊天
@@ -135,7 +135,7 @@
           </li>
           <li v-if="!appStore.isAuthenticated">
             <p class="px-2.5 py-[5px] text-[12px] text-[#cfcfce]">
-              <button class="text-[#d97757] hover:underline" @click="showLoginModal = true">登录</button> 后查看对话
+              <button class="text-[#d97757] hover:underline" @click="$router.push('/login')">登录</button> 后查看对话
             </p>
           </li>
         </ul>
@@ -191,7 +191,7 @@
             <template v-else>
               <button
                 class="w-full px-3 py-2 text-left text-[13px] text-[#d97757] hover:bg-black/[0.04] dark:hover:bg-white/5 transition-colors"
-                @click="showLoginModal = true; showUserMenu = false"
+                @click="$router.push('/login'); showUserMenu = false"
               >
                 登录
               </button>

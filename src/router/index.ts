@@ -2,10 +2,16 @@ import { createRouter, createWebHistory } from 'vue-router'
 
 const routes = [
   {
+    path: '/login',
+    name: 'Login',
+    component: () => import('@/views/LoginView.vue'),
+    meta: { title: '登录' }
+  },
+  {
     path: '/',
     name: 'Home',
     component: () => import('@/views/HomeView.vue'),
-    meta: { title: 'Claude' }
+    meta: { title: 'Claude' },
   },
   {
     path: '/chat/:id?',
