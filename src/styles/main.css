@@ -193,3 +193,45 @@
     opacity: 0.5;
   }
 }
+
+/* 全局指令 - Tooltip */
+.v-tooltip {
+  position: absolute;
+  bottom: calc(100% + 6px);
+  left: 50%;
+  transform: translateX(-50%) translateY(4px);
+  padding: 4px 10px;
+  background-color: #2f2f2f;
+  color: white;
+  font-size: 12px;
+  border-radius: 6px;
+  white-space: nowrap;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.15s ease, transform 0.15s ease;
+  z-index: 9999;
+}
+
+.v-tooltip::after {
+  content: '';
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  border: 4px solid transparent;
+  border-top-color: #2f2f2f;
+}
+
+.v-tooltip.show {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+
+/* 深色模式 */
+.dark .v-tooltip {
+  background-color: #f0f0f0;
+  color: #1a1a1a;
+}
+.dark .v-tooltip::after {
+  border-top-color: #f0f0f0;
+}

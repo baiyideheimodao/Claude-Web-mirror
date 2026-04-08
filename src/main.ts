@@ -1,25 +1,20 @@
 import { createApp } from 'vue'
 import { createPinia } from 'pinia'
-import { createRouter, createWebHistory } from 'vue-router'
 
 import './styles/design-tokens.css'
 import './styles/main.css'
 
 import App from './App.vue'
+import router from './router'
 
-// 路由配置
-const routes = [
-  { path: '/', name: 'Home', component: () => import('@/views/HomeView.vue') },
-  { path: '/chat/:id?', name: 'Chat', component: () => import('@/views/ChatView.vue') },
-  { path: '/:pathMatch(.*)*', redirect: '/' }
-]
-
-const router = createRouter({
-  history: createWebHistory(),
-  routes
-})
+// 注册全局指令
+import { clickOutside, tooltip } from './directives'
 
 const app = createApp(App)
+
+app.directive('click-outside', clickOutside)
+app.directive('tooltip', tooltip)
+
 const pinia = createPinia()
 
 app.use(pinia)

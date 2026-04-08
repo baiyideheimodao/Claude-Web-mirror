@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import type { AuthUser, UserProfile, Model, Dialog, DialogListResponse, DialogDetail, Message, Plan } from '@/types/api'
+import apiClient from '@/utils/api'
 import { authApi } from '@/api/auth'
 import { userApi } from '@/api/user'
 import { dialogApi } from '@/api/dialog'
