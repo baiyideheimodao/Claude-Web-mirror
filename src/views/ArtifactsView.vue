@@ -39,25 +39,25 @@
             <svg class="w-7 h-7 text-[#cfcfce]" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/></svg>
           </div>
           <p class="text-[15px] text-[#9b9a97] mb-1">暂无制品</p>
-          <p class="text-[13px] text-[#cfcfce]">从对话中创建您的第一个制品。</p>
+          <p class="text-[13px] text-[#cfcfce]">点击「新建制品」开始创作。</p>
         </div>
       </div>
     </main>
 
-    <!-- 创建Artifact弹窗 -->
-    <div v-if="showCreateModal" class="fixed inset-0 z-[100] flex items-start justify-center pt-20 bg-black/30" @click.self="showCreateModal = false">
+    <!-- 创建Artifact弹窗 - 第一步：选择类别 -->
+    <div v-if="showCreateModal && !isCreating" class="fixed inset-0 z-[100] flex items-start justify-center pt-20 bg-black/30" @click.self="showCreateModal = false">
       <div class="bg-white rounded-xl shadow-claude-lg w-[600px] max-w-[90vw] p-6 relative max-h-[80vh] overflow-y-auto">
         <div class="flex items-center justify-between mb-4">
-          <h2 class="text-lg font-semibold text-[#1a1a1a]">Untitled</h2>
+          <h2 class="text-lg font-semibold text-[#1a1a1a]">新建制品</h2>
           <button class="p-1 hover:bg-black/[0.04] rounded" @click="showCreateModal = false">
             <svg class="w-5 h-5 text-[#9b9a97]" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.75"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
           </button>
         </div>
 
-        <p class="text-[13px] text-[#787774] mb-5">开始创作吧！选择制品类别或从零开始构建。</p>
+        <p class="text-[13px] text-[#787774] mb-5">选择制品类别，AI 将引导您完成创建。</p>
 
         <!-- 类型选择网格 -->
-        <div class="grid grid-cols-3 gap-3 mb-4">
+        <div class="grid grid-cols-3 gap-3 mb-5">
           <button
             v-for="cat in artifactCategories"
             :key="cat.id"
@@ -66,9 +66,28 @@
           >
             <span class="text-2xl">{{ cat.icon }}</span>
             <span class="text-[12px] font-medium text-[#5c5b58] text-center leading-tight">{{ cat.label }}</span>
-            <component :is="'span'" v-html="cat.svgIcon" class="w-5 h-5 text-[#787774]"></component>
           </button>
         </div>
+
+        <button
+          :disabled="!selectedCategory"
+          class="w-full py-2.5 bg-[#d97757] hover:bg-[#c96a4a] disabled:bg-[#cfcfce] disabled:cursor-not-allowed text-white rounded-lg text-[14px] font-medium transition-colors"
+          @click="handleCreateArtifact"
+        >
+          开始创建
+        </button>
+      </div>
+    </div>
+
+    <!-- 创建中状态 -->
+    <div v-if="isCreating" class="fixed inset-0 z-[100] flex items-center justify-center bg-black/30">
+      <div class="bg-white rounded-xl p-8 flex flex-col items-center gap-4">
+        <div class="flex items-center gap-1.5">
+          <span class="w-2.5 h-2.5 bg-[#d97757] rounded-full animate-bounce" style="animation-delay: 0ms"></span>
+          <span class="w-2.5 h-2.5 bg-[#d97757] rounded-full animate-bounce" style="animation-delay: 150ms"></span>
+          <span class="w-2.5 h-2.5 bg-[#d97757] rounded-full animate-bounce" style="animation-delay: 300ms"></span>
+        </div>
+        <p class="text-[14px] text-[#5c5b58]">正在创建制品对话...</p>
       </div>
     </div>
   </div>
@@ -78,28 +97,55 @@
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import AppNavigation from '@/components/layout/AppNavigation.vue'
+import { useAppStore } from '@/stores/useAppStore'
 
 const router = useRouter()
+const appStore = useAppStore()
 const isCollapsed = ref(false)
 const activeTab = ref('yours')
 const showCreateModal = ref(false)
 const selectedCategory = ref('')
+const isCreating = ref(false)
 const artifacts = ref<any[]>([])
 
-// TODO: 从后端加载 artifacts
-
 const artifactCategories = [
-  { id: 'web', label: '应用与网站', icon: '🌐', svgIcon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18"/></svg>' },
-  { id: 'doc', label: '文档和模板', icon: '📄', svgIcon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>' },
-  { id: 'game', label: '游戏', icon: '🎮', svgIcon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="9" cy="10" r="1"/><circle cx="15" cy="10" r="1"/><path d="M7 15l2-3 3 3 3-3 2 3"/><rect x="4" y="5" width="16" height="14" rx="2"/></svg>' },
-  { id: 'tool', label: '效率工具', icon: '⚡', svgIcon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>' },
-  { id: 'creative', label: '创意项目', icon: '💡', svgIcon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/></svg>' },
-  { id: 'survey', label: '问卷或调查', icon: '📊', svgIcon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>' },
-  { id: 'code', label: '从零开始', icon: '✨', svgIcon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="3"/><path d="M12 1v6m0 6v6m8.66-10l-5.2 3m-2.92 5.2l-5.2 3M2.34 6l5.2 3m2.92 5.2l5.2 3"/></svg>' },
+  { id: 'web', label: '应用与网站', icon: '🌐' },
+  { id: 'doc', label: '文档和模板', icon: '📄' },
+  { id: 'game', label: '游戏', icon: '🎮' },
+  { id: 'tool', label: '效率工具', icon: '⚡' },
+  { id: 'creative', label: '创意项目', icon: '💡' },
+  { id: 'survey', label: '问卷或调查', icon: '📊' },
+  { id: 'code', label: '从零开始', icon: '✨' },
 ]
 
 const onSidebarChange = (collapsed: boolean) => { isCollapsed.value = collapsed }
-const openArtifact = (artifact: any) => {}
+const openArtifact = (_artifact: any) => {}
+
+/** 创建制品对话并跳转到聊天页面 */
+const handleCreateArtifact = async () => {
+  if (!selectedCategory.value || isCreating.value) return
+  isCreating.value = true
+
+  try {
+    const cat = artifactCategories.find(c => c.id === selectedCategory.value)
+    const dialog = await appStore.createDialog(`制品：${cat?.label || '新制品'}`)
+    if (!dialog) {
+      isCreating.value = false
+      return
+    }
+
+    // 跳转到聊天页，带上 artifact_type 查询参数，AI 会引导用户
+    router.push({
+      path: `/chat/${dialog.id}`,
+      query: { artifact_type: selectedCategory.value }
+    })
+  } catch (e) {
+    console.error('创建制品对话失败:', e)
+  } finally {
+    isCreating.value = false
+    showCreateModal.value = false
+  }
+}
 
 const formatTime = (dateStr: string): string => {
   const diffMs = Date.now() - new Date(dateStr).getTime()

@@ -26,8 +26,8 @@ export const dialogApi = {
     apiClient.delete(`/dialogs/${dialogId}`),
 
   /** 发送消息 */
-  sendMessage: (dialogId: string, content: string, files?: string[]) =>
-    apiClient.post<Message>(`/dialogs/${dialogId}/messages`, { content, files }),
+  sendMessage: (dialogId: string, content: string, files?: string[], artifactType?: string) =>
+    apiClient.post<Message>(`/dialogs/${dialogId}/messages`, { content, files, artifact_type: artifactType }),
 
   /** 编辑已发送消息 */
   editMessage: (dialogId: string, messageId: string, content: string) =>

@@ -73,8 +73,42 @@
                 <span class="text-white text-sm font-bold">C</span>
               </div>
               <div class="max-w-[80%] bg-white dark:bg-[#2a2a2a] border border-[#e5e5e4] dark:border-white/10 rounded-2xl rounded-tl-md p-4 shadow-sm">
-                <!-- 消息内容 - 支持Markdown渲染 -->
+                <!-- AI消息内容 -->
                 <div class="text-[15px] text-[#1a1a1a] dark:text-gray-200 leading-relaxed prose-sm dark:prose-invert max-w-none" v-html="renderContent(msg.content)"></div>
+
+                <!-- 选项卡片面板 - 从消息内容中提取 [QUESTION]+[CHOICE] 块渲染为独立面板 -->
+                <div v-if="(() => { console.log('[DEBUG] msg.id:', msg.id); console.log('[DEBUG] raw content:', JSON.stringify(msg.content)); console.log('[DEBUG] parsed panel:', JSON.stringify(getChoicePanel(msg.content))); return true; })()" class="hidden"></div>
+                <div v-if="getChoicePanel(msg.content) && !closedPanels[msg.id]" class="mt-4">
+                  <div class="choice-panel">
+                    <!-- 面板标题问题 -->
+                    <div class="choice-panel-header">
+                      <span class="choice-panel-title">{{ getChoicePanel(msg.content)?.question }}</span>
+                      <button class="choice-panel-close" @click="closedPanels[msg.id] = true" title="关闭">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+                      </button>
+                    </div>
+
+                    <!-- 编号选项列表 -->
+                    <div class="choice-panel-list">
+                      <button
+                        v-for="(choice, ci) in getChoicePanel(msg.content)!.choices"
+                        :key="ci"
+                        :class="['choice-panel-item', selectedChoices[msg.id] === ci ? 'choice-panel-item-active' : '']"
+                        @click="handleSelectChoice(msg.id, ci, choice)"
+                      >
+                        <span class="choice-panel-num">{{ ci + 1 }}</span>
+                        <span>{{ choice }}</span>
+                      </button>
+                    </div>
+
+                    <!-- 底部：跳过按钮 -->
+                    <div class="choice-panel-footer">
+                      <button class="choice-skip-btn" @click="handleSkipChoice(msg.id)">
+                        Skip
+                      </button>
+                    </div>
+                  </div>
+                </div>
 
                 <!-- AI消息底部操作栏 -->
                 <div class="flex items-center justify-between mt-3 pt-2 border-t border-[#f0ede7] dark:border-white/5">
@@ -186,7 +220,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, watch } from 'vue'
+import { ref, computed, onMounted, watch, reactive } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import AppNavigation from '@/components/layout/AppNavigation.vue'
 import { useAppStore } from '@/stores/useAppStore'
@@ -203,10 +237,15 @@ const isSending = ref(false)
 const inputRef = ref<HTMLTextAreaElement | null>(null)
 const showModelMenu = ref(false)
 const showNotifyBar = ref(false)
+const selectedChoices = reactive<Record<string, number>>({})
+const closedPanels = reactive<Record<string, boolean>>({})
 
 const dialogId = computed(() => route.params.id as string | undefined)
 const messages = computed(() => appStore.messages)
 const dialogDetail = computed(() => appStore.currentDialogDetail)
+
+// 制品模式：从 query 中读取 artifact_type
+const artifactType = computed(() => route.query.artifact_type as string | undefined)
 
 const onSidebarChange = (collapsed: boolean) => {
   isCollapsed.value = collapsed
@@ -218,7 +257,10 @@ const loadDialog = async (id: string) => {
   await appStore.openDialog(id)
 }
 
-// 如果URL有query参数 msg，自动发送
+// 制品模式：保存 artifact_type 到本地变量（避免 router.replace 后丢失）
+const savedArtifactType = ref<string | undefined>(undefined)
+
+// 如果URL有query参数 msg 或 artifact_type，自动发送
 watch(dialogId, async (newId) => {
   if (newId) {
     await loadDialog(newId)
@@ -227,9 +269,103 @@ watch(dialogId, async (newId) => {
       messageInput.value = msg
       setTimeout(() => handleSend(), 300)
       router.replace({ path: `/chat/${newId}` })
+    } else if (artifactType.value) {
+      // 制品模式：先保存到本地变量，再清除 query
+      savedArtifactType.value = artifactType.value
+      const typeLabel: Record<string, string> = {
+        web: '应用与网站',
+        doc: '文档和模板',
+        game: '游戏',
+        tool: '效率工具',
+        creative: '创意项目',
+        survey: '问卷或调查',
+        code: '从零开始'
+      }
+      messageInput.value = `我想创建一个「${typeLabel[savedArtifactType.value] || savedArtifactType.value}」类型的制品`
+      // 清除 query 参数，避免刷新时重复发送（artifact_type 已保存到 savedArtifactType）
+      router.replace({ path: `/chat/${newId}` })
+      setTimeout(() => handleSend(), 300)
     }
   }
 }, { immediate: true })
+
+/** 从 AI 消息内容中提取选项面板数据 { question, choices[] } */
+const getChoicePanel = (content: string): { question: string; choices: string[] } | null => {
+  // 匹配 [QUESTION]...[/QUESTION] 后面紧跟的 [CHOICE]...[/CHOICE] 块
+  const qMatch = content.match(/\[QUESTION\](.*?)\[\/QUESTION\]/s)
+  if (!qMatch) return null
+  const question = qMatch[1].trim()
+  const choiceMatches = content.match(/\[CHOICE\](.*?)\[\/CHOICE\]/gs)
+  const choices = choiceMatches ? choiceMatches.map(m => m.replace(/\[CHOICE\]/g, '').replace(/\[\/CHOICE\]/g, '').trim()) : []
+  if (choices.length === 0) return null
+  return { question, choices }
+}
+
+/** 渲染消息内容时，移除 [QUESTION] 和 [CHOICE] 标签块 */
+const renderContent = (content: string): string => {
+  if (!content) return ''
+  // 先移除 [QUESTION]...[/QUESTION] 块
+  let html = content.replace(/\[QUESTION\][\s\S]*?\[\/QUESTION\]/g, '').trim()
+  // 再移除 [CHOICE]...[/CHOICE] 块
+  html = html.replace(/\[CHOICE\][\s\S]*?\[\/CHOICE\]/g, '').trim()
+
+  html = html
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+
+  // 代码块 (```language\n...\n```)
+  html = html.replace(/```(\w*)\n([\s\S]*?)```/g, (_match, _lang, code) => {
+    return `<pre class="bg-[#f5f4f0] dark:bg-[#1a1a1a] rounded-lg p-3 my-3 overflow-x-auto font-mono text-[13px] border border-[#eee] dark:border-white/5"><code>${code}</code></pre>`
+  })
+
+  // 行内代码
+  html = html.replace(/`([^`]+)`/g, '<code class="bg-[#f5f4f0] dark:bg-white/10 px-1.5 py-0.5 rounded font-mono text-[13px]">$1</code>')
+
+  // 粗体/斜体
+  html = html.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
+  html = html.replace(/\*([^*]+)\*/g, '<em>$1</em>')
+
+  // 链接
+  html = html.replace(/(?<!\!)\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener" class="text-[#d97757] underline hover:no-underline">$1</a>')
+
+  // 图片
+  html = html.replace(/!\[([^\]]*)\]\(([^)]+)\)/g, '<img src="$2" alt="$1" class="max-w-full rounded-lg my-2 border border-[#e5e5e4]" />')
+
+  // 标题
+  html = html.replace(/^### (.+)$/gm, '<h4 class="font-semibold text-[15px] mt-3 mb-1">$1</h4>')
+  html = html.replace(/^## (.+)$/gm, '<h3 class="font-semibold text-base mt-3 mb-1">$1</h3>')
+  html = html.replace(/^# (.+)$/gm, '<h2 class="font-semibold text-lg mt-4 mb-2">$1</h2>')
+
+  // 无序列表
+  html = html.replace(/^[\-\*] (.+)$/gm, '<li class="list-disc ml-5 my-0.5">$1</li>')
+
+  // 分割线
+  html = html.replace(/^---$/gm, '<hr class="border-[#e5e5e4] my-4" />')
+
+  // 引用块
+  html = html.replace(/^&gt; (.+)$/gm, '<blockquote class="border-l-2 border-[#d97757]/30 pl-3 my-2 text-[#5c5b58] italic">$1</blockquote>')
+
+  return html
+}
+
+/** 用户点击选项卡片 */
+const handleSelectChoice = async (msgId: string, choiceIndex: number, choiceText: string) => {
+  selectedChoices[msgId] = choiceIndex
+  const id = dialogId.value
+  if (!id || isSending.value) return
+  messageInput.value = choiceText
+  await handleSend()
+}
+
+/** 用户点击跳过按钮 */
+const handleSkipChoice = async (msgId: string) => {
+  selectedChoices[msgId] = -1 // 标记为已跳过
+  const id = dialogId.value
+  if (!id || isSending.value) return
+  messageInput.value = '跳过此问题'
+  await handleSend()
+}
 
 /** 发送消息 */
 const handleSend = async () => {
@@ -240,7 +376,10 @@ const handleSend = async () => {
 
   isSending.value = true
   try {
-    const res = await dialogApi.sendMessage(id, content)
+    // 使用 savedArtifactType（制品模式保存的值）或 route.query 中的 artifact_type
+    const effectiveArtifactType = savedArtifactType.value || (route.query.artifact_type as string) || undefined
+    console.log('[DEBUG] sending with artifactType:', effectiveArtifactType)
+    const res = await dialogApi.sendMessage(id, content, undefined, effectiveArtifactType)
 
     if (res.success && res.data) {
       await appStore.openDialog(id)
@@ -313,7 +452,12 @@ const handleDeleteDialog = async () => {
 /** 复制消息 */
 const handleCopy = async (content: string) => {
   try {
-    await navigator.clipboard.writeText(content)
+    // 复制时去除 [QUESTION] 和 [CHOICE] 标签
+    const cleanContent = content
+      .replace(/\[QUESTION\][\s\S]*?\[\/QUESTION\]/g, '')
+      .replace(/\[CHOICE\][\s\S]*?\[\/CHOICE\]/g, '')
+      .trim()
+    await navigator.clipboard.writeText(cleanContent)
     // TODO: show toast "Copied!"
   } catch {}
 }
@@ -367,49 +511,6 @@ const formatTime = (timestamp: string) => {
   return date.toLocaleDateString()
 }
 
-/** 渲染消息内容（支持简单Markdown）*/
-const renderContent = (content: string): string => {
-  if (!content) return ''
-  let html = content
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-
-  // 代码块 (```language\n...\n```)
-  html = html.replace(/```(\w*)\n([\s\S]*?)```/g, (_match, _lang, code) => {
-    return `<pre class="bg-[#f5f4f0] dark:bg-[#1a1a1a] rounded-lg p-3 my-3 overflow-x-auto font-mono text-[13px] border border-[#eee] dark:border-white/5"><code>${code}</code></pre>`
-  })
-
-  // 行内代码
-  html = html.replace(/`([^`]+)`/g, '<code class="bg-[#f5f4f0] dark:bg-white/10 px-1.5 py-0.5 rounded font-mono text-[13px]">$1</code>')
-
-  // 粗体/斜体
-  html = html.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
-  html = html.replace(/\*([^*]+)\*/g, '<em>$1</em>')
-
-  // 链接
-  html = html.replace(/(?<!\!)\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener" class="text-[#d97757] underline hover:no-underline">$1</a>')
-
-  // 图片
-  html = html.replace(/!\[([^\]]*)\]\(([^)]+)\)/g, '<img src="$2" alt="$1" class="max-w-full rounded-lg my-2 border border-[#e5e5e4]" />')
-
-  // 标题
-  html = html.replace(/^### (.+)$/gm, '<h4 class="font-semibold text-[15px] mt-3 mb-1">$1</h4>')
-  html = html.replace(/^## (.+)$/gm, '<h3 class="font-semibold text-base mt-3 mb-1">$1</h3>')
-  html = html.replace(/^# (.+)$/gm, '<h2 class="font-semibold text-lg mt-4 mb-2">$1</h2>')
-
-  // 无序列表
-  html = html.replace(/^[\-\*] (.+)$/gm, '<li class="list-disc ml-5 my-0.5">$1</li>')
-
-  // 分割线
-  html = html.replace(/^---$/gm, '<hr class="border-[#e5e5e4] my-4" />')
-
-  // 引用块
-  html = html.replace(/^&gt; (.+)$/gm, '<blockquote class="border-l-2 border-[#d97757]/30 pl-3 my-2 text-[#5c5b58] italic">$1</blockquote>')
-
-  return html
-}
-
 const autoResize = (event: Event) => {
   const textarea = event.target as HTMLTextAreaElement
   textarea.style.height = 'auto'
@@ -447,4 +548,44 @@ onMounted(() => {
 .dropdown-leave-active { transition: all 0.1s ease-in; }
 .dropdown-enter-from { opacity: 0; transform: translateY(4px); }
 .dropdown-leave-to { opacity: 0; transform: translateY(-4px); }
+
+/* 选项面板样式 - 模仿截图中的独立卡片面板 */
+.choice-panel {
+  @apply bg-white dark:bg-[#2a2a2a] border border-[#e0e0df] dark:border-white/10 rounded-xl shadow-sm overflow-hidden;
+}
+.choice-panel-header {
+  @apply flex items-center justify-between px-4 py-3 border-b border-[#f0ede7] dark:border-white/5;
+}
+.choice-panel-title {
+  @apply text-[14px] font-medium text-[#1a1a1a] dark:text-white;
+}
+.choice-panel-close {
+  @apply p-0.5 text-[#9b9a97] hover:text-[#5c5b58] transition-colors;
+}
+.choice-panel-list {
+  @apply p-2;
+}
+.choice-panel-item {
+  @apply w-full flex items-center gap-3 px-3 py-2.5 text-left text-[13px] text-[#5c5b58] dark:text-gray-300
+    rounded-lg cursor-pointer transition-all duration-150
+    hover:bg-black/[0.03] dark:hover:bg-white/5;
+}
+.choice-panel-item-active {
+  @apply bg-[#fef8f5] text-[#d97757] font-medium;
+}
+.choice-panel-num {
+  @apply w-5 h-5 flex items-center justify-center text-[11px] font-semibold text-[#9b9a97]
+    bg-[#f5f4f0] dark:bg-white/5 rounded-full shrink-0;
+}
+.choice-panel-item-active .choice-panel-num {
+  @apply bg-[#d97757]/10 text-[#d97757];
+}
+.choice-panel-footer {
+  @apply flex items-center justify-end px-4 py-2.5 border-t border-[#f0ede7] dark:border-white/5;
+}
+.choice-skip-btn {
+  @apply px-3 py-1 text-[12px] font-medium text-[#787774] dark:text-gray-400 border border-[#e5e5e4] dark:border-white/10
+    rounded-md transition-colors duration-150
+    hover:bg-black/[0.04] dark:hover:bg-white/5 hover:text-[#1a1a1a] dark:hover:text-white;
+}
 </style>
