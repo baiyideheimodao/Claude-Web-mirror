@@ -9,6 +9,10 @@ export const projectApi = {
   create: (data: ProjectCreateRequest) =>
     apiClient.post<Project>('/projects', data),
 
+  /** 获取项目列表 */
+  getList: () =>
+    apiClient.get<Project[]>('/projects'),
+
   /** 上传知识库文件 */
   uploadKnowledgeBase: (projectId: string, file: File): Promise<any> => {
     const formData = new FormData()

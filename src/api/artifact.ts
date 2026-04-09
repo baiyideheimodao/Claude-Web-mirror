@@ -5,6 +5,10 @@ import apiClient from '@/utils/api'
 import type { Artifact, ArtifactCreateRequest } from '@/types/api'
 
 export const artifactApi = {
+  /** 获取Artifact列表 */
+  getList: () =>
+    apiClient.get<Artifact[]>('/artifacts'),
+
   /** 创建Artifact */
   create: (data: ArtifactCreateRequest) =>
     apiClient.post<Artifact>('/artifacts', data),

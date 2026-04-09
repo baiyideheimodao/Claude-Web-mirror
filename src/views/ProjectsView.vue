@@ -105,7 +105,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import AppNavigation from '@/components/layout/AppNavigation.vue'
 import { useAppStore } from '@/stores/useAppStore'
@@ -125,9 +125,18 @@ const createForm = ref({ name: '', description: '' })
 const projects = ref<any[]>([])
 
 const loadProjects = async () => {
-  // TODO: 从后端获取项目列表，暂时用空数组
-  // const res = await projectApi.getList()
+  try {
+    const res = await projectApi.getList()
+    if (res.success && res.data) {
+      const payload = (res.data as any).data || res.data
+      projects.value = Array.isArray(payload) ? payload : []
+    }
+  } catch (e) {
+    console.error('加载项目列表失败:', e)
+  }
 }
+
+onMounted(() => { loadProjects() })
 
 const filteredProjects = computed(() => {
   let result = [...projects.value]

@@ -94,7 +94,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import AppNavigation from '@/components/layout/AppNavigation.vue'
 import { useAppStore } from '@/stores/useAppStore'
@@ -106,7 +106,9 @@ const activeTab = ref('yours')
 const showCreateModal = ref(false)
 const selectedCategory = ref('')
 const isCreating = ref(false)
-const artifacts = ref<any[]>([])
+
+// 使用 store 中的 artifacts 数据
+const artifacts = computed(() => appStore.artifacts)
 
 const artifactCategories = [
   { id: 'web', label: '应用与网站', icon: '🌐' },
@@ -119,7 +121,18 @@ const artifactCategories = [
 ]
 
 const onSidebarChange = (collapsed: boolean) => { isCollapsed.value = collapsed }
-const openArtifact = (_artifact: any) => {}
+
+const openArtifact = (artifact: any) => {
+  // 如果有关联的对话，跳转到聊天页
+  if (artifact.dialog_id) {
+    router.push(`/chat/${artifact.dialog_id}`)
+  }
+}
+
+/** 页面加载时刷新制品列表 */
+onMounted(async () => {
+  await appStore.fetchArtifacts()
+})
 
 /** 创建制品对话并跳转到聊天页面 */
 const handleCreateArtifact = async () => {
@@ -158,8 +171,11 @@ const getTypeColor = (type: string) => {
   const colors: Record<string, string> = {
     code: 'bg-blue-50 text-blue-600',
     web: 'bg-green-50 text-green-600',
-    mermaid: 'bg-purple-50 text-purple-600',
     doc: 'bg-orange-50 text-orange-600',
+    game: 'bg-red-50 text-red-600',
+    tool: 'bg-cyan-50 text-cyan-600',
+    creative: 'bg-pink-50 text-pink-600',
+    survey: 'bg-indigo-50 text-indigo-600',
   }
   return colors[type] || 'bg-gray-50 text-gray-600'
 }

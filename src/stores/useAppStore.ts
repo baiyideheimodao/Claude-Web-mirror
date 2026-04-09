@@ -7,12 +7,16 @@ import { userApi } from '@/api/user'
 import { dialogApi } from '@/api/dialog'
 import { modelApi } from '@/api/model'
 import { fileApi } from '@/api/file'
+import { artifactApi } from '@/api/artifact'
 
 export const useAppStore = defineStore('app', () => {
   // ============ 用户状态 ============
   const user = ref<AuthUser | null>(null)
   const userProfile = ref<UserProfile | null>(null)
   const isAuthenticated = computed(() => !!user.value)
+
+  // ============ 制品状态 ============
+  const artifacts = ref<any[]>([])
 
   // ============ UI 状态 ============
   const theme = ref<'light' | 'dark' | 'system'>('light')
@@ -95,6 +99,7 @@ export const useAppStore = defineStore('app', () => {
       const res = await userApi.getProfile()
       if (res.success && res.data) {
         const payload = (res.data as any).data || res.data
+        user.value = payload as AuthUser
         userProfile.value = payload
       }
     } catch {}
@@ -111,6 +116,18 @@ export const useAppStore = defineStore('app', () => {
     } catch (e: any) {
       return { success: false, message: e.message }
     }
+  }
+
+  // ============ 制品操作 ============
+  const fetchArtifacts = async () => {
+    if (!isAuthenticated.value) return
+    try {
+      const res = await artifactApi.getList()
+      if (res.success && res.data) {
+        const payload = (res.data as any).data || res.data
+        artifacts.value = Array.isArray(payload) ? payload : []
+      }
+    } catch {}
   }
 
   // ============ 对话操作 ============
@@ -353,6 +370,11 @@ export const useAppStore = defineStore('app', () => {
 
   // ============ 初始化 ============
   const initialize = async () => {
+    // 先注册认证失效监听器（必须在 API 调用之前，否则 401 事件会丢失）
+    window.addEventListener('auth:unauthorized', () => {
+      logout()
+    })
+
     const savedTheme = localStorage.getItem('claude-theme') as any
     if (savedTheme) setTheme(savedTheme)
 
@@ -370,6 +392,7 @@ export const useAppStore = defineStore('app', () => {
       await Promise.all([
         fetchUserProfile(),
         fetchDialogList(),
+        fetchArtifacts(),
         fetchModels(),
         fetchPlans()
       ])
@@ -377,11 +400,6 @@ export const useAppStore = defineStore('app', () => {
       await fetchModels()
       await fetchPlans()
     }
-
-    // 监听认证失效事件
-    window.addEventListener('auth:unauthorized', () => {
-      logout()
-    })
 
     return () => {
       window.removeEventListener('auth:unauthorized', () => {})
@@ -437,6 +455,7 @@ export const useAppStore = defineStore('app', () => {
     currentDialogDetail,
     messages,
     isSendingMessage,
+    artifacts,
     plans,
 
     // 计算属性
@@ -468,6 +487,9 @@ export const useAppStore = defineStore('app', () => {
     getMessageBranches,
     uploadFile,
     forgotPassword,
+
+    // 制品
+    fetchArtifacts,
 
     // 模型
     fetchModels,
