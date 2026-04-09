@@ -250,9 +250,8 @@ const handleLogin = async () => {
   errorMessage.value = ''
 
   try {
-    // 用邮箱作为 username 登录（或提取用户名部分）
-    const loginIdentifier = email.value.split('@')[0]
-    const result = await appStore.login(loginIdentifier, password.value)
+    // 直接传邮箱作为 username，后端支持邮箱或用户名登录
+    const result = await appStore.login(email.value, password.value)
     if (result.success) {
       router.push('/')
     } else {
@@ -280,18 +279,8 @@ const handleRegister = async () => {
       password: f.password
     })
     if (result.success) {
-      // 注册成功，自动用新账号登录
-      const loginResult = await appStore.login(f.username, f.password)
-      if (loginResult.success) {
-        router.push('/')
-      } else {
-        // 注册成功但自动登录失败，跳回登录页让用户手动登录
-        isRegisterMode.value = false
-        loginStep.value = 'email'
-        email.value = f.email
-        registerForm.value = { username: '', email: '', password: '' }
-        errorMessage.value = '注册成功！请登录您的账号'
-      }
+      // 注册成功，store 已保存 token 和用户信息，直接跳转首页
+      router.push('/')
     } else {
       errorMessage.value = result.message || '注册失败'
     }
@@ -314,8 +303,26 @@ const switchToRegister = () => {
 }
 
 /** 忘记密码 */
-const handleForgotPassword = () => {
-  errorMessage.value = '忘记密码功能即将上线'}
+const handleForgotPassword = async () => {
+  if (!email.value) {
+    errorMessage.value = '请先输入邮箱'
+    return
+  }
+  isSubmitting.value = true
+  errorMessage.value = ''
+  try {
+    const result = await appStore.forgotPassword(email.value)
+    if (result.success) {
+      errorMessage.value = '重置密码邮件已发送，请检查您的邮箱'
+    } else {
+      errorMessage.value = result.message || '操作失败'
+    }
+  } catch (e: any) {
+    errorMessage.value = e.message || '操作失败'
+  } finally {
+    isSubmitting.value = false
+  }
+}
 </script>
 
 <style scoped>

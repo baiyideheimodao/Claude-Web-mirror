@@ -1,11 +1,12 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
-import type { AuthUser, UserProfile, Model, Dialog, DialogListResponse, DialogDetail, Message, Plan } from '@/types/api'
+import type { AuthUser, UserProfile, Model, Dialog, DialogListResponse, DialogDetail, Message, MessageBranch, UploadedFile, Plan } from '@/types/api'
 import apiClient from '@/utils/api'
 import { authApi } from '@/api/auth'
 import { userApi } from '@/api/user'
 import { dialogApi } from '@/api/dialog'
 import { modelApi } from '@/api/model'
+import { fileApi } from '@/api/file'
 
 export const useAppStore = defineStore('app', () => {
   // ============ 用户状态 ============
@@ -39,15 +40,17 @@ export const useAppStore = defineStore('app', () => {
     try {
       const res = await authApi.login({ username, password })
       if (res.success && res.data) {
-        user.value = res.data as any
-        if ((res.data as any).token) {
-          apiClient.setToken((res.data as any).token)
+        // API客户端已包裹一层：res.data = { success, data: { user, token }, message }
+        const payload = (res.data as any).data || res.data
+        user.value = payload.user || payload
+        if (payload.token) {
+          apiClient.setToken(payload.token)
         }
         await fetchUserProfile()
         await fetchDialogList()
         return { success: true }
       }
-      return { success: false, message: res.message }
+      return { success: false, message: (res.data as any)?.message || res.message }
     } catch (e: any) {
       return { success: false, message: e.message || '登录失败' }
     } finally {
@@ -59,7 +62,16 @@ export const useAppStore = defineStore('app', () => {
     setLoading(true)
     try {
       const res = await authApi.register(data)
-      return { success: res.success, message: res.message }
+      if (res.success) {
+        // 注册成功时后端也返回 { data: { user, token } }
+        const payload = (res.data as any)?.data || res.data
+        if (payload?.token) {
+          apiClient.setToken(payload.token)
+          user.value = payload.user || null
+        }
+        return { success: true, message: (res.data as any)?.message || res.message }
+      }
+      return { success: false, message: (res.data as any)?.message || (res.data as any)?.error || res.message }
     } catch (e: any) {
       return { success: false, message: e.message || '注册失败' }
     } finally {
@@ -82,7 +94,8 @@ export const useAppStore = defineStore('app', () => {
     try {
       const res = await userApi.getProfile()
       if (res.success && res.data) {
-        userProfile.value = res.data as any
+        const payload = (res.data as any).data || res.data
+        userProfile.value = payload
       }
     } catch {}
   }
@@ -91,7 +104,8 @@ export const useAppStore = defineStore('app', () => {
     try {
       const res = await userApi.updateProfile(data as any)
       if (res.success && res.data) {
-        userProfile.value = { ...userProfile.value!, ...res.data } as any
+        const payload = (res.data as any).data || res.data
+        userProfile.value = { ...userProfile.value!, ...payload } as any
       }
       return res
     } catch (e: any) {
@@ -105,7 +119,8 @@ export const useAppStore = defineStore('app', () => {
     try {
       const res = await dialogApi.getList()
       if (res.success && res.data) {
-        dialogList.value = res.data as any
+        const payload = (res.data as any).data || res.data
+        dialogList.value = payload
       }
     } catch {}
   }
@@ -115,7 +130,8 @@ export const useAppStore = defineStore('app', () => {
       const res = await dialogApi.create(title)
       if (res.success && res.data) {
         await fetchDialogList()
-        return res.data as Dialog
+        const payload = (res.data as any).data || res.data
+        return payload as Dialog
       }
       return null
     } catch {
@@ -128,8 +144,9 @@ export const useAppStore = defineStore('app', () => {
     try {
       const res = await dialogApi.getDetail(dialogId)
       if (res.success && res.data) {
-        currentDialogDetail.value = res.data as any
-        messages.value = (res.data as any).messages || []
+        const payload = (res.data as any).data || res.data
+        currentDialogDetail.value = payload
+        messages.value = payload.messages || []
         return true
       }
       return false
@@ -143,7 +160,8 @@ export const useAppStore = defineStore('app', () => {
     try {
       const res = await dialogApi.sendMessage(dialogId, content, files)
       if (res.success && res.data) {
-        const newMsg = res.data as Message
+        const payload = (res.data as any).data || res.data
+        const newMsg = payload as Message
         messages.value.push(newMsg)
         return newMsg
       }
@@ -185,11 +203,12 @@ export const useAppStore = defineStore('app', () => {
     try {
       const res = await dialogApi.regenerateMessage(dialogId, messageId)
       if (res.success && res.data) {
+        const payload = (res.data as any).data || res.data
         const idx = messages.value.findIndex(m => m.id === messageId)
         if (idx !== -1) {
-          messages.value[idx] = res.data as Message
+          messages.value[idx] = payload as Message
         }
-        return res.data as Message
+        return payload as Message
       }
       return null
     } catch {
@@ -199,14 +218,70 @@ export const useAppStore = defineStore('app', () => {
     }
   }
 
+  const editMessage = async (dialogId: string, messageId: string, content: string) => {
+    try {
+      const res = await dialogApi.editMessage(dialogId, messageId, content)
+      if (res.success && res.data) {
+        const payload = (res.data as any).data || res.data
+        const idx = messages.value.findIndex(m => m.id === messageId)
+        if (idx !== -1) {
+          messages.value[idx] = payload as Message
+        }
+        return payload as Message
+      }
+      return null
+    } catch {
+      return null
+    }
+  }
+
+  const getMessageBranches = async (dialogId: string, messageId: string) => {
+    try {
+      const res = await dialogApi.getMessageBranches(dialogId, messageId)
+      if (res.success && res.data) {
+        const payload = (res.data as any).data || res.data
+        return payload as MessageBranch[]
+      }
+      return []
+    } catch {
+      return []
+    }
+  }
+
+  const uploadFile = async (file: File, dialogId?: string) => {
+    try {
+      const res = await fileApi.upload(file, dialogId)
+      if (res.success && res.data) {
+        const payload = (res.data as any).data || res.data
+        return payload as UploadedFile
+      }
+      return null
+    } catch {
+      return null
+    }
+  }
+
+  const forgotPassword = async (email: string) => {
+    try {
+      const res = await authApi.forgotPassword({ email })
+      if (res.success) {
+        return { success: true, message: (res.data as any)?.message || res.message }
+      }
+      return { success: false, message: (res.data as any)?.message || res.message }
+    } catch (e: any) {
+      return { success: false, message: e.message || '操作失败' }
+    }
+  }
+
   // ============ 模型操作 ============
   const fetchModels = async () => {
     try {
       const res = await modelApi.getList()
       if (res.success && res.data) {
-        models.value = res.data as any
-        if (!currentModel.value && res.data.length > 0) {
-          currentModel.value = (res.data as any)[0]
+        const payload = (res.data as any).data || res.data
+        models.value = payload as any
+        if (!currentModel.value && payload.length > 0) {
+          currentModel.value = payload[0]
         }
       }
     } catch {}
@@ -225,7 +300,8 @@ export const useAppStore = defineStore('app', () => {
     try {
       const res = await userApi.getPlans()
       if (res.success && res.data) {
-        plans.value = res.data as any
+        const payload = (res.data as any).data || res.data
+        plans.value = payload as any
       }
     } catch {}
   }
@@ -388,6 +464,10 @@ export const useAppStore = defineStore('app', () => {
     renameDialog,
     deleteDialog,
     regenerateMessage,
+    editMessage,
+    getMessageBranches,
+    uploadFile,
+    forgotPassword,
 
     // 模型
     fetchModels,
