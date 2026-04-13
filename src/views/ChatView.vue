@@ -38,26 +38,26 @@
                 <div v-if="showModelMenu" class="absolute top-full right-0 mt-1 w-48 bg-white dark:bg-[#2a2a2a] border border-[#e0e0df] dark:border-white/10 rounded-lg shadow-claude-md py-1 z-50">
                   <button v-for="model in appStore.models" :key="model.id" class="w-full px-3 py-1.5 text-left text-[12px] flex justify-between hover:bg-black/[0.04] dark:hover:bg-white/5" :class="model.id === appStore.currentModel?.id ? 'text-[#d97757]' : ''" @click.stop="handleSwitchModel(model)">{{ model.name }}</button>
                 </div>
+              </Transition>
 
-                <!-- 制品卡片（可点击打开右侧面板） -->
-                <div v-if="getArtifact(msg.content)" class="mt-4 max-w-[80%] cursor-pointer group" @click="openArtifactPanel(getArtifact(msg.content)!)">
-                  <div class="artifact-card">
-                    <div class="artifact-card-header">
-                      <div class="flex items-center gap-2">
-                        <svg class="w-4 h-4 text-[#787774]" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.75"><path stroke-linecap="round" stroke-linejoin="round" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/></svg>
-                        <span class="artifact-card-title">{{ getArtifact(msg.content)?.title }}</span>
-                      </div>
-                      <svg class="w-4 h-4 text-[#9b9a97] group-hover:text-[#787774] transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
+              <!-- 制品卡片（可点击打开右侧面板） -->
+              <div v-if="getArtifact(msg.content)" class="mt-4 max-w-[80%] cursor-pointer group" @click="openArtifactPanel(getArtifact(msg.content)!)">
+                <div class="artifact-card">
+                  <div class="artifact-card-header">
+                    <div class="flex items-center gap-2">
+                      <svg class="w-4 h-4 text-[#787774]" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.75"><path stroke-linecap="round" stroke-linejoin="round" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/></svg>
+                      <span class="artifact-card-title">{{ getArtifact(msg.content)?.title }}</span>
                     </div>
-                    <div class="artifact-card-body">
-                      {{ getArtifact(msg.content)?.description || '点击查看代码和预览' }}
-                    </div>
-                    <div v-if="getArtifact(msg.content)?.type" class="artifact-card-type">
-                      <span>{{ getArtifactTypeLabel(getArtifact(msg.content)!.type) }}</span>
-                    </div>
+                    <svg class="w-4 h-4 text-[#9b9a97] group-hover:text-[#787774] transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
+                  </div>
+                  <div class="artifact-card-body">
+                    {{ getArtifact(msg.content)?.description || '点击查看代码和预览' }}
+                  </div>
+                  <div v-if="getArtifact(msg.content)?.type" class="artifact-card-type">
+                    <span>{{ getArtifactTypeLabel(getArtifact(msg.content)!.type) }}</span>
                   </div>
                 </div>
-              </Transition>
+              </div>
             </div>
 
             <button class="p-1.5 hover:bg-black/[0.04] dark:hover:bg-white/5 rounded-md transition-colors group" title="分享" @click="handleShare">
