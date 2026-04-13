@@ -86,7 +86,7 @@
                 <div class="flex gap-3">
                   <button
                     v-for="mode in colorModes" :key="mode.value"
-                    :class="['flex flex-col items-center gap-2 p-3 rounded-xl border-2 transition-all min-w-[80px]', appStore.theme === mode.value ? 'border-[#d97757] bg-[#fef8f5]' : 'border-[#e5e5e4] hover:border-[#cfcfce]']"
+                    :class="['flex flex-col items-center gap-2 p-3 rounded-xl border-2 transition-all min-w-[80px]', appStore.theme === mode.value ? 'border-[#d97757] bg-[#d97757]/10' : 'border-[#e5e5e4] dark:border-white/10 hover:border-[#cfcfce] dark:hover:border-white/20']"
                     @click="appStore.setTheme(mode.value)"
                   >
                     <div :class="['w-full aspect-[4/3] rounded-lg border', mode.bgClass]"></div>
@@ -100,7 +100,7 @@
                 <div class="flex gap-3">
                   <button
                     v-for="anim in animOptions" :key="anim.value"
-                    :class="['flex flex-col items-center gap-2 p-3 rounded-xl border-2 min-w-[80px]', backgroundAnimation === anim.value ? 'border-[#d97757] bg-[#fef8f5]' : 'border-[#e5e5e4] hover:border-[#cfcfce]']"
+                    :class="['flex flex-col items-center gap-2 p-3 rounded-xl border-2 min-w-[80px]', backgroundAnimation === anim.value ? 'border-[#d97757] bg-[#d97757]/10' : 'border-[#e5e5e4] dark:border-white/10 hover:border-[#cfcfce] dark:hover:border-white/20']"
                     @click="backgroundAnimation = anim.value"
                   >
                     <div :class="['w-full aspect-[4/3] rounded-lg flex items-center justify-center', anim.bgClass]">
