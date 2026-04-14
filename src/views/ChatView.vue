@@ -170,9 +170,8 @@
                   </button>
                 </div>
 
-                <!-- AI Logo：仅最后一条AI消息显示，紧贴内容下方 -->
                 <div v-if="isLastAiMessage(msg)" class="mt-3">
-                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" class="w-7 h-7 fill-current text-[#d97757]"><path d="m19.6 66.5 19.7-11 .3-1-.3-.5h-1l-3.3-.2-11.2-.3L14 53l-9.5-.5-2.4-.5L0 49l.2-1.5 2-1.3 2.9.2 6.3.5 9.5.6 6.9.4L38 49.1h1.6l.2-.7-.5-.4-.4-.4L29 41l-10.6-7-5.6-4.1-3-2-1.5-2-.6-4.2 2.7-3 3.7.3.9.2 3.7 2.9 8 6.1L37 36l1.5 1.2.6-.4.1-.3-.7-1.1L33 25l-6-10.4-2.7-4.3-.7-2.6c-.3-1-.4-2-.4-3l3-4.2L28 0l4.2.6L33.8 2l2.6 6 4.1 9.3L47 29.9l2 3.8 1 3.4.3 1h.7v-.5l.5-7.2 1-8.7 1-11.2.3-3.2 1.6-3.8 3-2L61 2.6l2 2.9-.3 1.8-1.1 7.7L59 27.1l-1.5 8.2h.9l1-1.1 4.1-5.4 6.9-8.6 3-3.5L77 13l2.3-1.8h4.3l3.1 4.7-1.4 4.9-4.4 5.6-3.7 4.7-5.3 7.1-3.2 5.7.3.4h.7l12-2.6 6.4-1.1 7.6-1.3 3.5 1.6.4 1.6-1.4 3.4-8.2 2-9.6 2-14.3 3.3-.2.1.2.3 6.4.6 2.8.2h6.8l12.6 1 3.3 2 1.9 2.7-.3 2-5.1 2.6-6.8-1.6-16-3.8-5.4-1.3h-.8v.4l4.6 4.5 8.3 7.5L89 80.1l.5 2.4-1.3 2-1.4-.2-9.2-7-3.6-3-8-6.8h-.5v.7l1.8 2.7 9.8 14.7.5 4.5-.7 1.4-2.6 1-2.7-.6-5.8-8-6-9-4.7-8.2-.5.4-2.9 30.2-1.3 1.5-3 1.2-2.5-2-1.4-3 1.4-6.2 1.6-8 1.3-6.4 1.2-7.9.7-2.6v-.2H49L43 72l-9 12.3-7.2 7.6-1.7.7-3-1.5.3-2.8L24 86l10-12.8 6-7.9 4-4.6-.1-.5h-.3L17.2 77.4l-4.7.6-2-2 .2-3 1-1 8-5.5Z"/></svg>
+                  <svg ref="aiLogoRef" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" class="w-7 h-7 fill-current text-[#d97757]"><path d="m19.6 66.5 19.7-11 .3-1-.3-.5h-1l-3.3-.2-11.2-.3L14 53l-9.5-.5-2.4-.5L0 49l.2-1.5 2-1.3 2.9.2 6.3.5 9.5.6 6.9.4L38 49.1h1.6l.2-.7-.5-.4-.4-.4L29 41l-10.6-7-5.6-4.1-3-2-1.5-2-.6-4.2 2.7-3 3.7.3.9.2 3.7 2.9 8 6.1L37 36l1.5 1.2.6-.4.1-.3-.7-1.1L33 25l-6-10.4-2.7-4.3-.7-2.6c-.3-1-.4-2-.4-3l3-4.2L28 0l4.2.6L33.8 2l2.6 6 4.1 9.3L47 29.9l2 3.8 1 3.4.3 1h.7v-.5l.5-7.2 1-8.7 1-11.2.3-3.2 1.6-3.8 3-2L61 2.6l2 2.9-.3 1.8-1.1 7.7L59 27.1l-1.5 8.2h.9l1-1.1 4.1-5.4 6.9-8.6 3-3.5L77 13l2.3-1.8h4.3l3.1 4.7-1.4 4.9-4.4 5.6-3.7 4.7-5.3 7.1-3.2 5.7.3.4h.7l12-2.6 6.4-1.1 7.6-1.3 3.5 1.6.4 1.6-1.4 3.4-8.2 2-9.6 2-14.3 3.3-.2.1.2.3 6.4.6 2.8.2h6.8l12.6 1 3.3 2 1.9 2.7-.3 2-5.1 2.6-6.8-1.6-16-3.8-5.4-1.3h-.8v.4l4.6 4.5 8.3 7.5L89 80.1l.5 2.4-1.3 2-1.4-.2-9.2-7-3.6-3-8-6.8h-.5v.7l1.8 2.7 9.8 14.7.5 4.5-.7 1.4-2.6 1-2.7-.6-5.8-8-6-9-4.7-8.2-.5.4-2.9 30.2-1.3 1.5-3 1.2-2.5-2-1.4-3 1.4-6.2 1.6-8 1.3-6.4 1.2-7.9.7-2.6v-.2H49L43 72l-9 12.3-7.2 7.6-1.7.7-3-1.5.3-2.8L24 86l10-12.8 6-7.9 4-4.6-.1-.5h-.3L17.2 77.4l-4.7.6-2-2 .2-3 1-1 8-5.5Z"/></svg>
                 </div>
             </div>
           </template>
@@ -330,9 +329,11 @@ const isCollapsed = ref(false)
 const isSending = ref(false)
 const streamingContent = ref('')
 const isDragging = ref(false)
+const isAiWaiting = ref(false)
 let abortController: AbortController | null = null
 const inputRef = ref<HTMLTextAreaElement | null>(null)
 const msgContainerRef = ref<HTMLElement | null>(null)
+const aiLogoRef = ref<SVGSVGElement | null>(null)
 const showModelMenu = ref(false)
 const showNotifyBar = ref(false)
 const selectedChoices = reactive<Record<string, number>>({})
@@ -814,6 +815,7 @@ const handleSend = async () => {
   console.log(`[FRONTEND] content: ${content.substring(0, 80)}`)
 
   isSending.value = true
+  isAiWaiting.value = true
   streamingContent.value = ''
   abortController = new AbortController()
   savedArtifactType.value &&= undefined // 用完即清除
@@ -860,6 +862,7 @@ const handleSend = async () => {
         // 直接更新消息列表中的内容，触发 Vue 响应式渲染
         if (tempMsg) tempMsg.content += event.text
         streamingContent.value = tempMsg?.content ?? ''
+        if (isAiWaiting.value) isAiWaiting.value = false
         // 每个chunk都滚动到底部
         scrollToBottom()
         if (eventCount % 5 === 1) {
@@ -1064,6 +1067,451 @@ const autoResizeByRef = () => {
 onMounted(() => {
   setTimeout(() => inputRef.value?.focus(), 300)
 })
+
+// ============ AI Logo 动画控制 ============
+let aiAnimFrameId: number | null = null
+let aiLogoOriginalD: string | null = null
+let aiLogoPathElement: SVGPathElement | null = null
+
+/** AI Logo 思考动画 */
+const startAiLogoAnimation = (svg: SVGSVGElement) => {
+  const pathElement = svg.querySelector('path')
+  if (!pathElement) return
+
+  const originalD = pathElement.getAttribute('d')
+  if (!originalD) return
+
+  // 保存到模块级变量，供 stopAiLogoAnimation 使用
+  aiLogoOriginalD = originalD
+  aiLogoPathElement = pathElement
+        
+        // ---------- 2. 高级SVG路径解析器 (支持绝对/相对指令 M, m, L, l, H, h, V, v, Z, z，以及连续省略指令) ----------
+        // 返回结构: { subpaths: [{ points: [{x,y}], closed: boolean }] }
+        function parsePathToPoints(dString) {
+            if (!dString) return { subpaths: [] };
+            
+            // 正则匹配命令字母 和 数值 (支持科学计数法、负号、小数)
+            const tokens = [];
+            const regex = /([a-zA-Z])|(-?\d*\.?\d+(?:e[-+]?\d+)?)/gi;
+            let match;
+            while ((match = regex.exec(dString)) !== null) {
+                if (match[1]) {
+                    tokens.push({ type: 'cmd', value: match[1] });
+                } else if (match[0] !== undefined && match[0] !== '') {
+                    tokens.push({ type: 'num', value: parseFloat(match[0]) });
+                }
+            }
+            
+            // 解析流程
+            let subpaths = [];
+            let currentPoints = [];      // 当前子路径点集 (绝对坐标)
+            let currentPoint = { x: 0, y: 0 };   // 当前画笔位置 (绝对坐标)
+            let subpathClosed = false;
+            let lastCmd = '';
+            let cmdBuffer = [];            // 存放待处理的数值
+            let isRelative = false;
+            let startPointOfSubpath = { x: 0, y: 0 };
+            
+            // 辅助函数：添加点
+            function addPoint(x, y) {
+                currentPoints.push({ x, y });
+                currentPoint = { x, y };
+            }
+            
+            // 处理直线（相对/绝对）
+            function processLineTo(rel, x, y) {
+                let nx = rel ? currentPoint.x + x : x;
+                let ny = rel ? currentPoint.y + y : y;
+                addPoint(nx, ny);
+            }
+            
+            // 处理水平线
+            function processHorizontal(rel, val) {
+                let nx = rel ? currentPoint.x + val : val;
+                addPoint(nx, currentPoint.y);
+            }
+            
+            // 处理垂直线
+            function processVertical(rel, val) {
+                let ny = rel ? currentPoint.y + val : val;
+                addPoint(currentPoint.x, ny);
+            }
+            
+            // 闭合子路径
+            function closeSubpath() {
+                if (currentPoints.length > 0 && !subpathClosed) {
+                    // 闭合: 添加回到起点的线段（起点即为当前子路径第一个点）
+                    if (currentPoints.length > 1 && (currentPoints[0].x !== currentPoint.x || currentPoints[0].y !== currentPoint.y)) {
+                        addPoint(currentPoints[0].x, currentPoints[0].y);
+                    }
+                    subpathClosed = true;
+                }
+            }
+            
+            // 结束当前子路径, 存入列表
+            function finalizeSubpath() {
+                if (currentPoints.length > 0) {
+                    subpaths.push({
+                        points: [...currentPoints],
+                        closed: subpathClosed
+                    });
+                }
+                currentPoints = [];
+                subpathClosed = false;
+                // 注意: currentPoint 保留, 但新子路径开始时会重置起始点
+            }
+            
+            let i = 0;
+            while (i < tokens.length) {
+                const token = tokens[i];
+                if (token.type === 'cmd') {
+                    // 遇到新命令: 先处理之前缓存的数值? 每个新命令之前确保无残留，不过对于同一命令可连续数值，但新命令重置cmdBuffer
+                    cmdBuffer = [];
+                    const cmd = token.value;
+                    lastCmd = cmd;
+                    isRelative = (cmd === cmd.toLowerCase());
+                    const absCmd = cmd.toUpperCase();
+                    
+                    i++;
+                    // 收集当前命令对应的所有数值 (直到下一个命令或结束)
+                    let numbers = [];
+                    while (i < tokens.length && tokens[i].type === 'num') {
+                        numbers.push(tokens[i].value);
+                        i++;
+                    }
+                    
+                    // 根据命令类型处理
+                    if (absCmd === 'M') {
+                        // moveto 需要成对出现, 如果之前的子路径非空，则终结上一个子路径
+                        if (currentPoints.length > 0) {
+                            finalizeSubpath();
+                        }
+                        // 开启新子路径
+                        currentPoints = [];
+                        subpathClosed = false;
+                        // 处理moveto参数 (必须至少一对坐标)
+                        for (let j = 0; j < numbers.length; j += 2) {
+                            if (j + 1 >= numbers.length) break;
+                            let x = numbers[j];
+                            let y = numbers[j+1];
+                            let nx = isRelative ? (currentPoint.x + x) : x;
+                            let ny = isRelative ? (currentPoint.y + y) : y;
+                            // moveto 点记录为当前子路径起始点
+                            addPoint(nx, ny);
+                            startPointOfSubpath = { x: nx, y: ny };
+                            // 如果有多对坐标，后续的坐标按照隐式L命令处理 (规范: 多个M后续点当作L)
+                            for (let k = j+2; k < numbers.length; k += 2) {
+                                if (k+1 >= numbers.length) break;
+                                let lx = numbers[k];
+                                let ly = numbers[k+1];
+                                let lnx = isRelative ? (currentPoint.x + lx) : lx;
+                                let lny = isRelative ? (currentPoint.y + ly) : ly;
+                                addPoint(lnx, lny);
+                            }
+                            break; // 只处理第一对作为真正的M，后续已在内部处理L
+                        }
+                    }
+                    else if (absCmd === 'L') {
+                        // 线段
+                        for (let j = 0; j < numbers.length; j += 2) {
+                            if (j+1 >= numbers.length) break;
+                            let x = numbers[j];
+                            let y = numbers[j+1];
+                            processLineTo(isRelative, x, y);
+                        }
+                    }
+                    else if (absCmd === 'H') {
+                        for (let j = 0; j < numbers.length; j++) {
+                            processHorizontal(isRelative, numbers[j]);
+                        }
+                    }
+                    else if (absCmd === 'V') {
+                        for (let j = 0; j < numbers.length; j++) {
+                            processVertical(isRelative, numbers[j]);
+                        }
+                    }
+                    else if (absCmd === 'Z') {
+                        // 闭合路径
+                        closeSubpath();
+                    }
+                    else if (absCmd === 'C' || absCmd === 'Q' || absCmd === 'A' || absCmd === 'S' || absCmd === 'T') {
+                        // 本路径中仅包含直线/折线，没有高阶曲线，但为了稳健，遇到曲线做近似处理：只记录端点（近似忽略控制点）
+                        // 注意：题目路径本身只有 M/L/H/V 及相对小写，没有曲线指令，为了安全忽略曲线内部点，只处理终点。
+                        console.warn("检测到曲线命令，为保持形状只添加终点/近似, 可能丢失细节, 但此svg无曲线放心");
+                        if (absCmd === 'C') {
+                            // 三次贝塞尔: 每组需要6个数值，取终点
+                            for (let j = 0; j+5 < numbers.length; j += 6) {
+                                let endX = numbers[j+4];
+                                let endY = numbers[j+5];
+                                processLineTo(isRelative, endX, endY);
+                            }
+                        } else if (absCmd === 'Q') {
+                            for (let j = 0; j+3 < numbers.length; j += 4) {
+                                let endX = numbers[j+2];
+                                let endY = numbers[j+3];
+                                processLineTo(isRelative, endX, endY);
+                            }
+                        } else if (absCmd === 'A') {
+                            for (let j = 0; j+6 < numbers.length; j += 7) {
+                                let endX = numbers[j+5];
+                                let endY = numbers[j+6];
+                                processLineTo(isRelative, endX, endY);
+                            }
+                        } else {
+                            // 其他近似处理
+                            for (let j = 0; j+1 < numbers.length; j+=2) {
+                                if(j+1>=numbers.length)break;
+                                processLineTo(isRelative, numbers[j], numbers[j+1]);
+                            }
+                        }
+                    }
+                    else {
+                        // 未知命令忽略
+                    }
+                } else {
+                    // 理论上不应该出现数值而没有命令, 跳过
+                    i++;
+                }
+            }
+            // 最后结束最后一个子路径
+            if (currentPoints.length > 0) {
+                finalizeSubpath();
+            }
+            return { subpaths };
+        }
+        
+        // ---------- 3. 根据点集重新生成路径 (绝对坐标，M + L + Z) ----------
+        function rebuildPathFromSubpaths(subpaths) {
+            if (!subpaths || subpaths.length === 0) return '';
+            let dParts = [];
+            for (let sub of subpaths) {
+                if (!sub.points || sub.points.length === 0) continue;
+                // 第一个点用 M
+                dParts.push(`M ${sub.points[0].x} ${sub.points[0].y}`);
+                // 后续点 L
+                for (let i = 1; i < sub.points.length; i++) {
+                    dParts.push(`L ${sub.points[i].x} ${sub.points[i].y}`);
+                }
+                // 闭合
+                if (sub.closed) {
+                    dParts.push('Z');
+                }
+            }
+            return dParts.join(' ');
+        }
+        
+        // ---------- 4. 解析原始路径获取所有子路径 & 原始顶点数据 ----------
+        const parsed = parsePathToPoints(originalD);
+        if (!parsed.subpaths.length) {
+            console.error("路径解析失败, 返回原始路径");
+            pathElement.setAttribute('d', originalD);
+            return;
+        }
+        
+        // 深拷贝原始点集 (用于恢复原始坐标)
+        let originalSubpaths = [];
+        for (let sub of parsed.subpaths) {
+            let pointsCopy = sub.points.map(p => ({ x: p.x, y: p.y }));
+            originalSubpaths.push({
+                points: pointsCopy,
+                closed: sub.closed
+            });
+        }
+        
+        // ---------- 5. 计算全局中心 (基于所有顶点) & 最大半径 & 半径阈值(一半) ----------
+        let allPoints = [];
+        for (let sub of originalSubpaths) {
+            for (let pt of sub.points) {
+                allPoints.push(pt);
+            }
+        }
+        if (allPoints.length === 0) {
+            console.warn("没有顶点数据");
+            pathElement.setAttribute('d', originalD);
+            return;
+        }
+        
+        // 中心：所有顶点的平均坐标 (更符合放射中心感)
+        let centerX = 0, centerY = 0;
+        for (let p of allPoints) {
+            centerX += p.x;
+            centerY += p.y;
+        }
+        centerX /= allPoints.length;
+        centerY /= allPoints.length;
+        
+        // 最大半径 (从中心到最远顶点)
+        let maxRadius = 0;
+        for (let p of allPoints) {
+            const dx = p.x - centerX;
+            const dy = p.y - centerY;
+            const dist = Math.hypot(dx, dy);
+            if (dist > maxRadius) maxRadius = dist;
+        }
+        const thresholdRadius = maxRadius / 2;   // 半径的一半
+        
+        // 预计算每个原始顶点相对于中心的方向和原始距离 (以便快速变形)
+        // 存储原始顶点信息： 所属子路径索引、点索引、原始坐标、距离、单位向量
+        let verticesMeta = [];
+        for (let si = 0; si < originalSubpaths.length; si++) {
+            const sub = originalSubpaths[si];
+            for (let pi = 0; pi < sub.points.length; pi++) {
+                const pt = sub.points[pi];
+                const dx = pt.x - centerX;
+                const dy = pt.y - centerY;
+                const dist = Math.hypot(dx, dy);
+                const dirX = dist > 1e-6 ? dx / dist : 0;
+                const dirY = dist > 1e-6 ? dy / dist : 0;
+                verticesMeta.push({
+                    subIdx: si,
+                    pointIdx: pi,
+                    origX: pt.x,
+                    origY: pt.y,
+                    dist: dist,
+                    dirX: dirX,
+                    dirY: dirY
+                });
+            }
+        }
+        
+        // 变形函数: factor 0 -> 原始形态, factor 1 -> 完全收缩(距离>阈值点压到阈值半径边界, 内部点不变)
+        // 对于原始距离 dist > thresholdRadius 的点: 新距离 = thresholdRadius + (dist - thresholdRadius) * (1 - factor)
+        // 当 factor=1 新距离 = thresholdRadius; factor=0 新距离 = dist。
+        // 内部点 (dist <= thresholdRadius) 保持不变。
+        function computeDeformedPoint(meta, factor) {
+            if (meta.dist <= thresholdRadius) {
+                // 内部点完全不动，保持原始位置
+                return { x: meta.origX, y: meta.origY };
+            } else {
+                // 外部点根据因子向阈值圆内收缩
+                const newDist = thresholdRadius + (meta.dist - thresholdRadius) * (1 - factor);
+                const newX = centerX + meta.dirX * newDist;
+                const newY = centerY + meta.dirY * newDist;
+                return { x: newX, y: newY };
+            }
+        }
+        
+        // 根据 factor 重建所有子路径的新点集
+        function buildDeformedSubpaths(factor) {
+            // 深拷贝结构，方便填充
+            let newSubpaths = [];
+            for (let sub of originalSubpaths) {
+                newSubpaths.push({
+                    points: [],
+                    closed: sub.closed
+                });
+            }
+            for (let meta of verticesMeta) {
+                const newPt = computeDeformedPoint(meta, factor);
+                newSubpaths[meta.subIdx].points[meta.pointIdx] = newPt;
+            }
+            // 确保每个子路径的点顺序正确，无缺失 (上面已按索引填充)
+            return newSubpaths;
+        }
+        
+        // ---------- 6. 动画系统: 呼吸/收缩恢复来回循环 (无限循环) ----------
+        let animationId = null;
+        let startTimestamp = null;
+        let cycleDuration = 2800; // 一个完整收缩+恢复周期 2.8秒 (收缩1.4s，恢复1.4s)
+        let direction = 1;        // 不再需要方向，用正弦或三角波? 使用三角波来回更自然: factor = 1 - |2*t - 1|? 
+        // 为了视觉更平滑: 采用 sin 但需要持续收缩恢复: factor 范围 [0,1] 的往复, 使用 0.5+0.5*cos(pi + 2*pi*t)? 
+        // 最好使用 三角波: factor = 1 - | (time % cycleDuration) / (cycleDuration/2) - 1 | 
+        // 实现收缩(0->1)然后恢复(1->0)
+        function computeFactorByTime(nowMs) {
+            if (startTimestamp === null) startTimestamp = nowMs;
+            const elapsed = (nowMs - startTimestamp) % cycleDuration;   // 周期内位置
+            const halfCycle = cycleDuration / 2;
+            let t = elapsed / halfCycle;  // [0,2]
+            if (t <= 1) {
+                // 收缩阶段: t:0->1  factor:0 -> 1
+                return t;       // 从原始 -> 完全收缩
+            } else {
+                // 恢复阶段: t:1->2  factor:1 -> 0
+                return 2 - t;   // 完全收缩回到原始
+            }
+        }
+        
+        // 更新路径的d属性
+        function updatePathByFactor(factor) {
+            const deformedSubpaths = buildDeformedSubpaths(factor);
+            const newD = rebuildPathFromSubpaths(deformedSubpaths);
+            pathElement.setAttribute('d', newD);
+            // 更新UI显示因子状态(调试)
+            const stateSpan = document.getElementById('animState');
+            if (stateSpan) {
+                let percent = Math.round(factor * 100);
+                if (factor > 0.98) stateSpan.innerHTML = `⚡ 完全收缩 · 向心聚拢 (${percent}%)`;
+                else if (factor < 0.02) stateSpan.innerHTML = `🌀 原始放射形态 · 舒展 (${percent}%)`;
+                else if (factor > 0.5) stateSpan.innerHTML = `📐 收缩变形中 · 边缘内聚 (${percent}%)`;
+                else stateSpan.innerHTML = `🌊 恢复舒展 · 向外复位 (${percent}%)`;
+            }
+        }
+        
+        // 动画循环
+        function animate(timestamp) {
+            if (!startTimestamp) startTimestamp = timestamp;
+            const factor = computeFactorByTime(timestamp);
+            updatePathByFactor(factor);
+            animationId = requestAnimationFrame(animate);
+        }
+        
+        // 重置为原始形态 (停止动画，设置为完全原始形态，再可选重启)
+        function resetToOriginal() {
+            if (animationId) {
+                cancelAnimationFrame(animationId);
+                animationId = null;
+            }
+            // 重置为原始形态 (factor = 0)
+            updatePathByFactor(0);
+            // 重置时间戳，重新启动动画实现连续恢复循环
+            startTimestamp = null;
+            // 重新启动动画
+            animationId = requestAnimationFrame(animate);
+            const stateSpan = document.getElementById('animState');
+            if (stateSpan) stateSpan.innerHTML = `🔄 已重置 · 继续动态收缩恢复`;
+            // 闪烁重置提示
+            const resetBtn = document.getElementById('resetBtn');
+            if (resetBtn) {
+                resetBtn.style.transform = 'scale(0.95)';
+                setTimeout(() => { if(resetBtn) resetBtn.style.transform = ''; }, 150);
+            }
+        }
+        
+        // 绑定重置按钮
+        const resetBtn = document.getElementById('resetBtn');
+        if (resetBtn) {
+            resetBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                resetToOriginal();
+            });
+        }
+        
+        // 开始动画
+        animationId = requestAnimationFrame(animate);
+        
+    aiAnimFrameId = requestAnimationFrame(animate)
+  }
+
+const stopAiLogoAnimation = () => {
+  if (aiAnimFrameId !== null) {
+    cancelAnimationFrame(aiAnimFrameId)
+    aiAnimFrameId = null
+  }
+  // 停止后重置 path 到原始形态
+  if (aiLogoPathElement && aiLogoOriginalD) {
+    aiLogoPathElement.setAttribute('d', aiLogoOriginalD)
+    aiLogoPathElement = null
+    aiLogoOriginalD = null
+  }
+}
+
+watch(isAiWaiting, (val) => {
+  if (val && aiLogoRef.value) {
+    startAiLogoAnimation(aiLogoRef.value)
+  } else {
+    stopAiLogoAnimation()
+  }
+})
 </script>
 
 <style scoped>
@@ -1155,7 +1603,6 @@ onMounted(() => {
 /* 预览面板代码区 */
 pre code { font-family: 'SF Mono', Menlo, Consolas, monospace; }
 
-/* 制品向导面板样式（流式传输完成后智能注入） */
 .wizard-panel {
   @apply bg-white dark:bg-[#2a2a2a] border border-[#e5e5e4] dark:border-white/10 rounded-xl shadow-sm overflow-hidden;
 }
