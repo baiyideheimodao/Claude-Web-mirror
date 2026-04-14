@@ -5,7 +5,7 @@
 
     <!-- 主内容区域 -->
     <main :class="['min-h-screen transition-all duration-200 ease-in-out', isCollapsed ? 'ml-[48px]' : 'ml-[260px]']">
-      <div class="max-w-[800px] mx-auto px-6 pt-[140px] pb-8">
+      <div class="max-w-[800px] mx-auto px-6 pt-[28vh] pb-8">
         <!-- 问候语区域 -->
         <div class="text-center mb-8">
           <h1 class="text-[32px] font-normal text-[#1a1a1a] dark:text-white flex items-center justify-center gap-3 leading-tight">
