@@ -565,9 +565,13 @@ const formatTime = (dateStr: string): string => {
   return `${Math.floor(diffMin / 1440)} 天前`
 }
 
-// 全局快捷键
+// 全局快捷键 + 侧边栏挂载时确保加载对话列表
 onMounted(() => {
   window.addEventListener('keydown', handleGlobalKeydown)
+  // 每次侧边栏挂载时，已登录则刷新对话列表（解决路由切换/刷新后列表消失的问题）
+  if (appStore.isAuthenticated) {
+    appStore.fetchDialogList()
+  }
 })
 onUnmounted(() => {
   window.removeEventListener('keydown', handleGlobalKeydown)
@@ -605,6 +609,13 @@ const closeUserMenuOnClickOutside = (e: MouseEvent) => {
     setTimeout(() => { showUserMenu.value = false }, 50)
   }
 }
+
+// 监听登录状态变化：用户登录后自动拉取对话列表
+watch(() => appStore.isAuthenticated, (isAuth) => {
+  if (isAuth) {
+    appStore.fetchDialogList()
+  }
+})
 </script>
 
 <style scoped>
