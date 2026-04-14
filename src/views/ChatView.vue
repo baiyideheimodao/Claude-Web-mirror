@@ -1,5 +1,5 @@
 <template>
-  <div class="min-h-screen bg-[#f9f8f5] dark:bg-[#1a1a1a] text-text-100">
+  <div class="min-h-screen bg-[#f9f8f5] dark:bg-[#1a1a1a] text-[#1a1a1a] dark:text-gray-200">
     <!-- 左侧导航栏 -->
     <AppNavigation @sidebar-change="onSidebarChange" />
 
@@ -19,7 +19,7 @@
             </button>
             <h1 v-else class="text-xl font-semibold text-[#1a1a1a] dark:text-white truncate flex items-center gap-2">
               {{ dialogDetail.title }}
-              <button class="p-1 hover:bg-black/[0.04] rounded opacity-60 hover:opacity-100 transition-opacity" title="编辑标题">
+              <button class="p-1 hover:bg-black/[0.04] dark:hover:bg-white/5 rounded opacity-60 hover:opacity-100 transition-opacity" title="编辑标题">
                 <svg class="w-3.5 h-3.5 text-[#9b9a97]" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.75"><path stroke-linecap="round" stroke-linejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/></svg>
               </button>
             </h1>
@@ -39,25 +39,6 @@
                   <button v-for="model in appStore.models" :key="model.id" class="w-full px-3 py-1.5 text-left text-[12px] flex justify-between hover:bg-black/[0.04] dark:hover:bg-white/5" :class="model.id === appStore.currentModel?.id ? 'text-[#d97757]' : ''" @click.stop="handleSwitchModel(model)">{{ model.name }}</button>
                 </div>
               </Transition>
-
-              <!-- 制品卡片（可点击打开右侧面板） -->
-              <div v-if="getArtifact(msg.content)" class="mt-4 max-w-[80%] cursor-pointer group" @click="openArtifactPanel(getArtifact(msg.content)!)">
-                <div class="artifact-card">
-                  <div class="artifact-card-header">
-                    <div class="flex items-center gap-2">
-                      <svg class="w-4 h-4 text-[#787774]" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.75"><path stroke-linecap="round" stroke-linejoin="round" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/></svg>
-                      <span class="artifact-card-title">{{ getArtifact(msg.content)?.title }}</span>
-                    </div>
-                    <svg class="w-4 h-4 text-[#9b9a97] group-hover:text-[#787774] transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
-                  </div>
-                  <div class="artifact-card-body">
-                    {{ getArtifact(msg.content)?.description || '点击查看代码和预览' }}
-                  </div>
-                  <div v-if="getArtifact(msg.content)?.type" class="artifact-card-type">
-                    <span>{{ getArtifactTypeLabel(getArtifact(msg.content)!.type) }}</span>
-                  </div>
-                </div>
-              </div>
             </div>
 
             <button class="p-1.5 hover:bg-black/[0.04] dark:hover:bg-white/5 rounded-md transition-colors group" title="分享" @click="handleShare">
@@ -90,7 +71,7 @@
             <div v-else>
               <div class="max-w-[80%] text-[15px] text-[#1a1a1a] dark:text-gray-200 leading-relaxed prose-sm dark:prose-invert max-w-none" v-html="renderContent(msg.content)"></div>
 
-                <!-- 选项卡片面板 -->
+                <!-- 选项卡片面板（原有标签模式） -->
                 <div v-if="getChoicePanel(msg.content) && !closedPanels[msg.id]" class="mt-4 max-w-[80%]">
                   <div class="choice-panel">
                     <div class="choice-panel-header">
@@ -99,25 +80,6 @@
                         <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
                       </button>
                     </div>
-
-                <!-- 制品卡片（可点击打开右侧面板） -->
-                <div v-if="getArtifact(msg.content)" class="mt-4 max-w-[80%] cursor-pointer group" @click="openArtifactPanel(getArtifact(msg.content)!)">
-                  <div class="artifact-card">
-                    <div class="artifact-card-header">
-                      <div class="flex items-center gap-2">
-                        <svg class="w-4 h-4 text-[#787774]" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.75"><path stroke-linecap="round" stroke-linejoin="round" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/></svg>
-                        <span class="artifact-card-title">{{ getArtifact(msg.content)?.title }}</span>
-                      </div>
-                      <svg class="w-4 h-4 text-[#9b9a97] group-hover:text-[#787774] transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
-                    </div>
-                    <div class="artifact-card-body">
-                      {{ getArtifact(msg.content)?.description || '点击查看代码和预览' }}
-                    </div>
-                    <div v-if="getArtifact(msg.content)?.type" class="artifact-card-type">
-                      <span>{{ getArtifactTypeLabel(getArtifact(msg.content)!.type) }}</span>
-                    </div>
-                  </div>
-                </div>
                     <div class="choice-panel-list">
                       <button v-for="(choice, ci) in getChoicePanel(msg.content)!.choices" :key="ci"
                         :class="['choice-panel-item', selectedChoices[msg.id] === ci ? 'choice-panel-item-active' : '']"
@@ -126,83 +88,42 @@
                       </button>
                     </div>
 
-                <!-- 制品卡片（可点击打开右侧面板） -->
-                <div v-if="getArtifact(msg.content)" class="mt-4 max-w-[80%] cursor-pointer group" @click="openArtifactPanel(getArtifact(msg.content)!)">
-                  <div class="artifact-card">
-                    <div class="artifact-card-header">
-                      <div class="flex items-center gap-2">
-                        <svg class="w-4 h-4 text-[#787774]" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.75"><path stroke-linecap="round" stroke-linejoin="round" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/></svg>
-                        <span class="artifact-card-title">{{ getArtifact(msg.content)?.title }}</span>
-                      </div>
-                      <svg class="w-4 h-4 text-[#9b9a97] group-hover:text-[#787774] transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
-                    </div>
-                    <div class="artifact-card-body">
-                      {{ getArtifact(msg.content)?.description || '点击查看代码和预览' }}
-                    </div>
-                    <div v-if="getArtifact(msg.content)?.type" class="artifact-card-type">
-                      <span>{{ getArtifactTypeLabel(getArtifact(msg.content)!.type) }}</span>
-                    </div>
-                  </div>
-                </div>
                     <div class="choice-panel-footer">
                       <button class="choice-skip-btn" @click="handleSkipChoice(msg.id)">Skip</button>
                     </div>
-
-                <!-- 制品卡片（可点击打开右侧面板） -->
-                <div v-if="getArtifact(msg.content)" class="mt-4 max-w-[80%] cursor-pointer group" @click="openArtifactPanel(getArtifact(msg.content)!)">
-                  <div class="artifact-card">
-                    <div class="artifact-card-header">
-                      <div class="flex items-center gap-2">
-                        <svg class="w-4 h-4 text-[#787774]" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.75"><path stroke-linecap="round" stroke-linejoin="round" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/></svg>
-                        <span class="artifact-card-title">{{ getArtifact(msg.content)?.title }}</span>
-                      </div>
-                      <svg class="w-4 h-4 text-[#9b9a97] group-hover:text-[#787774] transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
-                    </div>
-                    <div class="artifact-card-body">
-                      {{ getArtifact(msg.content)?.description || '点击查看代码和预览' }}
-                    </div>
-                    <div v-if="getArtifact(msg.content)?.type" class="artifact-card-type">
-                      <span>{{ getArtifactTypeLabel(getArtifact(msg.content)!.type) }}</span>
-                    </div>
                   </div>
                 </div>
-                  </div>
 
-                <!-- 制品卡片（可点击打开右侧面板） -->
-                <div v-if="getArtifact(msg.content)" class="mt-4 max-w-[80%] cursor-pointer group" @click="openArtifactPanel(getArtifact(msg.content)!)">
-                  <div class="artifact-card">
-                    <div class="artifact-card-header">
+                <!-- 制品向导选项卡（流式完成后智能注入） -->
+                <div v-if="choiceWizard.active && !choiceWizard.completed && msg.id === choiceWizard.currentMsgId && !closedPanels[msg.id]" class="mt-4 max-w-[80%]">
+                  <div class="wizard-panel">
+                    <div class="wizard-panel-header">
                       <div class="flex items-center gap-2">
-                        <svg class="w-4 h-4 text-[#787774]" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.75"><path stroke-linecap="round" stroke-linejoin="round" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/></svg>
-                        <span class="artifact-card-title">{{ getArtifact(msg.content)?.title }}</span>
+                        <svg class="w-4 h-4 text-[#d97757]" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.75"><path stroke-linecap="round" stroke-linejoin="round" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/></svg>
+                        <span class="wizard-panel-title">{{ getWizardPanel()?.question || '请选择' }}</span>
                       </div>
-                      <svg class="w-4 h-4 text-[#9b9a97] group-hover:text-[#787774] transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
-                    </div>
-                    <div class="artifact-card-body">
-                      {{ getArtifact(msg.content)?.description || '点击查看代码和预览' }}
-                    </div>
-                    <div v-if="getArtifact(msg.content)?.type" class="artifact-card-type">
-                      <span>{{ getArtifactTypeLabel(getArtifact(msg.content)!.type) }}</span>
-                    </div>
-                  </div>
-                </div>
-                </div>
-
-                <!-- 制品卡片（可点击打开右侧面板） -->
-                <div v-if="getArtifact(msg.content)" class="mt-4 max-w-[80%] cursor-pointer group" @click="openArtifactPanel(getArtifact(msg.content)!)">
-                  <div class="artifact-card">
-                    <div class="artifact-card-header">
                       <div class="flex items-center gap-2">
-                        <svg class="w-4 h-4 text-[#787774]" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.75"><path stroke-linecap="round" stroke-linejoin="round" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/></svg>
-                        <span class="artifact-card-title">{{ getArtifact(msg.content)?.title }}</span>
+                        <!-- 进度指示器 -->
+                        <div class="flex items-center gap-1 mr-2">
+                          <template v-for="i in choiceWizard.totalRounds" :key="i">
+                            <div :class="['w-1.5 h-1.5 rounded-full', i <= choiceWizard.round + 1 ? 'bg-[#d97757]' : 'bg-[#e0e0df]']"></div>
+                          </template>
+                        </div>
+                        <span class="text-[11px] text-[#9b9a97] mr-1">{{ choiceWizard.round + 1 }}/{{ choiceWizard.totalRounds }}</span>
+                        <button class="choice-panel-close" @click="handleSkipChoice(msg.id)" title="跳过此步">
+                          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+                        </button>
                       </div>
-                      <svg class="w-4 h-4 text-[#9b9a97] group-hover:text-[#787774] transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
                     </div>
-                    <div class="artifact-card-body">
-                      {{ getArtifact(msg.content)?.description || '点击查看代码和预览' }}
+                    <div class="choice-panel-list">
+                      <button v-for="(choice, ci) in getWizardPanel()!.choices" :key="ci"
+                        :class="['choice-panel-item wizard-choice-item', selectedChoices[msg.id] === ci ? 'choice-panel-item-active' : '']"
+                        @click="handleSelectChoice(msg.id, ci, choice)">
+                        <span class="choice-panel-num">{{ ci + 1 }}</span><span>{{ choice }}</span>
+                      </button>
                     </div>
-                    <div v-if="getArtifact(msg.content)?.type" class="artifact-card-type">
-                      <span>{{ getArtifactTypeLabel(getArtifact(msg.content)!.type) }}</span>
+                    <div class="wizard-panel-hint">
+                      <span>选择后将继续与 Claude 对话，收集更多细节</span>
                     </div>
                   </div>
                 </div>
@@ -244,70 +165,14 @@
                     </button>
                   </div>
 
-                <!-- 制品卡片（可点击打开右侧面板） -->
-                <div v-if="getArtifact(msg.content)" class="mt-4 max-w-[80%] cursor-pointer group" @click="openArtifactPanel(getArtifact(msg.content)!)">
-                  <div class="artifact-card">
-                    <div class="artifact-card-header">
-                      <div class="flex items-center gap-2">
-                        <svg class="w-4 h-4 text-[#787774]" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.75"><path stroke-linecap="round" stroke-linejoin="round" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/></svg>
-                        <span class="artifact-card-title">{{ getArtifact(msg.content)?.title }}</span>
-                      </div>
-                      <svg class="w-4 h-4 text-[#9b9a97] group-hover:text-[#787774] transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
-                    </div>
-                    <div class="artifact-card-body">
-                      {{ getArtifact(msg.content)?.description || '点击查看代码和预览' }}
-                    </div>
-                    <div v-if="getArtifact(msg.content)?.type" class="artifact-card-type">
-                      <span>{{ getArtifactTypeLabel(getArtifact(msg.content)!.type) }}</span>
-                    </div>
-                  </div>
-                </div>
                   <button v-if="index === messages.length - 1 && msg.role === 'ai'" class="action-btn" title="重新生成" :disabled="isSending" @click="handleRegenerate(msg.id)">
                     <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.75"><path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
                   </button>
                 </div>
 
-                <!-- 制品卡片（可点击打开右侧面板） -->
-                <div v-if="getArtifact(msg.content)" class="mt-4 max-w-[80%] cursor-pointer group" @click="openArtifactPanel(getArtifact(msg.content)!)">
-                  <div class="artifact-card">
-                    <div class="artifact-card-header">
-                      <div class="flex items-center gap-2">
-                        <svg class="w-4 h-4 text-[#787774]" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.75"><path stroke-linecap="round" stroke-linejoin="round" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/></svg>
-                        <span class="artifact-card-title">{{ getArtifact(msg.content)?.title }}</span>
-                      </div>
-                      <svg class="w-4 h-4 text-[#9b9a97] group-hover:text-[#787774] transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
-                    </div>
-                    <div class="artifact-card-body">
-                      {{ getArtifact(msg.content)?.description || '点击查看代码和预览' }}
-                    </div>
-                    <div v-if="getArtifact(msg.content)?.type" class="artifact-card-type">
-                      <span>{{ getArtifactTypeLabel(getArtifact(msg.content)!.type) }}</span>
-                    </div>
-                  </div>
-                </div>
-
                 <!-- AI Logo：仅最后一条AI消息显示，紧贴内容下方 -->
                 <div v-if="isLastAiMessage(msg)" class="mt-3">
                   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" class="w-7 h-7 fill-current text-[#d97757]"><path d="m19.6 66.5 19.7-11 .3-1-.3-.5h-1l-3.3-.2-11.2-.3L14 53l-9.5-.5-2.4-.5L0 49l.2-1.5 2-1.3 2.9.2 6.3.5 9.5.6 6.9.4L38 49.1h1.6l.2-.7-.5-.4-.4-.4L29 41l-10.6-7-5.6-4.1-3-2-1.5-2-.6-4.2 2.7-3 3.7.3.9.2 3.7 2.9 8 6.1L37 36l1.5 1.2.6-.4.1-.3-.7-1.1L33 25l-6-10.4-2.7-4.3-.7-2.6c-.3-1-.4-2-.4-3l3-4.2L28 0l4.2.6L33.8 2l2.6 6 4.1 9.3L47 29.9l2 3.8 1 3.4.3 1h.7v-.5l.5-7.2 1-8.7 1-11.2.3-3.2 1.6-3.8 3-2L61 2.6l2 2.9-.3 1.8-1.1 7.7L59 27.1l-1.5 8.2h.9l1-1.1 4.1-5.4 6.9-8.6 3-3.5L77 13l2.3-1.8h4.3l3.1 4.7-1.4 4.9-4.4 5.6-3.7 4.7-5.3 7.1-3.2 5.7.3.4h.7l12-2.6 6.4-1.1 7.6-1.3 3.5 1.6.4 1.6-1.4 3.4-8.2 2-9.6 2-14.3 3.3-.2.1.2.3 6.4.6 2.8.2h6.8l12.6 1 3.3 2 1.9 2.7-.3 2-5.1 2.6-6.8-1.6-16-3.8-5.4-1.3h-.8v.4l4.6 4.5 8.3 7.5L89 80.1l.5 2.4-1.3 2-1.4-.2-9.2-7-3.6-3-8-6.8h-.5v.7l1.8 2.7 9.8 14.7.5 4.5-.7 1.4-2.6 1-2.7-.6-5.8-8-6-9-4.7-8.2-.5.4-2.9 30.2-1.3 1.5-3 1.2-2.5-2-1.4-3 1.4-6.2 1.6-8 1.3-6.4 1.2-7.9.7-2.6v-.2H49L43 72l-9 12.3-7.2 7.6-1.7.7-3-1.5.3-2.8L24 86l10-12.8 6-7.9 4-4.6-.1-.5h-.3L17.2 77.4l-4.7.6-2-2 .2-3 1-1 8-5.5Z"/></svg>
-                </div>
-
-                <!-- 制品卡片（可点击打开右侧面板） -->
-                <div v-if="getArtifact(msg.content)" class="mt-4 max-w-[80%] cursor-pointer group" @click="openArtifactPanel(getArtifact(msg.content)!)">
-                  <div class="artifact-card">
-                    <div class="artifact-card-header">
-                      <div class="flex items-center gap-2">
-                        <svg class="w-4 h-4 text-[#787774]" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.75"><path stroke-linecap="round" stroke-linejoin="round" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/></svg>
-                        <span class="artifact-card-title">{{ getArtifact(msg.content)?.title }}</span>
-                      </div>
-                      <svg class="w-4 h-4 text-[#9b9a97] group-hover:text-[#787774] transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
-                    </div>
-                    <div class="artifact-card-body">
-                      {{ getArtifact(msg.content)?.description || '点击查看代码和预览' }}
-                    </div>
-                    <div v-if="getArtifact(msg.content)?.type" class="artifact-card-type">
-                      <span>{{ getArtifactTypeLabel(getArtifact(msg.content)!.type) }}</span>
-                    </div>
-                  </div>
                 </div>
             </div>
           </template>
@@ -340,25 +205,6 @@
                   </svg>
                   <p class="text-[14px] font-medium text-[#d97757]">释放以上传附件</p>
                 </div>
-
-                <!-- 制品卡片（可点击打开右侧面板） -->
-                <div v-if="getArtifact(msg.content)" class="mt-4 max-w-[80%] cursor-pointer group" @click="openArtifactPanel(getArtifact(msg.content)!)">
-                  <div class="artifact-card">
-                    <div class="artifact-card-header">
-                      <div class="flex items-center gap-2">
-                        <svg class="w-4 h-4 text-[#787774]" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.75"><path stroke-linecap="round" stroke-linejoin="round" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/></svg>
-                        <span class="artifact-card-title">{{ getArtifact(msg.content)?.title }}</span>
-                      </div>
-                      <svg class="w-4 h-4 text-[#9b9a97] group-hover:text-[#787774] transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
-                    </div>
-                    <div class="artifact-card-body">
-                      {{ getArtifact(msg.content)?.description || '点击查看代码和预览' }}
-                    </div>
-                    <div v-if="getArtifact(msg.content)?.type" class="artifact-card-type">
-                      <span>{{ getArtifactTypeLabel(getArtifact(msg.content)!.type) }}</span>
-                    </div>
-                  </div>
-                </div>
               </div>
 
               <textarea
@@ -379,17 +225,28 @@
                   <input type="file" class="hidden" accept="image/*,.pdf,.txt,.md,.doc,.docx" multiple @change="handleFileUpload" />
                 </label>
 
+                <!-- 发送 / 终止按钮 -->
                 <button
-                  :disabled="isSending || !messageInput.trim()"
+                  v-if="!isSending"
+                  :disabled="!messageInput.trim()"
                   class="px-4 py-1.5 bg-[#d97757] hover:bg-[#c96a4a] disabled:bg-[#cfcfce] disabled:cursor-not-allowed text-white rounded-lg transition-colors duration-150 text-[13px] font-medium ml-2"
                   @click="handleSend"
                 >
-                  {{ isSending ? '...' : '发送' }}
+                  发送
+                </button>
+                <button
+                  v-else
+                  class="px-3 py-1.5 bg-transparent hover:bg-black/[0.04] dark:hover:bg-white/5 text-[#9b9a97] hover:text-[#1a1a1a] dark:hover:text-white rounded-lg transition-colors duration-150 text-[13px] font-medium ml-2 flex items-center gap-1.5 border border-[#e0e0df] dark:border-white/10"
+                  @click="handleStopGeneration"
+                  title="终止回答"
+                >
+                  <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 24 24"><rect x="6" y="6" width="12" height="12" rx="2"/></svg>
+                  停止
                 </button>
               </div>
             </div>
 
-            <p class="text-center text-[11px] text-[#cfcfce] mt-2">
+            <p class="text-center text-[11px] text-[#b8b7b4] dark:text-gray-500 mt-2">
               Claude 可能会出错。请核实重要信息。
             </p>
           </div>
@@ -446,7 +303,7 @@
         <div v-if="artifactViewMode === 'code'" class="flex-1 overflow-auto bg-[#1a1a1a]">
           <div class="relative min-h-full p-4">
             <div class="absolute top-3 left-4 flex items-center gap-2 z-10">
-              <span class="text-[11px] text-[#555] font-mono">{{ getLanguageTag(currentArtifact?.type) }}</span>
+              <span class="text-[11px] text-[#555] dark:text-gray-500 font-mono">{{ getLanguageTag(currentArtifact?.type) }}</span>
             </div>
             <pre class="font-mono text-[13px] leading-relaxed text-gray-200 whitespace-pre-wrap"><code>{{ currentArtifact?.content }}</code></pre>
           </div>
@@ -480,6 +337,15 @@ const showModelMenu = ref(false)
 const showNotifyBar = ref(false)
 const selectedChoices = reactive<Record<string, number>>({})
 const closedPanels = reactive<Record<string, boolean>>({})
+
+// ============ 制品选项卡向导（流式传输完成后智能注入） ============
+const choiceWizard = reactive({
+  active: false,           // 是否处于制品向导模式
+  round: 0,                // 当前轮次（0-2，共 3 轮）
+  totalRounds: 3,          // 总轮数
+  completed: false,        // 是否已完成所有选择
+  currentMsgId: '',        // 当前正在处理的消息 ID
+})
 
 // 制品面板状态
 const showArtifactPanel = ref(false)
@@ -517,7 +383,7 @@ watch(dialogId, async (newId) => {
       setTimeout(() => handleSend(), 300)
       router.replace({ path: `/chat/${newId}` })
     } else if (artifactType.value) {
-      // 制品模式：先保存到本地变量，再清除 query
+      // 制品模式：创建全新会话（不在旧会话上追加）
       savedArtifactType.value = artifactType.value
       const typeLabel: Record<string, string> = {
         web: '应用与网站',
@@ -528,24 +394,176 @@ watch(dialogId, async (newId) => {
         survey: '问卷或调查',
         code: '从零开始'
       }
-      messageInput.value = `我想创建一个「${typeLabel[savedArtifactType.value] || savedArtifactType.value}」类型的制品`
-      // 清除 query 参数，避免刷新时重复发送（artifact_type 已保存到 savedArtifactType）
-      router.replace({ path: `/chat/${newId}` })
+      const artifactMsg = `我想创建一个「${typeLabel[savedArtifactType.value] || savedArtifactType.value}」类型的制品。请将所有 HTML、CSS、JavaScript 代码全部写在同一个文件中输出，不要拆分成多个文件，以便直接预览和运行最终效果。`
+      console.log(`[ARTIFACT] Creating NEW dialog for artifact type=${savedArtifactType.value}`)
+      try {
+        const res = await appStore.createDialog()
+        if (res?.id && res.id !== newId) {
+          // 新会话创建成功，跳转到新会话 URL（携带消息触发自动发送）
+          router.replace({ path: `/chat/${res.id}`, query: { msg: artifactMsg } })
+          return
+        }
+      } catch (e) {
+        console.error('[ARTIFACT] Failed to create new dialog, falling back to current', e)
+      }
+      // 创建失败时的降级方案：在当前会话中发送
+      messageInput.value = artifactMsg
       setTimeout(() => handleSend(), 300)
+      router.replace({ path: `/chat/${newId}` })
     }
   }
 }, { immediate: true })
 
 /** 从 AI 消息内容中提取选项面板数据 { question, choices[] } */
 const getChoicePanel = (content: string): { question: string; choices: string[] } | null => {
-  // 匹配 [QUESTION]...[/QUESTION] 后面紧跟的 [CHOICE]...[/CHOICE] 块
+  // 优先匹配 [QUESTION]...[/QUESTION] 标签（原有逻辑）
   const qMatch = content.match(/\[QUESTION\](.*?)\[\/QUESTION\]/s)
-  if (!qMatch) return null
-  const question = qMatch[1].trim()
-  const choiceMatches = content.match(/\[CHOICE\](.*?)\[\/CHOICE\]/gs)
-  const choices = choiceMatches ? choiceMatches.map(m => m.replace(/\[CHOICE\]/g, '').replace(/\[\/CHOICE\]/g, '').trim()) : []
-  if (choices.length === 0) return null
-  return { question, choices }
+  if (qMatch) {
+    const question = qMatch[1].trim()
+    const choiceMatches = content.match(/\[CHOICE\](.*?)\[\/CHOICE\]/gs)
+    const choices = choiceMatches ? choiceMatches.map(m => m.replace(/\[CHOICE\]/g, '').replace(/\[\/CHOICE\]/g, '').trim()) : []
+    if (choices.length === 0) return null
+    return { question, choices }
+  }
+
+  // 向导模式：检查当前消息是否是向导消息（通过 choiceWizard.currentMsgId 判断）
+  if (choiceWizard.active && content) {
+    // 向导的选项由 generateWizardChoices 动态生成，这里不返回
+    // 实际的向导面板通过 wizardChoices computed 或 reactive 数据驱动
+    return null
+  }
+
+  return null
+}
+
+/** 为制品向导生成动态选项（根据轮次和上下文智能生成） */
+const getWizardPanel = (): { question: string; choices: string[] } | null => {
+  if (!choiceWizard.active || choiceWizard.completed) return null
+
+  const lastAiMsg = [...messages.value].reverse().find(m => m.role === 'ai')
+  if (!lastAiMsg || lastAiMsg.id !== choiceWizard.currentMsgId) return null
+
+  const questions = [
+    '你希望这个制品的主要用途是什么？',
+    '你对界面风格有什么偏好？',
+    '还需要添加哪些功能或特性？'
+  ]
+
+  const allChoices: Record<number, string[][]> = {
+    0: [
+      ['展示信息为主', '用户交互为主', '数据管理为主'],
+      ['企业/专业风格', '现代简约风', '创意活泼风'],
+      ['表单和搜索功能', '图表和数据可视化', '分享和协作'],
+    ],
+    1: [
+      ['移动端适配优先', '桌面端体验优先', '响应式设计'],
+      ['需要深色模式', '浅色主题即可', '跟随系统设置'],
+      ['需要多语言支持', '仅中文即可', '中英双语'],
+    ],
+    2: [
+      ['需要后台管理系统', '纯前端页面即可', '需要 API 对接'],
+      ['快速原型 / MVP', '完整产品级', '学习 / Demo 用途'],
+      ['不需要了，开始生成', '再给我更多选择', '让我自定义需求'],
+    ],
+  }
+
+  const round = Math.min(choiceWizard.round, 2)
+  return {
+    question: questions[round],
+    choices: allChoices[round % 3][Math.floor(round / 3)] || allChoices[2][2],
+  }
+}
+
+/** 检测流式回复是否为制品相关请求，并激活向导模式 */
+const detectAndActivateWizard = (userMsg: string, aiContent: string): void => {
+  if (choiceWizard.completed || choiceWizard.active) return
+
+  // 检测用户的首次请求是否为制品类型请求
+  const artifactKeywords = /创建|生成|制作|构建|开发|build|create|make|制品|应用|网站|文档|模板|工具|游戏|问卷|survey|app|web|doc|game|tool|creative/i
+  const isArtifactRequest = artifactKeywords.test(userMsg)
+
+  // 如果用户请求包含制品关键词且 AI 回复内容较长（说明是有意义的回复）
+  if (isArtifactRequest && aiContent.length > 100) {
+    console.log(`[WIZARD] Activating choice wizard. User msg keywords detected.`)
+    choiceWizard.active = true
+    choiceWizard.round = 0
+    choiceWizard.completed = false
+  }
+}
+
+/** 从 AI 回复内容中自动提取代码块/HTML，注入 [ARTIFACT] 标签以生成可预览卡片 */
+const autoInjectArtifact = (content: string): { content: string; injected: boolean } => {
+  // 已经包含 [ARTIFACT] 标签的不再处理
+  if (/\[ARTIFACT\]/.test(content)) {
+    return { content, injected: false }
+  }
+
+  let extractedTitle = '生成的制品'
+  let extractedContent = ''
+  let extractedType = 'code'
+  let description = ''
+
+  // 策略1：优先提取最大的代码块（html/vue/react/css/js）
+  const codeBlockMatches = content.match(/```(html|vue|jsx|tsx|css|javascript|js|typescript|ts)\n([\s\S]*?)```/g)
+  if (codeBlockMatches && codeBlockMatches.length > 0) {
+    // 取最长或最可能包含完整代码的块（通常 html/vue 块最大）
+    let bestMatch = codeBlockMatches[0]
+    let bestLen = bestMatch.length
+    for (const m of codeBlockMatches) {
+      if (m.length > bestLen) {
+        bestMatch = m
+        bestLen = m.length
+      }
+    }
+
+    const langMatch = bestMatch.match(/```(\w+)\n([\s\S]*?)```/)
+    if (langMatch) {
+      extractedType = langMatch[1]
+      extractedContent = langMatch[2].trim()
+    }
+
+    // 尝试从代码块中提取标题（第一个注释行或 title 标签）
+    const titleFromCode = extractedContent.match(/<!--\s*(.+?)\s*-->/)
+    if (titleFromCode) extractedTitle = titleFromCode[1].trim()
+    else {
+      const titleTag = extractedContent.match(/<title>(.*?)<\/title>/i)
+      if (titleTag) extractedTitle = titleTag[1].trim()
+    }
+  }
+
+  // 策略2：如果没找到代码块，检查是否有裸 HTML 内容（没有 ``` 包裹）
+  if (!extractedContent && /<(html|!DOCTYPE)\b/i.test(content)) {
+    // 提取从 <!DOCTYPE 或 <html 开始到结尾的内容
+    const htmlMatch = content.match(/(<!DOCTYPE[\s\S]*?<\/html>|<html[\s\S]*?<\/html>)/i)
+    if (htmlMatch) {
+      extractedType = 'html'
+      extractedContent = htmlMatch[1].trim()
+    }
+  }
+
+  // 如果成功提取到有意义的代码内容（至少50字符），注入 ARTIFACT 标签
+  if (extractedContent.length >= 50) {
+    // 用正文的前两行作为描述
+    const plainText = content.replace(/```[\s\S]*?```/g, '').replace(/[#*\-\[\]>]/g, ' ').trim()
+    const firstLines = plainText.split('\n').filter(l => l.trim()).slice(0, 2).join(' ').substring(0, 120)
+    description = firstLines || '点击查看代码和预览'
+
+    const artifactJson = JSON.stringify({
+      title: extractedTitle,
+      content: extractedContent,
+      type: extractedType,
+      description: description,
+    })
+
+    console.log(`[ARTIFACT] Auto-injected artifact: type=${extractedType}, title=${extractedTitle}, contentLen=${extractedContent.length}`)
+
+    return {
+      content: content + `\n\n[ARTIFACT]${artifactJson}[/ARTIFACT]\n`,
+      injected: true,
+    }
+  }
+
+  return { content, injected: false }
 }
 
 /** 渲染消息内容时，移除 [QUESTION]、[CHOICE] 和 [ARTIFACT] 标签块 */
@@ -564,11 +582,11 @@ const renderContent = (content: string): string => {
 
   // 代码块 (```language\n...\n```)
   html = html.replace(/```(\w*)\n([\s\S]*?)```/g, (_match, _lang, code) => {
-    return `<pre class="bg-[#f5f4f0] dark:bg-[#1a1a1a] rounded-lg p-3 my-3 overflow-x-auto font-mono text-[13px] border border-[#eee] dark:border-white/5"><code>${code}</code></pre>`
+    return `<pre class="bg-[#f5f4f0] dark:bg-[#1a1a1a] rounded-lg p-3 my-3 overflow-x-auto font-mono text-[13px] border border-[#eee] dark:border-white/5"><code class="text-[#1a1a1a] dark:text-gray-200">${code}</code></pre>`
   })
 
   // 行内代码
-  html = html.replace(/`([^`]+)`/g, '<code class="bg-[#f5f4f0] dark:bg-white/10 px-1.5 py-0.5 rounded font-mono text-[13px]">$1</code>')
+  html = html.replace(/`([^`]+)`/g, '<code class="bg-[#f5f4f0] dark:bg-white/10 px-1.5 py-0.5 rounded font-mono text-[13px] text-[#1a1a1a] dark:text-gray-200">$1</code>')
 
   // 粗体/斜体
   html = html.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
@@ -578,21 +596,21 @@ const renderContent = (content: string): string => {
   html = html.replace(/(?<!\!)\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener" class="text-[#d97757] underline hover:no-underline">$1</a>')
 
   // 图片
-  html = html.replace(/!\[([^\]]*)\]\(([^)]+)\)/g, '<img src="$2" alt="$1" class="max-w-full rounded-lg my-2 border border-[#e5e5e4]" />')
+  html = html.replace(/!\[([^\]]*)\]\(([^)]+)\)/g, '<img src="$2" alt="$1" class="max-w-full rounded-lg my-2 border border-[#e5e5e4] dark:border-white/10" />')
 
   // 标题
-  html = html.replace(/^### (.+)$/gm, '<h4 class="font-semibold text-[15px] mt-3 mb-1">$1</h4>')
-  html = html.replace(/^## (.+)$/gm, '<h3 class="font-semibold text-base mt-3 mb-1">$1</h3>')
-  html = html.replace(/^# (.+)$/gm, '<h2 class="font-semibold text-lg mt-4 mb-2">$1</h2>')
+  html = html.replace(/^### (.+)$/gm, '<h4 class="font-semibold text-[15px] mt-3 mb-1 text-[#1a1a1a] dark:text-gray-200">$1</h4>')
+  html = html.replace(/^## (.+)$/gm, '<h3 class="font-semibold text-base mt-3 mb-1 text-[#1a1a1a] dark:text-white">$1</h3>')
+  html = html.replace(/^# (.+)$/gm, '<h2 class="font-semibold text-lg mt-4 mb-2 text-[#1a1a1a] dark:text-white">$1</h2>')
 
   // 无序列表
-  html = html.replace(/^[\-\*] (.+)$/gm, '<li class="list-disc ml-5 my-0.5">$1</li>')
+  html = html.replace(/^[\-\*] (.+)$/gm, '<li class="list-disc ml-5 my-0.5 text-[#1a1a1a] dark:text-gray-200">$1</li>')
 
   // 分割线
-  html = html.replace(/^---$/gm, '<hr class="border-[#e5e5e4] my-4" />')
+  html = html.replace(/^---$/gm, '<hr class="border-[#e5e5e4] dark:border-white/10 my-4" />')
 
   // 引用块
-  html = html.replace(/^&gt; (.+)$/gm, '<blockquote class="border-l-2 border-[#d97757]/30 pl-3 my-2 text-[#5c5b58] italic">$1</blockquote>')
+  html = html.replace(/^&gt; (.+)$/gm, '<blockquote class="border-l-2 border-[#d97757]/30 pl-3 my-2 text-[#5c5b58] dark:text-gray-400 italic">$1</blockquote>')
 
   return html
 }
@@ -601,6 +619,28 @@ const renderContent = (content: string): string => {
 const handleSelectChoice = async (msgId: string, choiceIndex: number, choiceText: string) => {
   selectedChoices[msgId] = choiceIndex
   const id = dialogId.value
+
+  // 向导模式：记录选择并推进到下一轮
+  if (choiceWizard.active && !choiceWizard.completed && msgId === choiceWizard.currentMsgId) {
+    console.log(`[WIZARD] Round ${choiceWizard.round + 1}/${choiceWizard.totalRounds}: selected "${choiceText}"`)
+    choiceWizard.round++
+
+    if (choiceWizard.round >= choiceWizard.totalRounds) {
+      // 所有轮次完成，退出向导模式，发送最终汇总消息（强制要求单文件输出）
+      choiceWizard.completed = true
+      console.log(`[WIZARD] All ${choiceWizard.totalRounds} rounds completed! Switching to normal conversation.`)
+      messageInput.value = '基于以上所有选择，请生成完整的制品代码和详细说明。【重要】请将所有 HTML、CSS、JavaScript 全部写在一个文件中输出，不要拆分成多个文件，以便直接预览和运行最终效果。'
+    } else {
+      // 还有下一轮，将用户的选择作为上下文继续提问
+      messageInput.value = choiceText
+    }
+    closedPanels[msgId] = true // 关闭当前面板
+    if (!id || isSending.value) return
+    await handleSend()
+    return
+  }
+
+  // 原有逻辑：非向导模式下的普通选项处理
   if (!id || isSending.value) return
   messageInput.value = choiceText
   await handleSend()
@@ -610,6 +650,18 @@ const handleSelectChoice = async (msgId: string, choiceIndex: number, choiceText
 const handleSkipChoice = async (msgId: string) => {
   selectedChoices[msgId] = -1 // 标记为已跳过
   const id = dialogId.value
+
+  // 向导模式下跳过：直接完成向导进入正常对话
+  if (choiceWizard.active && !choiceWizard.completed && msgId === choiceWizard.currentMsgId) {
+    console.log(`[WIZARD] User skipped at round ${choiceWizard.round + 1}. Completing wizard.`)
+    choiceWizard.completed = true
+    closedPanels[msgId] = true
+    messageInput.value = '好的，请根据已有信息直接生成制品。【重要】请将所有 HTML、CSS、JavaScript 全部写在一个文件中输出，不要拆分成多个文件，以便直接预览和运行最终效果。'
+    if (!id || isSending.value) return
+    await handleSend()
+    return
+  }
+
   if (!id || isSending.value) return
   messageInput.value = '跳过此问题'
   await handleSend()
@@ -826,6 +878,33 @@ const handleSend = async () => {
     }
 
     console.log(`[FRONTEND] for-await loop ended. total events received: ${eventCount}`)
+
+    // ============ 流式完成后的向导检测 & 自动制品注入 ============
+    const finalContent = tempMsg?.content || ''
+
+    // 自动从 AI 回复中提取代码块，注入 [ARTIFACT] 标签生成可预览卡片
+    if (tempMsg && finalContent.length > 50) {
+      const { content: enriched, injected } = autoInjectArtifact(finalContent)
+      if (injected) {
+        tempMsg.content = enriched
+        console.log(`[FRONTEND] Artifact auto-injected into msg ${tempAiMsgId}`)
+      }
+    }
+
+    if (!choiceWizard.completed) {
+      // 首次请求时检测是否需要激活向导
+      if (!choiceWizard.active) {
+        detectAndActivateWizard(content, finalContent)
+        if (choiceWizard.active) {
+          choiceWizard.currentMsgId = tempAiMsgId
+          console.log(`[WIZARD] Wizard activated! Round 1/${choiceWizard.totalRounds}. Waiting for user selection on msg ${tempAiMsgId}`)
+        }
+      } else if (choiceWizard.active && !choiceWizard.completed) {
+        // 向导模式下的后续轮次，更新当前消息 ID 以显示新选项卡
+        choiceWizard.currentMsgId = tempAiMsgId
+        console.log(`[WIZARD] Round ${choiceWizard.round + 1}/${choiceWizard.totalRounds} ready. Choices shown on msg ${tempAiMsgId}`)
+      }
+    }
 
     showNotifyBar.value = true
     await appStore.fetchDialogList()
@@ -1075,4 +1154,34 @@ onMounted(() => {
 
 /* 预览面板代码区 */
 pre code { font-family: 'SF Mono', Menlo, Consolas, monospace; }
+
+/* 制品向导面板样式（流式传输完成后智能注入） */
+.wizard-panel {
+  @apply bg-white dark:bg-[#2a2a2a] border border-[#e5e5e4] dark:border-white/10 rounded-xl shadow-sm overflow-hidden;
+}
+.wizard-panel-header {
+  @apply flex items-center justify-between px-4 py-3 border-b border-[#f5f3ef] dark:border-white/5;
+}
+.wizard-panel-title {
+  @apply text-[13px] font-medium text-[#1a1a1a] dark:text-white;
+}
+.wizard-choice-item {
+  position: relative;
+}
+.wizard-choice-item::before {
+  content: '';
+  @apply absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-0 rounded-full bg-[#d97757] transition-all duration-200;
+}
+.wizard-choice-item:hover::before {
+  @apply h-4;
+}
+.wizard-choice-item-active::before {
+  @apply h-6;
+}
+.wizard-panel-hint {
+  @apply px-4 py-2.5 flex items-center justify-center border-t border-[#f5f3ef] dark:border-white/5;
+}
+.wizard-panel-hint span {
+  @apply text-[11px] text-[#b8b7b4] dark:text-gray-500;
+}
 </style>
