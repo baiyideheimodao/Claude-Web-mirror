@@ -22,7 +22,7 @@
           class="p-1 hover:bg-black/[0.04] dark:hover:bg-white/5 rounded transition-colors duration-150"
           title="关闭侧边栏 (Ctrl+\)"
         >
-          <svg class="w-[17px] h-[17px] text-[#9b9a97]" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.75">
+          <svg class="w-[17px] h-[17px] text-[#9b9a97] dark:text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.75">
             <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16"/>
           </svg>
         </button>
@@ -153,12 +153,12 @@
           </div>
           <div class="flex items-center gap-0.5 shrink-0 ml-1">
             <button class="p-1 -mr-1 hover:bg-black/[0.06] dark:hover:bg-white/5 rounded transition-colors duration-150" title="Attachments" @click.stop>
-              <svg class="w-3.5 h-3.5 text-[#9b9a97]" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.75">
+              <svg class="w-3.5 h-3.5 text-[#9b9a97] dark:text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.75">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13" />
               </svg>
             </button>
             <button class="p-1 hover:bg-black/[0.06] dark:hover:bg-white/5 rounded transition-colors duration-150" title="More options" @click.stop="showUserMenu = !showUserMenu">
-              <svg class="w-3.5 h-3.5 text-[#9b9a97]" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.75">
+              <svg class="w-3.5 h-3.5 text-[#9b9a97] dark:text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.75">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
               </svg>
             </button>
@@ -286,7 +286,7 @@
       <div v-if="showLoginModal" class="fixed inset-0 z-[200] flex items-center justify-center bg-black/30 backdrop-blur-sm" @click.self="showLoginModal = false">
         <div class="bg-white dark:bg-[#2a2a2a] rounded-xl shadow-claude-lg w-[400px] max-w-[90vw] p-6 relative animate-in">
           <button class="absolute top-4 right-4 p-1 hover:bg-black/[0.04] dark:hover:bg-white/5 rounded" @click="showLoginModal = false">
-            <svg class="w-5 h-5 text-[#9b9a97]" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.75">
+            <svg class="w-5 h-5 text-[#9b9a97] dark:text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.75">
               <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
             </svg>
           </button>
@@ -335,7 +335,7 @@
       <div v-if="showRegisterModal" class="fixed inset-0 z-[200] flex items-center justify-center bg-black/30 backdrop-blur-sm" @click.self="showRegisterModal = false">
         <div class="bg-white dark:bg-[#2a2a2a] rounded-xl shadow-claude-lg w-[420px] max-w-[90vw] p-6 relative animate-in">
           <button class="absolute top-4 right-4 p-1 hover:bg-black/[0.04] dark:hover:bg-white/5 rounded" @click="showRegisterModal = false">
-            <svg class="w-5 h-5 text-[#9b9a97]" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.75">
+            <svg class="w-5 h-5 text-[#9b9a97] dark:text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.75">
               <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
             </svg>
           </button>
@@ -376,7 +376,7 @@
       <div v-if="showSearchModal" class="fixed inset-0 z-[200] flex items-start justify-center pt-[15vh] bg-black/30 backdrop-blur-sm" @click.self="showSearchModal = false">
         <div class="bg-white dark:bg-[#2a2a2a] rounded-xl shadow-claude-lg w-[560px] max-w-[90vw] overflow-hidden animate-in">
           <div class="flex items-center border-b border-[#e5e5e4] dark:border-white/10 px-4">
-            <svg class="w-5 h-5 text-[#9b9a97] mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.75">
+            <svg class="w-5 h-5 text-[#9b9a97] dark:text-gray-500 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.75">
               <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
             </svg>
             <input
@@ -384,13 +384,13 @@
               v-model="searchQuery"
               type="text"
               autofocus
-              class="flex-1 py-3 bg-transparent border-none outline-none text-[14px] text-[#1a1a1a] dark:text-white placeholder-[#9b9a97]"
+              class="flex-1 py-3 bg-transparent border-none outline-none text-[14px] text-[#1a1a1a] dark:text-white placeholder-[#9b9a97] dark:placeholder-gray-500"
               placeholder="搜索对话和项目..."
               @keydown.escape="showSearchModal = false"
               @input="handleSearchInput"
             />
             <button class="ml-2 p-1 hover:bg-black/[0.04] rounded" @click="showSearchModal = false">
-              <svg class="w-4 h-4 text-[#9b9a97]" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.75"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+              <svg class="w-4 h-4 text-[#9b9a97] dark:text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.75"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
             </button>
             <kbd class="ml-2 px-1.5 py-0.5 bg-[#f0ede7] dark:bg-white/10 rounded text-[11px] text-[#787774] font-mono">Esc</kbd>
           </div>
@@ -413,10 +413,10 @@
             </div>
           </div>
           <div v-else-if="searchQuery && searchResults.length === 0" class="py-8 text-center">
-            <p class="text-[13px] text-[#9b9a97]">未找到 "{{ searchQuery }}" 的结果</p>
+            <p class="text-[13px] text-[#9b9a97] dark:text-gray-500">未找到 "{{ searchQuery }}" 的结果</p>
           </div>
           <div v-else class="py-6 text-center">
-            <p class="text-[13px] text-[#9b9a97]">输入内容以搜索...</p>
+            <p class="text-[13px] text-[#9b9a97] dark:text-gray-500">输入内容以搜索...</p>
           </div>
         </div>
       </div>
@@ -565,9 +565,13 @@ const formatTime = (dateStr: string): string => {
   return `${Math.floor(diffMin / 1440)} 天前`
 }
 
-// 全局快捷键
+// 全局快捷键 + 侧边栏挂载时确保加载对话列表
 onMounted(() => {
   window.addEventListener('keydown', handleGlobalKeydown)
+  // 每次侧边栏挂载时，已登录则刷新对话列表（解决路由切换/刷新后列表消失的问题）
+  if (appStore.isAuthenticated) {
+    appStore.fetchDialogList()
+  }
 })
 onUnmounted(() => {
   window.removeEventListener('keydown', handleGlobalKeydown)
@@ -605,6 +609,13 @@ const closeUserMenuOnClickOutside = (e: MouseEvent) => {
     setTimeout(() => { showUserMenu.value = false }, 50)
   }
 }
+
+// 监听登录状态变化：用户登录后自动拉取对话列表
+watch(() => appStore.isAuthenticated, (isAuth) => {
+  if (isAuth) {
+    appStore.fetchDialogList()
+  }
+})
 </script>
 
 <style scoped>
@@ -612,10 +623,12 @@ const closeUserMenuOnClickOutside = (e: MouseEvent) => {
   @apply py-[6px] px-2.5 text-left text-[13px] text-[#5c5b58] dark:text-gray-400 hover:text-[#3d3c3a] dark:hover:text-gray-200 hover:bg-black/[0.04] dark:hover:bg-white/5 rounded-md transition-colors duration-150 flex items-center gap-2;
 }
 .nav-icon { color: #787774; }
+.dark .nav-icon { color: #6b6a67; }
 .icon-btn {
   @apply w-9 h-9 flex items-center justify-center rounded-md hover:bg-black/[0.06] dark:hover:bg-white/5 transition-colors duration-150;
 }
 .icon-svg { color: #5c5b58; }
+.dark .icon-svg { color: #9b9a97; }
 .tooltip {
   @apply absolute left-full ml-2 px-2.5 py-1 bg-[#2f2f2f] text-white text-xs whitespace-nowrap opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity z-50 shadow-lg rounded-md;
 }
@@ -623,11 +636,12 @@ const closeUserMenuOnClickOutside = (e: MouseEvent) => {
   @apply px-1.5 py-0.5 bg-[#f0ede7] dark:bg-white/10 rounded text-[10px] text-[#787774] font-mono;
 }
 .modal-input {
-  @apply w-full px-3 py-2 border border-[#e0e0df] dark:border-white/10 rounded-lg text-[14px] text-[#1a1a1a] dark:text-white placeholder-[#cfcfce] focus:outline-none focus:border-[#d97757];
+  @apply w-full px-3 py-2 border border-[#e0e0df] dark:border-white/10 rounded-lg text-[14px] text-[#1a1a1a] dark:text-white placeholder-[#9b9a97] dark:placeholder-gray-500 focus:outline-none focus:border-[#d97757];
 }
 .nav-scrollbar::-webkit-scrollbar { width: 4px; }
 .nav-scrollbar::-webkit-scrollbar-track { background: transparent; }
 .nav-scrollbar::-webkit-scrollbar-thumb { background: #e5e5e4; border-radius: 4px; }
+.dark .nav-scrollbar::-webkit-scrollbar-thumb { background: #3a3a3a; }
 
 /* Dropdown animation */
 .dropdown-enter-active { transition: all 0.15s ease-out; }

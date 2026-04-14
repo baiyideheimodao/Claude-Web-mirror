@@ -79,6 +79,87 @@ class ApiClient {
     return this.request({ method: 'DELETE', url, params })
   }
 
+  /**
+   * 流式 POST（SSE / fetch 原生 ReadableStream）
+   * @returns AsyncGenerator 逐块 yield Server-Sent Event data
+   */
+  async *streamPost(url: string, data?: any): AsyncGenerator<any> {
+    const token = localStorage.getItem('claude-token')
+    // 统一走 Vite 代理 (/api/* → localhost:3001)，避免跨域和端口不匹配问题
+    const fullUrl = `/api/v1${url}`
+
+    console.log('[FRONTEND stream] POST', fullUrl)
+    console.log('[FRONTEND stream] data:', JSON.stringify(data)?.substring(0, 100))
+
+    const response = await fetch(fullUrl, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': token ? `Bearer ${token}` : '',
+        Accept: 'text/event-stream'
+      },
+      body: JSON.stringify(data)
+    })
+
+    console.log('[FRONTEND stream] response status:', response.status, 'ok:', response.ok)
+    console.log('[FRONTEND stream] content-type:', response.headers.get('content-type'))
+
+    if (!response.ok) {
+      const errBody = await response.text()
+      console.error('[FRONTEND stream] ERROR body:', errBody)
+      throw new Error(`Stream error ${response.status}: ${errBody}`)
+    }
+
+    if (!response.body) {
+      console.error('[FRONTEND stream] response.body is null! No ReadableStream available')
+      throw new Error('No response body (ReadableStream not supported)')
+    }
+
+    const reader = response.body.getReader()
+    const decoder = new TextDecoder()
+    let buffer = ''
+    let eventCount = 0
+    const t0 = performance.now()
+
+    while (true) {
+      const { done, value } = await reader.read()
+      if (done) {
+        console.log(`[FRONTEND stream] ReadableStream DONE at +${Math.round(performance.now() - t0)}ms, total events: ${eventCount}`)
+        break
+      }
+      const rawText = decoder.decode(value, { stream: true })
+      buffer += rawText
+      console.log(`[FRONTEND stream] raw chunk #${eventCount + 1} (${value.length} bytes) at +${Math.round(performance.now() - t0)}ms:`, rawText.substring(0, 200))
+
+      // 按双换行分割 SSE 事件
+      const lines = buffer.split('\n\n')
+      buffer = lines.pop() || ''
+
+      for (const line of lines) {
+        if (!line.trim()) continue
+        let event = 'message'
+        let dataStr = ''
+        for (const part of line.split('\n')) {
+          if (part.startsWith('event:')) event = part.slice(6).trim()
+          if (part.startsWith('data:')) dataStr = part.slice(5).trim()
+        }
+        if (dataStr) {
+          try {
+            const parsed = JSON.parse(dataStr)
+            eventCount++
+            console.log(`[FRONTEND stream] event #${eventCount} type=${event}:`, dataStr.substring(0, 150))
+            yield { ...parsed, type: event }
+          } catch (parseErr) {
+            console.warn(`[FRONTEND stream] JSON parse error for:`, dataStr.substring(0, 100))
+            yield { raw: dataStr }
+          }
+        }
+      }
+    }
+
+    console.log('[FRONTEND stream] generator finished normally, yielded', eventCount, 'events')
+  }
+
   setToken(token: string): void {
     localStorage.setItem('claude-token', token)
   }

@@ -163,7 +163,10 @@ export const useAppStore = defineStore('app', () => {
       if (res.success && res.data) {
         const payload = (res.data as any).data || res.data
         currentDialogDetail.value = payload
-        messages.value = payload.messages || []
+        // 只在服务器返回有效消息列表时才替换；空响应不清空已有消息
+        if (payload.messages && payload.messages.length > 0) {
+          messages.value = payload.messages
+        }
         return true
       }
       return false
