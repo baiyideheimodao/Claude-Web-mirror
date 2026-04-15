@@ -5,50 +5,27 @@
 
     <!-- 主聊天区域 -->
     <main :class="['min-h-screen transition-all duration-200 ease-in-out', isCollapsed ? 'ml-[48px]' : 'ml-[288px]', showArtifactPanel ? 'mr-[520px]' : '']">
-      <div class="max-w-3xl mx-auto px-6 pt-6 pb-24">
-        <!-- 对话标题栏 + 返回按钮 -->
-        <div v-if="dialogDetail" class="flex items-center justify-between mb-4">
-          <div class="flex items-center gap-2">
-            <button
-              v-if="!dialogId || messages.length === 0"
-              class="p-1 hover:bg-black/[0.04] dark:hover:bg-white/5 rounded-md transition-colors text-[13px] text-[#787774] flex items-center gap-1"
-              @click="$router.push('/chats')"
-            >
-              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.75"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
-              {{ dialogDetail.title }}
-            </button>
-            <h1 v-else class="text-xl font-semibold text-[#1a1a1a] dark:text-white truncate flex items-center gap-2">
-              {{ dialogDetail.title }}
-              <button class="p-1 hover:bg-black/[0.04] dark:hover:bg-white/5 rounded opacity-60 hover:opacity-100 transition-opacity" title="编辑标题">
-                <svg class="w-3.5 h-3.5 text-[#9b9a97]" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.75"><path stroke-linecap="round" stroke-linejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/></svg>
-              </button>
-            </h1>
-          </div>
+      <!-- 标题栏（官网风格：独立于消息容器，撑满内容区宽度，标题左 + Share右边缘） -->
+      <div class="px-6 pt-6 mb-4">
+        <div class="flex items-center justify-between">
+          <button
+            class="flex items-center gap-1 text-[13px] text-[#787774] dark:text-[#9b9a97] hover:text-[#5c5b58] dark:hover:text-[#e8e7e0] transition-colors cursor-pointer"
+            @click="!dialogId || messages.length === 0 ? $router.push('/chats') : null"
+          >
+            <svg v-if="!dialogId || messages.length === 0" class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.75"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
+            {{ dialogDetail?.title || '今天有什么可以帮我的' }}
+            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg>
+          </button>
 
-          <div class="flex items-center gap-1">
-            <!-- 模型切换（在标题栏右侧） -->
-            <div
-              v-click-outside="() => showModelMenu = false"
-              class="flex items-center gap-1 px-2 py-1 hover:bg-black/[0.04] dark:hover:bg-white/5 rounded cursor-pointer relative"
-              @click="showModelMenu = !showModelMenu"
-            >
-              <span class="text-[12px] text-[#787774]">{{ appStore.currentModel?.name || 'Sonnet 4d' }}</span>
-              <svg class="w-3 h-3 text-[#9b9a97]" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg>
-              <Transition name="dropdown">
-                <div v-if="showModelMenu" class="absolute top-full right-0 mt-1 w-48 bg-white dark:bg-[#2c2c2a] border border-[#e0e0df] dark:border-white/10 rounded-lg shadow-claude-md py-1 z-50">
-                  <button v-for="model in appStore.models" :key="model.id" class="w-full px-3 py-1.5 text-left text-[12px] flex justify-between hover:bg-black/[0.04] dark:hover:bg-white/5" :class="model.id === appStore.currentModel?.id ? 'text-[#d97757]' : ''" @click.stop="handleSwitchModel(model)">{{ model.name }}</button>
-                </div>
-              </Transition>
-            </div>
-
-            <button class="p-1.5 hover:bg-black/[0.04] dark:hover:bg-white/5 rounded-md transition-colors group" title="分享" @click="handleShare">
-              <svg class="w-4 h-4 text-[#9b9a97] group-hover:text-[#787774]" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.75"><path stroke-linecap="round" stroke-linejoin="round" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"/></svg>
-            </button>
-            <button class="p-1.5 hover:bg-black/[0.04] dark:hover:bg-white/5 rounded-md transition-colors group" title="删除对话" @click="handleDeleteDialog">
-              <svg class="w-4 h-4 text-[#9b9a97] group-hover:text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.75"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
-            </button>
-          </div>
+          <!-- 官网风格：Share 文字按钮（带边框） -->
+          <button class="px-3 py-1 text-[12px] font-medium text-[#787774] dark:text-[#b8b7b4] border border-[#e5e5e4] dark:border-white/10 rounded-lg hover:bg-black/[0.03] dark:hover:bg-white/5 transition-colors" @click="handleShare">
+            Share
+          </button>
         </div>
+      </div>
+
+      <!-- 消息列表容器 -->
+      <div class="max-w-3xl mx-auto px-6 pb-24">
 
         <!-- 消息列表区域 -->
         <div ref="msgContainerRef" class="space-y-6 mb-32">
@@ -61,15 +38,15 @@
           <template v-for="(msg, index) in messages" :key="msg.id">
             <!-- 用户消息 -->
             <div v-if="msg.role === 'user'" class="flex justify-end">
-              <div class="max-w-[80%] bg-white dark:bg-[#2c2c2a] border border-[#e5e5e4] dark:border-white/10 rounded-2xl rounded-tr-md p-4 shadow-sm">
-                <p class="text-[15px] text-[#1a1a1a] dark:text-gray-200 leading-relaxed whitespace-pre-wrap">{{ msg.content }}</p>
-                <p class="text-[11px] text-[#9b9a97] mt-2 text-right">{{ formatTime(msg.timestamp) }}</p>
+              <!-- 用户消息（官网风格：无边框无阴影，深色背景，圆角，无时间戳） -->
+              <div class="max-w-[80%] bg-[#121212] dark:bg-[#121212] rounded-xl px-4 py-2.5">
+                <p class="text-[15px] text-[#f8f8f6] leading-relaxed whitespace-pre-wrap">{{ msg.content }}</p>
               </div>
             </div>
 
             <!-- AI 消息（无边框纯文字） -->
             <div v-else>
-              <div class="max-w-[80%] text-[15px] text-[#1a1a1a] dark:text-gray-200 leading-relaxed prose-sm dark:prose-invert max-w-none" v-html="renderContent(msg.content)"></div>
+              <div class="text-[16px] text-[#f8f8f6] dark:text-[#f8f8f6] leading-relaxed prose-sm dark:prose-invert max-w-none" v-html="renderContent(msg.content)"></div>
 
                 <!-- 选项卡片面板（原有标签模式） -->
                 <div v-if="getChoicePanel(msg.content) && !closedPanels[msg.id]" class="mt-4 max-w-[80%]">
@@ -94,36 +71,37 @@
                   </div>
                 </div>
 
-                <!-- 制品向导选项卡（流式完成后智能注入） -->
-                <div v-if="choiceWizard.active && !choiceWizard.completed && msg.id === choiceWizard.currentMsgId && !closedPanels[msg.id]" class="mt-4 max-w-[80%]">
-                  <div class="wizard-panel">
-                    <div class="wizard-panel-header">
+                <!-- 制品向导选项卡（固定在底部，覆盖输入框上方） -->
+                <div v-if="choiceWizard.active && !choiceWizard.completed && msg.id === choiceWizard.currentMsgId && !closedPanels[msg.id]"
+                  class="fixed left-0 right-0 bottom-0 z-50" :style="{ marginLeft: isCollapsed ? '48px' : '288px', transition: 'margin-left 200ms ease-in-out' }">
+                  <div class="wizard-panel mx-auto mb-4 max-w-3xl">
+                    <!-- 标题栏：问题 + 步骤导航 + 关闭 -->
+                    <div class="wizard-header">
+                      <span class="wizard-title">{{ getWizardPanel()?.question || '请选择' }}</span>
                       <div class="flex items-center gap-2">
-                        <svg class="w-4 h-4 text-[#d97757]" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.75"><path stroke-linecap="round" stroke-linejoin="round" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/></svg>
-                        <span class="wizard-panel-title">{{ getWizardPanel()?.question || '请选择' }}</span>
-                      </div>
-                      <div class="flex items-center gap-2">
-                        <!-- 进度指示器 -->
-                        <div class="flex items-center gap-1 mr-2">
-                          <template v-for="i in choiceWizard.totalRounds" :key="i">
-                            <div :class="['w-1.5 h-1.5 rounded-full', i <= choiceWizard.round + 1 ? 'bg-[#d97757]' : 'bg-[#e0e0df]']"></div>
-                          </template>
-                        </div>
-                        <span class="text-[11px] text-[#9b9a97] mr-1">{{ choiceWizard.round + 1 }}/{{ choiceWizard.totalRounds }}</span>
-                        <button class="choice-panel-close" @click="handleSkipChoice(msg.id)" title="跳过此步">
-                          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+                        <button v-if="choiceWizard.round > 0" class="wizard-nav-btn" @click="choiceWizard.round--" title="上一步">&lt;</button>
+                        <span class="wizard-step">{{ choiceWizard.round + 1 }} of {{ choiceWizard.totalRounds }}</span>
+                        <button v-if="choiceWizard.round < choiceWizard.totalRounds - 1" class="wizard-nav-btn" @click="choiceWizard.round++" title="下一步">&gt;</button>
+                        <button class="wizard-close-btn" @click="handleSkipChoice(msg.id)" title="关闭">
+                          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
                         </button>
                       </div>
                     </div>
-                    <div class="choice-panel-list">
+
+                    <!-- 选项列表 -->
+                    <div class="wizard-options">
                       <button v-for="(choice, ci) in getWizardPanel()!.choices" :key="ci"
-                        :class="['choice-panel-item wizard-choice-item', selectedChoices[msg.id] === ci ? 'choice-panel-item-active' : '']"
+                        :class="['wizard-option', selectedChoices[msg.id] === ci ? 'wizard-option-active' : '']"
                         @click="handleSelectChoice(msg.id, ci, choice)">
-                        <span class="choice-panel-num">{{ ci + 1 }}</span><span>{{ choice }}</span>
+                        <span :class="['wizard-opt-num', selectedChoices[msg.id] === ci ? 'wizard-opt-num-active' : '']">{{ ci + 1 }}</span>
+                        <span class="wizard-opt-text">{{ choice }}</span>
+                        <svg class="wizard-opt-arrow" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3"/></svg>
                       </button>
                     </div>
-                    <div class="wizard-panel-hint">
-                      <span>选择后将继续与 Claude 对话，收集更多细节</span>
+
+                    <!-- 底部：Skip 按钮 -->
+                    <div class="wizard-footer">
+                      <button class="wizard-skip-btn" @click="handleSkipChoice(msg.id)">Skip</button>
                     </div>
                   </div>
                 </div>
@@ -147,26 +125,19 @@
                   </div>
                 </div>
 
-                <!-- AI消息底部操作栏 -->
-                <div class="flex items-center justify-between mt-3 pt-2 border-t border-[#f0ede7] dark:border-white/5 max-w-[80%]">
-                  <div class="flex items-center gap-1">
-                    <p class="text-[11px] text-[#9b9a97] mr-2">{{ formatTime(msg.timestamp) }}</p>
-                    <button class="action-btn" title="复制" @click="handleCopy(msg.content)">
-                      <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.75"><path stroke-linecap="round" stroke-linejoin="round" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8z"/></svg>
-                    </button>
-                    <button class="action-btn" title="好的回复">
-                      <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.75"><path stroke-linecap="round" stroke-linejoin="round" d="M14 10h4.764a2 2 0 011.789 2.894l-3.5 7A2 2 0 0115.263 21h-4.017c-.163 0-.326-.02-.485-.06L7 20m7-10V5a2 2 0 00-2-2h-.095c-.5 0-.905.405-.905.905 0 .714-.211 1.412-.608 2.006L7 11v9m7-10h-2M7 20H5a2 2 0 01-2-2v-6a2 2 0 012-2h2.5"/></svg>
-                    </button>
-                    <button class="action-btn" title="不好的回复">
-                      <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.75"><path stroke-linecap="round" stroke-linejoin="round" d="M10 14H5.236a2 2 0 01-1.789-2.894l3.5-7A2 2 0 018.736 3h4.018a2 2 0 01.485.06l3.76.94m-7 10v5a2 2 0 002 2h.096c.5 0 .905-.405.905-.904 0-.715.211-1.413.608-2.008L17 13V4m-7 10h2m5-10h2a2 2 0 012 2v6a2 2 0 01-2 2h-2m-5 10h-2m0 0a2 2 0 01-2-2v-6m2 2v4"/></svg>
-                    </button>
-                    <button class="action-btn" title="转发">
-                      <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.75"><path stroke-linecap="round" stroke-linejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3"/></svg>
-                    </button>
-                  </div>
-
-                  <button v-if="index === messages.length - 1 && msg.role === 'ai'" class="action-btn" title="重新生成" :disabled="isSending" @click="handleRegenerate(msg.id)">
-                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.75"><path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                <!-- AI消息底部操作栏（官网风格：仅复制/点赞/点踩/转发，4个图标，无重答、无时间戳、无分隔线） -->
+                <div class="flex items-center gap-0.5 mt-2 max-w-none">
+                  <button class="action-btn" title="复制" @click="handleCopy(msg.content)">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.75"><path stroke-linecap="round" stroke-linejoin="round" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8z"/></svg>
+                  </button>
+                  <button class="action-btn" title="好的回复">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.75"><path stroke-linecap="round" stroke-linejoin="round" d="M14 10h4.764a2 2 0 011.789 2.894l-3.5 7A2 2 0 0115.263 21h-4.017c-.163 0-.326-.02-.485-.06L7 20m7-10V5a2 2 0 00-2-2h-.095c-.5 0-.905.405-.905.905 0 .714-.211 1.412-.608 2.006L7 11v9m7-10h-2M7 20H5a2 2 0 01-2-2v-6a2 2 0 012-2h2.5"/></svg>
+                  </button>
+                  <button class="action-btn" title="不好的回复">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.75"><path stroke-linecap="round" stroke-linejoin="round" d="M10 14H5.236a2 2 0 01-1.789-2.894l3.5-7A2 2 0 018.736 3h4.018a2 2 0 01.485.06l3.76.94m-7 10v5a2 2 0 002 2h.096c.5 0 .905-.405.905-.904 0-.715.211-1.413.608-2.008L17 13V4m-7 10h2m5-10h2a2 2 0 012 2v6a2 2 0 01-2 2h-2m-5 10h-2m0 0a2 2 0 01-2-2v-6m2 2v4"/></svg>
+                  </button>
+                  <button class="action-btn" title="转发">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.75"><path stroke-linecap="round" stroke-linejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3"/></svg>
                   </button>
                 </div>
 
@@ -191,6 +162,7 @@
             <div
               class="bg-white rounded-[20px] dark:bg-[#2c2c2a] border border-[#e5e5e4] dark:border-[rgba(226,225,218,0.12)] hover:border-[#d0d0cd] hover:dark:border-[rgba(226,225,218,0.2)] shadow-none dark:shadow-none transition-colors duration-200 relative"
               :class="{ 'ring-2 ring-[#d97757]/20': isDragging }"
+              style="min-height: 122px;"
               @dragenter.prevent="isDragging = true"
               @dragover.prevent="isDragging = true"
               @dragleave.prevent="(e: DragEvent) => { if (!(e.currentTarget as Element)?.contains(e.relatedTarget as Node)) isDragging = false }"
@@ -210,13 +182,14 @@
                 ref="inputRef"
                 v-model="messageInput"
                 rows="1"
-                class="w-full bg-transparent border-0 rounded-[20px] pt-4 pb-14 px-4 text-[15px] text-[#1a1a1a] dark:text-[#f8f8f6] placeholder-[#9b9a97] focus:outline-none focus:ring-0 resize-none min-h-[56px] max-h-[200px] leading-relaxed"
-                placeholder="给 Claude 发消息..."
+                class="w-full bg-transparent border-0 rounded-[20px] pt-4 pb-14 px-4 text-[16px] text-[#1a1a1a] dark:text-[#f8f8f6] placeholder-[#9b9a97] focus:outline-none focus:ring-0 resize-none min-h-[56px] max-h-[200px] leading-relaxed"
+                placeholder="Reply..."
                 @input="autoResize"
                 @keydown.enter.exact.prevent="handleSend"
               ></textarea>
 
               <div class="absolute bottom-3 left-3 right-3 flex items-center justify-between">
+                <!-- 左侧：附件按钮 -->
                 <label class="p-1.5 hover:bg-black/[0.04] dark:hover:bg-white/5 rounded-md transition-colors group cursor-pointer" title="附件">
                   <svg class="w-[17px] h-[17px] text-[#9b9a97] group-hover:text-[#787774]" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.75">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
@@ -224,28 +197,61 @@
                   <input type="file" class="hidden" accept="image/*,.pdf,.txt,.md,.doc,.docx" multiple @change="handleFileUpload" />
                 </label>
 
-                <!-- 发送 / 终止按钮 -->
-                <button
-                  v-if="!isSending"
-                  :disabled="!messageInput.trim()"
-                  class="w-8 h-8 flex items-center justify-center bg-[#d97757] hover:bg-[#c96a4a] disabled:bg-[#cfcfce] disabled:cursor-not-allowed text-white rounded-lg transition-colors duration-150"
-                  @click="handleSend"
-                  title="发送消息"
-                >
-                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 256 256"><path d="M208.49,120.49a12,12,0,0,1-17,0L140,69V216a12,12,0,0,1-24,0V69L64.49,120.49a12,12,0,0,1-17-17l72-72a12,12,0,0,1,17,0l72,72A12,12,0,0,1,208.49,120.49Z"/></svg>
-                </button>
-                <button
-                  v-else
-                  class="w-8 h-8 flex items-center justify-center hover:bg-black/[0.04] dark:hover:bg-white/5 text-[#9b9a97] hover:text-[#1a1a1a] dark:hover:text-white rounded-lg transition-colors duration-150"
-                  @click="handleStopGeneration"
-                  title="停止生成"
-                >
-                  <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24"><rect x="5" y="5" width="14" height="14" rx="2"/></svg>
-                </button>
+                <!-- 右侧：空状态=模型名+语音，有内容=发送/停止 -->
+                <div class="flex items-center gap-1">
+                  <!-- 空状态：模型选择器 -->
+                  <div v-if="!messageInput.trim() && !isSending"
+                    v-click-outside="() => showModelMenu = false"
+                    class="flex items-center gap-1 px-2 py-1 hover:bg-black/[0.04] dark:hover:bg-white/5 rounded cursor-pointer relative"
+                    @click="showModelMenu = !showModelMenu"
+                  >
+                    <span class="text-[12px] text-[#787774]">{{ appStore.currentModel?.name || 'Sonnet 4.6' }}</span>
+                    <svg class="w-3 h-3 text-[#9b9a97]" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg>
+                    <Transition name="dropdown">
+                      <div v-if="showModelMenu" class="absolute bottom-full right-0 mb-1 w-48 bg-white dark:bg-[#2c2c2a] border border-[#e0e0df] dark:border-white/10 rounded-lg shadow-claude-md py-1 z-50">
+                        <button v-for="model in appStore.models" :key="model.id" class="w-full px-3 py-1.5 text-left text-[12px] flex justify-between hover:bg-black/[0.04] dark:hover:bg-white/5" :class="model.id === appStore.currentModel?.id ? 'text-[#d97757]' : ''" @click.stop="handleSwitchModel(model)">{{ model.name }}</button>
+                      </div>
+                    </Transition>
+                  </div>
+
+                  <!-- 空状态：语音按钮（波形图标，同HomeView） -->
+                  <button
+                    v-if="!messageInput.trim() && !isSending"
+                    v-tooltip="'语音输入'"
+                    class="w-8 h-8 flex items-center justify-center hover:bg-black/[0.04] dark:hover:bg-white/5 rounded-lg transition-colors duration-150 group cursor-pointer"
+                    style="padding-left: 6px; padding-right: 6px;"
+                    aria-label="Use voice mode"
+                  >
+                    <svg width="20" height="20" viewBox="0 0 21 21" fill="none" xmlns="http://www.w3.org/2000/svg" class="inline-block overflow-visible">
+                      <rect x="0" y="7.5" height="6px" fill="currentColor" width="1px" rx="0.5" ry="0.5"/>
+                      <rect x="4" y="5.5" height="10px" fill="currentColor" width="1px" rx="0.5" ry="0.5"/>
+                      <rect x="8" y="2.5" height="16px" fill="currentColor" width="1px" rx="0.5" ry="0.5"/>
+                      <rect x="12" y="5.5" height="10px" fill="currentColor" width="1px" rx="0.5" ry="0.5"/>
+                      <rect x="16" y="2.5" height="16px" fill="currentColor" width="1px" rx="0.5" ry="0.5"/>
+                      <rect x="20" y="7.5" height="6px" fill="currentColor" width="1px" rx="0.5" ry="0.5"/>
+                    </svg>
+                  </button>
+
+                  <!-- 有内容时：发送 / 终止按钮 -->
+                  <button
+                    v-if="isSending || messageInput.trim()"
+                    :disabled="!messageInput.trim()"
+                    class="w-8 h-8 flex items-center justify-center bg-[#d97757] hover:bg-[#c96a4a] disabled:bg-[#cfcfce] disabled:cursor-not-allowed text-white rounded-lg transition-colors duration-150"
+                    :title="isSending ? '停止生成' : '发送消息'"
+                    @click="isSending ? handleStopGeneration() : handleSend()"
+                  >
+                    <template v-if="isSending">
+                      <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24"><rect x="5" y="5" width="14" height="14" rx="2"/></svg>
+                    </template>
+                    <template v-else>
+                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 256 256"><path d="M208.49,120.49a12,12,0,0,1-17,0L140,69V216a12,12,0,0,1-24,0V69L64.49,120.49a12,12,0,0,1-17-17l72-72a12,12,0,0,1,17,0l72,72A12,12,0,0,1,208.49,120.49Z"/></svg>
+                    </template>
+                  </button>
+                </div>
               </div>
             </div>
 
-            <p class="text-center text-[11px] text-[#b8b7b4] dark:text-gray-500 mt-2">
+            <p class="text-center text-[12px] text-[#97958c] dark:text-[#97958c] mt-2">
               Claude 可能会出错。请核实重要信息。
             </p>
           </div>
@@ -909,7 +915,6 @@ const handleSend = async () => {
       }
     }
 
-    showNotifyBar.value = true
     await appStore.fetchDialogList()
   } catch (e: any) {
     console.error(`[FRONTEND] CATCH error:`, e.name, e.message)
@@ -1074,7 +1079,8 @@ let aiLogoOriginalD: string | null = null
 let aiLogoPathElement: SVGPathElement | null = null
 
 /** AI Logo 思考动画 */
-const startAiLogoAnimation = (svg: SVGSVGElement) => {
+const startAiLogoAnimation = (svg: SVGSVGElement | null) => {
+  if (!svg || typeof svg.querySelector !== 'function') return
   const pathElement = svg.querySelector('path')
   if (!pathElement) return
 
@@ -1506,10 +1512,14 @@ const stopAiLogoAnimation = () => {
 }
 
 watch(isAiWaiting, (val) => {
-  if (val && aiLogoRef.value) {
-    startAiLogoAnimation(aiLogoRef.value)
-  } else {
-    stopAiLogoAnimation()
+  try {
+    if (val && aiLogoRef.value) {
+      startAiLogoAnimation(aiLogoRef.value)
+    } else {
+      stopAiLogoAnimation()
+    }
+  } catch (e) {
+    // 静默处理动画错误，不影响主流程
   }
 })
 </script>
@@ -1603,32 +1613,143 @@ watch(isAiWaiting, (val) => {
 /* 预览面板代码区 */
 pre code { font-family: 'SF Mono', Menlo, Consolas, monospace; }
 
+/* 制品向导面板 - 官网风格 */
 .wizard-panel {
-  @apply bg-white dark:bg-[#2c2c2a] border border-[#e5e5e4] dark:border-white/10 rounded-xl shadow-sm overflow-hidden;
+  background-color: #fff;
+  border: 1px solid #3a3936;
+  border-radius: 1rem;
+  overflow: hidden;
 }
-.wizard-panel-header {
-  @apply flex items-center justify-between px-4 py-3 border-b border-[#f5f3ef] dark:border-white/5;
+.dark .wizard-panel {
+  background-color: #2c2c2a;
+  border-color: #5c5b58;
 }
-.wizard-panel-title {
-  @apply text-[13px] font-medium text-[#1a1a1a] dark:text-white;
+.wizard-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 1.25rem;
 }
-.wizard-choice-item {
-  position: relative;
+.wizard-title {
+  font-size: 15px;
+  color: #fff;
 }
-.wizard-choice-item::before {
-  content: '';
-  @apply absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-0 rounded-full bg-[#d97757] transition-all duration-200;
+.wizard-step {
+  font-size: 13px;
+  color: #9b9a97;
+  margin: 0 0.375rem;
+  user-select: none;
 }
-.wizard-choice-item:hover::before {
-  @apply h-4;
+.wizard-nav-btn {
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  color: #787774;
+  cursor: pointer;
+  transition: color 0.15s;
+  font-family: ui-sans-serif, system-ui;
 }
-.wizard-choice-item-active::before {
-  @apply h-6;
+.wizard-nav-btn:hover {
+  color: white;
 }
-.wizard-panel-hint {
-  @apply px-4 py-2.5 flex items-center justify-center border-t border-[#f5f3ef] dark:border-white/5;
+.wizard-close-btn {
+  padding: 0.25rem;
+  color: #787774;
+  transition: color 0.15s;
+  cursor: pointer;
+  margin-left: 0.25rem;
 }
-.wizard-panel-hint span {
-  @apply text-[11px] text-[#b8b7b4] dark:text-gray-500;
+.wizard-close-btn:hover {
+  color: white;
+}
+.wizard-options {
+  padding: 0.5rem 0.5rem 0.5rem;
+}
+.wizard-options > * + * {
+  margin-top: 0.125rem;
+}
+.wizard-option {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border-radius: 0.75rem;
+  text-align: left;
+  transition: all 0.15s;
+  cursor: pointer;
+}
+.wizard-option:hover {
+  background-color: rgba(255,255,255,0.04);
+}
+.wizard-option-active {
+  background-color: rgba(255,255,255,0.06);
+}
+.wizard-opt-num {
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  font-size: 12px;
+  font-weight: 600;
+  color: #9b9a97;
+  background: transparent;
+  border: 1px solid rgba(74,73,71,0.5);
+  border-radius: 0.5rem;
+  transition: all 0.15s;
+}
+.wizard-opt-num-active {
+  color: white;
+  background: transparent;
+  border: none;
+}
+.wizard-opt-text {
+  flex: 1;
+  font-size: 14px;
+  color: #e8e7e0;
+  line-height: 1.25;
+}
+.wizard-option-active .wizard-opt-text {
+  color: white;
+  font-weight: 500;
+}
+.wizard-opt-arrow {
+  width: 16px;
+  height: 16px;
+  color: #5c5b58;
+  opacity: 0;
+  transition: opacity 0.15s;
+  margin-left: auto;
+  flex-shrink: 0;
+}
+.wizard-option:hover .wizard-opt-arrow,
+.wizard-option-active .wizard-opt-arrow {
+  opacity: 1;
+}
+.wizard-footer {
+  display: flex;
+  align-items: flex-end;
+  justify-content: flex-end;
+  padding: 0.75rem 1.25rem 1rem;
+}
+.wizard-skip-btn {
+  padding: 0.375rem 1rem;
+  font-size: 13px;
+  font-weight: 500;
+  color: #9b9a97;
+  border: 1px solid rgba(74,73,71,0.5);
+  border-radius: 0.5rem;
+  transition: all 0.15s;
+  cursor: pointer;
+}
+.wizard-skip-btn:hover {
+  background-color: rgba(255,255,255,0.05);
+  color: #e8e7e0;
+  border-color: rgba(92,91,88,0.5);
 }
 </style>

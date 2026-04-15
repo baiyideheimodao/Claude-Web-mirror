@@ -107,7 +107,7 @@
           <li v-for="chat in recentChatsList" :key="chat.id">
             <router-link :to="`/chat/${chat.id}`" custom v-slot="{ navigate }">
               <button
-                class="w-full text-left px-4 py-1.5 rounded-md text-[12px] text-[#c3c2b7] hover:text-[#e8e7e0] dark:text-[#c3c2b7] dark:hover:text-[#e8e7e0] hover:bg-black/[0.04] dark:hover:bg-white/5 transition-colors duration-150 truncate leading-normal"
+                class="w-full text-left px-4 py-1.5 rounded-md text-[13px] text-[#c3c2b7] hover:text-[#e8e7e0] dark:text-[#c3c2b7] dark:hover:text-[#e8e7e0] hover:bg-black/[0.04] dark:hover:bg-white/5 transition-colors duration-150 truncate leading-normal"
                 @click="navigate"
               >{{ chat.title }}</button>
             </router-link>
@@ -590,7 +590,7 @@ watch(() => appStore.isAuthenticated, (isAuth) => {
 
 <style scoped>
 .nav-item-btn {
-  @apply py-[6px] px-[16px] text-left text-[12px] text-[#c3c2b7] dark:text-[#c3c2b7] hover:text-[#e8e7e0] dark:hover:text-[#e8e7e0] hover:bg-black/[0.04] dark:hover:bg-white/5 rounded-md transition-colors duration-150 flex items-center gap-2;
+  @apply py-[6px] px-[16px] text-left text-[13px] font-normal text-[#787774] dark:text-[#b8b7b4] hover:text-[#1a1a1a] dark:hover:text-white hover:bg-black/[0.04] dark:hover:bg-white/5 rounded-md transition-colors duration-150 flex items-center gap-2;
 }
 .nav-icon { color: #787774; }
 .dark .nav-icon { color: #9b9a97; }
