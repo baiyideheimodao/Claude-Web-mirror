@@ -1,8 +1,8 @@
 <template>
-  <div class="min-h-screen bg-[#f9f8f5] dark:bg-[#1a1a1a] text-text-100" :class="{ 'dark': appStore.isDarkMode }">
+  <div class="min-h-screen bg-[#f9f8f5] dark:bg-[#1f1f1e] text-text-100" :class="{ 'dark': appStore.isDarkMode }">
     <AppNavigation @sidebar-change="onSidebarChange" />
 
-    <main :class="['min-h-screen transition-all duration-200 ease-in-out', isCollapsed ? 'ml-[48px]' : 'ml-[260px]']">
+    <main :class="['min-h-screen transition-all duration-200 ease-in-out', isCollapsed ? 'ml-[48px]' : 'ml-[288px]']">
       <div class="max-w-3xl mx-auto px-6 pt-6 pb-8">
         <h1 class="text-xl font-semibold text-[#1a1a1a] dark:text-white mb-6">设置</h1>
 

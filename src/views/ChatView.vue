@@ -1,10 +1,10 @@
 <template>
-  <div class="min-h-screen bg-[#f9f8f5] dark:bg-[#1a1a1a] text-[#1a1a1a] dark:text-gray-200">
+  <div class="min-h-screen bg-[#f9f8f5] dark:bg-[#1f1f1e] text-[#1a1a1a] dark:text-gray-200">
     <!-- 左侧导航栏 -->
     <AppNavigation @sidebar-change="onSidebarChange" />
 
     <!-- 主聊天区域 -->
-    <main :class="['min-h-screen transition-all duration-200 ease-in-out', isCollapsed ? 'ml-[48px]' : 'ml-[260px]', showArtifactPanel ? 'mr-[520px]' : '']">
+    <main :class="['min-h-screen transition-all duration-200 ease-in-out', isCollapsed ? 'ml-[48px]' : 'ml-[288px]', showArtifactPanel ? 'mr-[520px]' : '']">
       <div class="max-w-3xl mx-auto px-6 pt-6 pb-24">
         <!-- 对话标题栏 + 返回按钮 -->
         <div v-if="dialogDetail" class="flex items-center justify-between mb-4">
@@ -35,7 +35,7 @@
               <span class="text-[12px] text-[#787774]">{{ appStore.currentModel?.name || 'Sonnet 4d' }}</span>
               <svg class="w-3 h-3 text-[#9b9a97]" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg>
               <Transition name="dropdown">
-                <div v-if="showModelMenu" class="absolute top-full right-0 mt-1 w-48 bg-white dark:bg-[#2a2a2a] border border-[#e0e0df] dark:border-white/10 rounded-lg shadow-claude-md py-1 z-50">
+                <div v-if="showModelMenu" class="absolute top-full right-0 mt-1 w-48 bg-white dark:bg-[#2c2c2a] border border-[#e0e0df] dark:border-white/10 rounded-lg shadow-claude-md py-1 z-50">
                   <button v-for="model in appStore.models" :key="model.id" class="w-full px-3 py-1.5 text-left text-[12px] flex justify-between hover:bg-black/[0.04] dark:hover:bg-white/5" :class="model.id === appStore.currentModel?.id ? 'text-[#d97757]' : ''" @click.stop="handleSwitchModel(model)">{{ model.name }}</button>
                 </div>
               </Transition>
@@ -61,7 +61,7 @@
           <template v-for="(msg, index) in messages" :key="msg.id">
             <!-- 用户消息 -->
             <div v-if="msg.role === 'user'" class="flex justify-end">
-              <div class="max-w-[80%] bg-white dark:bg-[#2a2a2a] border border-[#e5e5e4] dark:border-white/10 rounded-2xl rounded-tr-md p-4 shadow-sm">
+              <div class="max-w-[80%] bg-white dark:bg-[#2c2c2a] border border-[#e5e5e4] dark:border-white/10 rounded-2xl rounded-tr-md p-4 shadow-sm">
                 <p class="text-[15px] text-[#1a1a1a] dark:text-gray-200 leading-relaxed whitespace-pre-wrap">{{ msg.content }}</p>
                 <p class="text-[11px] text-[#9b9a97] mt-2 text-right">{{ formatTime(msg.timestamp) }}</p>
               </div>
@@ -177,27 +177,27 @@
           </template>
 
         </div>
-        <div class="fixed bottom-6 left-0 right-0 z-40" :style="{ marginLeft: isCollapsed ? '48px' : '260px', transition: 'margin-left 200ms ease-in-out' }">
+        <div class="fixed bottom-6 left-0 right-0 z-40" :style="{ marginLeft: isCollapsed ? '48px' : '288px', transition: 'margin-left 200ms ease-in-out' }">
           <div class="max-w-3xl mx-auto px-6">
             <!-- "Want to be notified when Claude responds?" 提示条 -->
-            <div v-if="showNotifyBar" class="mb-3 flex items-center justify-between px-4 py-2.5 bg-white dark:bg-[#2a2a2a] border border-[#e5e5e4] dark:border-white/10 rounded-lg shadow-sm">
+            <div v-if="showNotifyBar" class="mb-3 flex items-center justify-between px-4 py-2.5 bg-white dark:bg-[#2c2c2a] border border-[#e5e5e4] dark:border-white/10 rounded-lg shadow-sm">
               <span class="text-[13px] text-[#1a1a1a] dark:text-white">当 Claude 回复完成时需要通知吗？</span>
-              <button class="px-3 py-1 bg-[#1a1a1a] text-white rounded text-[12px] font-medium hover:bg-[#333]" @click="showNotifyBar = false">通知我</button>
+              <button class="px-3 py-1 bg-[#1f1f1e] dark:bg-[#2a2a2a] text-white rounded text-[12px] font-medium hover:bg-black/80 dark:hover:bg-white/10" @click="showNotifyBar = false">通知我</button>
               <button class="p-1 text-[#9b9a97] hover:text-[#5c5b58]" @click="showNotifyBar = false">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.75"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
               </button>
             </div>
 
             <div
-              class="bg-white dark:bg-[#2a2a2a] border border-[#e0e0df] dark:border-white/10 rounded-xl shadow-claude-md hover:border-[#cfcfce] dark:hover:border-white/20 transition-colors duration-200 relative"
-              :class="{ 'border-[#d97757] ring-2 ring-[#d97757]/20': isDragging }"
+              class="bg-white rounded-[20px] dark:bg-[#2c2c2a] border border-[#e5e5e4] dark:border-[rgba(226,225,218,0.12)] hover:border-[#d0d0cd] hover:dark:border-[rgba(226,225,218,0.2)] shadow-none dark:shadow-none transition-colors duration-200 relative"
+              :class="{ 'ring-2 ring-[#d97757]/20': isDragging }"
               @dragenter.prevent="isDragging = true"
               @dragover.prevent="isDragging = true"
               @dragleave.prevent="(e: DragEvent) => { if (!(e.currentTarget as Element)?.contains(e.relatedTarget as Node)) isDragging = false }"
               @drop.prevent="handleDrop"
             >
               <!-- 拖拽提示遮罩 -->
-              <div v-if="isDragging" class="absolute inset-0 rounded-xl bg-[#d97757]/5 flex items-center justify-center z-10 pointer-events-none">
+              <div v-if="isDragging" class="absolute inset-0 rounded-[20px] bg-[#d97757]/5 flex items-center justify-center z-10 pointer-events-none">
                 <div class="text-center">
                   <svg class="w-10 h-10 mx-auto text-[#d97757] mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/>
@@ -210,14 +210,14 @@
                 ref="inputRef"
                 v-model="messageInput"
                 rows="1"
-                class="w-full bg-transparent border-0 rounded-xl pt-4 pb-14 px-4 text-[15px] text-[#1a1a1a] dark:text-white placeholder-[#9b9a97] focus:outline-none resize-none min-h-[56px] max-h-[200px] leading-relaxed"
+                class="w-full bg-transparent border-0 rounded-[20px] pt-4 pb-14 px-4 text-[15px] text-[#1a1a1a] dark:text-[#f8f8f6] placeholder-[#9b9a97] focus:outline-none focus:ring-0 resize-none min-h-[56px] max-h-[200px] leading-relaxed"
                 placeholder="给 Claude 发消息..."
                 @input="autoResize"
                 @keydown.enter.exact.prevent="handleSend"
               ></textarea>
 
-              <div class="absolute bottom-3 left-3 right-3 flex items-center justify-end">
-                <label class="p-1.5 mr-1 hover:bg-black/[0.04] dark:hover:bg-white/5 rounded-md transition-colors group cursor-pointer" title="附件">
+              <div class="absolute bottom-3 left-3 right-3 flex items-center justify-between">
+                <label class="p-1.5 hover:bg-black/[0.04] dark:hover:bg-white/5 rounded-md transition-colors group cursor-pointer" title="附件">
                   <svg class="w-[17px] h-[17px] text-[#9b9a97] group-hover:text-[#787774]" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.75">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
                   </svg>
@@ -228,19 +228,19 @@
                 <button
                   v-if="!isSending"
                   :disabled="!messageInput.trim()"
-                  class="px-4 py-1.5 bg-[#d97757] hover:bg-[#c96a4a] disabled:bg-[#cfcfce] disabled:cursor-not-allowed text-white rounded-lg transition-colors duration-150 text-[13px] font-medium ml-2"
+                  class="w-8 h-8 flex items-center justify-center bg-[#d97757] hover:bg-[#c96a4a] disabled:bg-[#cfcfce] disabled:cursor-not-allowed text-white rounded-lg transition-colors duration-150"
                   @click="handleSend"
+                  title="发送消息"
                 >
-                  发送
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 256 256"><path d="M208.49,120.49a12,12,0,0,1-17,0L140,69V216a12,12,0,0,1-24,0V69L64.49,120.49a12,12,0,0,1-17-17l72-72a12,12,0,0,1,17,0l72,72A12,12,0,0,1,208.49,120.49Z"/></svg>
                 </button>
                 <button
                   v-else
-                  class="px-3 py-1.5 bg-transparent hover:bg-black/[0.04] dark:hover:bg-white/5 text-[#9b9a97] hover:text-[#1a1a1a] dark:hover:text-white rounded-lg transition-colors duration-150 text-[13px] font-medium ml-2 flex items-center gap-1.5 border border-[#e0e0df] dark:border-white/10"
+                  class="w-8 h-8 flex items-center justify-center hover:bg-black/[0.04] dark:hover:bg-white/5 text-[#9b9a97] hover:text-[#1a1a1a] dark:hover:text-white rounded-lg transition-colors duration-150"
                   @click="handleStopGeneration"
-                  title="终止回答"
+                  title="停止生成"
                 >
-                  <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 24 24"><rect x="6" y="6" width="12" height="12" rx="2"/></svg>
-                  停止
+                  <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24"><rect x="5" y="5" width="14" height="14" rx="2"/></svg>
                 </button>
               </div>
             </div>
@@ -255,7 +255,7 @@
 
     <!-- 右侧制品预览面板 -->
     <Transition name="panel">
-      <div v-if="showArtifactPanel" class="fixed top-0 right-0 w-[520px] h-screen bg-white dark:bg-[#1a1a1a] border-l border-[#e0e0df] dark:border-white/10 z-50 flex flex-col shadow-xl">
+      <div v-if="showArtifactPanel" class="fixed top-0 right-0 w-[520px] h-screen bg-white dark:bg-[#1f1f1e] border-l border-[#e0e0df] dark:border-white/10 z-50 flex flex-col shadow-xl">
         <!-- 面板头部 -->
         <div class="flex items-center justify-between px-4 py-3 border-b border-[#f0ede7] dark:border-white/5 shrink-0">
           <div class="flex items-center gap-3">
@@ -285,7 +285,7 @@
         </div>
 
         <!-- 面板内容区：预览模式 -->
-        <div v-if="artifactViewMode === 'preview'" ref="artifactPreviewRef" class="flex-1 overflow-auto bg-white dark:bg-[#0f0f0f]">
+        <div v-if="artifactViewMode === 'preview'" ref="artifactPreviewRef" class="flex-1 overflow-auto bg-white dark:bg-[#1f1f1e]">
           <iframe
             v-if="currentArtifact && isPreviewable(currentArtifact)"
             :srcdoc="currentArtifact.content"
@@ -294,12 +294,12 @@
           ></iframe>
           <div v-else-if="currentArtifact" class="p-6 text-[14px] text-[#5c5b58] dark:text-gray-400">
             <p>此类型的制品暂不支持预览，请切换到「代码」视图查看。</p>
-            <pre v-if="!isPreviewable(currentArtifact)" class="mt-4 p-4 bg-[#f5f4f0] dark:bg-[#1a1a1a] rounded-lg overflow-x-auto text-[13px] font-mono whitespace-pre-wrap">{{ currentArtifact.content }}</pre>
+            <pre v-if="!isPreviewable(currentArtifact)" class="mt-4 p-4 bg-[#f5f4f0] dark:bg-[#1f1f1e] rounded-lg overflow-x-auto text-[13px] font-mono whitespace-pre-wrap">{{ currentArtifact.content }}</pre>
           </div>
         </div>
 
         <!-- 面板内容区：代码模式 -->
-        <div v-if="artifactViewMode === 'code'" class="flex-1 overflow-auto bg-[#1a1a1a]">
+        <div v-if="artifactViewMode === 'code'" class="flex-1 overflow-auto bg-[#1f1f1e]">
           <div class="relative min-h-full p-4">
             <div class="absolute top-3 left-4 flex items-center gap-2 z-10">
               <span class="text-[11px] text-[#555] dark:text-gray-500 font-mono">{{ getLanguageTag(currentArtifact?.type) }}</span>
@@ -583,7 +583,7 @@ const renderContent = (content: string): string => {
 
   // 代码块 (```language\n...\n```)
   html = html.replace(/```(\w*)\n([\s\S]*?)```/g, (_match, _lang, code) => {
-    return `<pre class="bg-[#f5f4f0] dark:bg-[#1a1a1a] rounded-lg p-3 my-3 overflow-x-auto font-mono text-[13px] border border-[#eee] dark:border-white/5"><code class="text-[#1a1a1a] dark:text-gray-200">${code}</code></pre>`
+    return `<pre class="bg-[#f5f4f0] dark:bg-[#1f1f1e] rounded-lg p-3 my-3 overflow-x-auto font-mono text-[13px] border border-[#eee] dark:border-white/5"><code class="text-[#1a1a1a] dark:text-gray-200">${code}</code></pre>`
   })
 
   // 行内代码
@@ -1536,7 +1536,7 @@ watch(isAiWaiting, (val) => {
 
 /* 选项面板样式 - 模仿截图中的独立卡片面板 */
 .choice-panel {
-  @apply bg-white dark:bg-[#2a2a2a] border border-[#e0e0df] dark:border-white/10 rounded-xl shadow-sm overflow-hidden;
+  @apply bg-white dark:bg-[#2c2c2a] border border-[#e0e0df] dark:border-white/10 rounded-xl shadow-sm overflow-hidden;
 }
 .choice-panel-header {
   @apply flex items-center justify-between px-4 py-3 border-b border-[#f0ede7] dark:border-white/5;
@@ -1576,7 +1576,7 @@ watch(isAiWaiting, (val) => {
 
 /* 制品卡片样式 */
 .artifact-card {
-  @apply bg-white dark:bg-[#2a2a2a] border border-[#e0e0df] dark:border-white/10 rounded-xl shadow-sm overflow-hidden;
+  @apply bg-white dark:bg-[#2c2c2a] border border-[#e0e0df] dark:border-white/10 rounded-xl shadow-sm overflow-hidden;
 }
 .artifact-card-header {
   @apply flex items-center justify-between px-4 py-3 border-b border-[#f0ede7] dark:border-white/5 cursor-pointer;
@@ -1604,7 +1604,7 @@ watch(isAiWaiting, (val) => {
 pre code { font-family: 'SF Mono', Menlo, Consolas, monospace; }
 
 .wizard-panel {
-  @apply bg-white dark:bg-[#2a2a2a] border border-[#e5e5e4] dark:border-white/10 rounded-xl shadow-sm overflow-hidden;
+  @apply bg-white dark:bg-[#2c2c2a] border border-[#e5e5e4] dark:border-white/10 rounded-xl shadow-sm overflow-hidden;
 }
 .wizard-panel-header {
   @apply flex items-center justify-between px-4 py-3 border-b border-[#f5f3ef] dark:border-white/5;

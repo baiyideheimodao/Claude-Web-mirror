@@ -1,5 +1,5 @@
 <template>
-  <div class="min-h-screen bg-[#f9f8f5] dark:bg-[#1a1a1a] flex flex-col transition-colors duration-200">
+  <div class="min-h-screen bg-[#f9f8f5] dark:bg-[#1f1f1e] flex flex-col transition-colors duration-200">
     <!-- 顶部导航 -->
     <header class="h-11 px-4 flex items-center justify-between shrink-0">
       <div class="flex items-center gap-1.5 ml-2">
@@ -118,7 +118,7 @@
               </div>
 
               <button
-                class="w-full py-2.5 px-4 bg-white dark:bg-[#333] border border-[#e0e0df] dark:border-white/10 rounded-lg flex items-center justify-center gap-2.5 hover:bg-[#fafafa] dark:hover:bg-[#3a3a3a] transition-colors duration-150"
+                class="w-full py-2.5 px-4 bg-white dark:bg-[#2a2a2a] border border-[#e0e0df] dark:border-white/10 rounded-lg flex items-center justify-center gap-2.5 hover:bg-[#fafafa] dark:hover:bg-[#3a3a3a] transition-colors duration-150"
                 @click="switchToRegister"
               >
                 <span class="text-[14px] font-medium text-[#1a1a1a] dark:text-white">创建账号</span>

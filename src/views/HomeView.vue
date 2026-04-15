@@ -1,10 +1,10 @@
 <template>
-  <div class="min-h-screen bg-[#f9f8f5] dark:bg-[#1a1a1a] text-text-100">
+  <div class="min-h-screen bg-[#f9f8f5] dark:bg-[#1f1f1e] text-text-100">
     <!-- 左侧导航栏 -->
     <AppNavigation @sidebar-change="onSidebarChange" />
 
     <!-- 主内容区域 -->
-    <main :class="['min-h-screen transition-all duration-200 ease-in-out', isCollapsed ? 'ml-[48px]' : 'ml-[260px]']">
+    <main :class="['min-h-screen transition-all duration-200 ease-in-out', isCollapsed ? 'ml-[48px]' : 'ml-[288px]']">
       <div class="max-w-[800px] mx-auto px-6 pt-[28vh] pb-8">
         <!-- 问候语区域 -->
         <div class="text-center mb-8">
@@ -16,12 +16,12 @@
 
         <!-- 输入框区域 -->
         <div class="mb-6">
-          <div class="relative bg-white dark:bg-[#2a2a2a] border border-[#e0e0df] dark:border-white/10 rounded-xl shadow-sm hover:border-[#cfcfce] dark:hover:border-white/20 transition-colors duration-200">
+          <div class="relative bg-white rounded-[20px] dark:bg-[#2c2c2a] dark:border-[rgba(226,225,218,0.12)] dark:shadow-none transition-colors duration-200 border border-[#e5e5e4] hover:border-[#d0d0cd] hover:dark:border-[rgba(226,225,218,0.2)]" style="min-height: 122px;">
             <textarea
               ref="inputRef"
               v-model="userInput"
               rows="1"
-              class="w-full bg-transparent border-0 rounded-xl pt-4 pb-14 px-4 text-[16px] text-[#1a1a1a] dark:text-white placeholder-[#9b9a97] focus:outline-none resize-none min-h-[68px] max-h-[240px] leading-relaxed"
+              class="w-full bg-transparent border-0 rounded-[20px] pt-4 pb-14 px-4 text-[16px] text-[#1a1a1a] dark:text-[#f8f8f6] placeholder-[#9b9a97] focus:outline-none focus:ring-0 resize-none min-h-[68px] max-h-[240px] leading-relaxed"
               placeholder="今天有什么可以帮您的？"
               @input="autoResize"
               @keydown.enter.exact.prevent="handleSend"
@@ -29,9 +29,8 @@
 
             <!-- 底部工具栏 -->
             <div class="absolute bottom-3 left-3 right-3 flex items-center justify-between">
-              <!-- 左侧：附件按钮 -->
+              <!-- 左侧：附件按钮（始终显示） -->
               <label
-                v-if="!userInput"
                 v-tooltip="'Attach file (支持拖拽上传)'"
                 class="p-1.5 hover:bg-black/[0.04] dark:hover:bg-white/5 rounded-md transition-colors duration-150 group cursor-pointer"
               >
@@ -41,7 +40,7 @@
                 <input type="file" class="hidden" accept="image/*,.pdf,.txt,.md,.doc,.docx,.csv,.json,.html,.css,.js,.ts,.py,.java,.go,.rs" multiple @change="handleFileUpload" />
               </label>
 
-              <!-- 右侧：模型选择器 + 发送 -->
+              <!-- 右侧：模型选择器 / 发送按钮 -->
               <div class="flex items-center gap-0.5">
                 <template v-if="!userInput">
                   <div
@@ -59,7 +58,7 @@
                     <Transition name="dropdown">
                       <div
                         v-if="showModelMenu"
-                        class="absolute top-full right-0 mt-1 w-56 bg-white dark:bg-[#2a2a2a] border border-[#e0e0df] dark:border-white/10 rounded-lg shadow-claude-md py-1 z-50"
+                        class="absolute top-full right-0 mt-1 w-56 bg-white dark:bg-[#2c2c2a] border border-[#e0e0df] dark:border-white/10 rounded-lg shadow-claude-md py-1 z-50"
                       >
                         <button
                           v-for="model in appStore.models"
@@ -78,13 +77,19 @@
                     </Transition>
                   </div>
 
-                  <!-- 语音按钮 -->
+                  <!-- 语音按钮（官网同款：32x32, radius 8, 波形图标） -->
                   <button
                     v-tooltip="'语音输入'"
-                    class="p-1.5 hover:bg-black/[0.04] dark:hover:bg-white/5 rounded-md transition-colors duration-150 group cursor-pointer"
+                    class="w-8 h-8 flex items-center justify-center hover:bg-black/[0.04] dark:hover:bg-white/5 rounded-lg transition-colors duration-150 group cursor-pointer"
+                    style="padding-left: 6px; padding-right: 6px;"
                   >
-                    <svg class="w-[17px] h-[17px] text-[#9b9a97] group-hover:text-[#787774]" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.75">
-                      <path stroke-linecap="round" stroke-linejoin="round" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z"/>
+                    <svg width="20" height="20" viewBox="0 0 21 21" fill="none" xmlns="http://www.w3.org/2000/svg" class="inline-block overflow-visible">
+                      <rect x="0" y="7.5" height="6px" fill="currentColor" width="1px" rx="0.5" ry="0.5"/>
+                      <rect x="4" y="5.5" height="10px" fill="currentColor" width="1px" rx="0.5" ry="0.5"/>
+                      <rect x="8" y="2.5" height="16px" fill="currentColor" width="1px" rx="0.5" ry="0.5"/>
+                      <rect x="12" y="5.5" height="10px" fill="currentColor" width="1px" rx="0.5" ry="0.5"/>
+                      <rect x="16" y="2.5" height="16px" fill="currentColor" width="1px" rx="0.5" ry="0.5"/>
+                      <rect x="20" y="7.5" height="6px" fill="currentColor" width="1px" rx="0.5" ry="0.5"/>
                     </svg>
                   </button>
                 </template>
@@ -92,10 +97,10 @@
                 <button
                   v-if="userInput"
                   :disabled="isSending || !userInput.trim()"
-                  class="px-3 py-1.5 bg-[#d97757] hover:bg-[#c96a4a] disabled:bg-[#cfcfce] disabled:cursor-not-allowed text-white rounded-lg transition-colors duration-150 text-[13px] font-medium"
+                  class="w-8 h-8 flex items-center justify-center bg-[#d97757] hover:bg-[#c96a4a] disabled:bg-[#cfcfce] disabled:cursor-not-allowed text-white rounded-lg transition-colors duration-150"
                   @click="handleSend"
                 >
-                  {{ isSending ? '...' : '发送' }}
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 256 256"><path d="M208.49,120.49a12,12,0,0,1-17,0L140,69V216a12,12,0,0,1-24,0V69L64.49,120.49a12,12,0,0,1-17-17l72-72a12,12,0,0,1,17,0l72,72A12,12,0,0,1,208.49,120.49Z"/></svg>
                 </button>
               </div>
             </div>
@@ -200,13 +205,13 @@ const handleFileUpload = async (event: Event) => {
   input.value = ''
 }
 
-// 快捷按钮 - 每个都有对应功能
+// 快捷按钮 - 每个都有对应功能（使用官网同款 fill 图标，viewBox 0 0 256 256）
 const shortcuts = [
-  { id: 1, label: '策略规划', icon: '<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.75"><path stroke-linecap="round" stroke-linejoin="round" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/></svg>', route: '/chat' },
-  { id: 2, label: '写作', icon: '<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.75"><path stroke-linecap="round" stroke-linejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/></svg>', route: '/chat' },
-  { id: 3, label: '学习', icon: '<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.75"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg>', route: '/chat' },
-  { id: 4, label: '编程', icon: '<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.75"><path stroke-linecap="round" stroke-linejoin="round" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/></svg>', route: '/code' },
-  { id: 5, label: '生活', icon: '<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.75"><path stroke-linecap="round" stroke-linejoin="round" d="M21 15.546c-.523 0-1.046.151-1.5.454a2.704 2.704 0 01-3 0 2.704 2.704 0 00-3 0 2.704 2.704 0 01-3 0 2.704 2.704 0 00-3 0 2.701 2.701 0 00-1.5-.454M9 6v2m3-2v2m3-2v2M9 3h.01M12 3h.01M15 3h.01M21 21v-7a2 2 0 00-2-2H5a2 2 0 00-2 2v7h18zm-3-9v-2a2 2 0 00-2-2H8a2 2 0 00-2 2v2h12z"/></svg>', route: '/chat' },
+  { id: 1, label: '策略规划', icon: '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 256 256"><path d="M232,208a8,8,0,0,1-8,8H32a8,8,0,0,1-8-8V48a8,8,0,0,1,16,0v94.37L90.73,98a8,8,0,0,1,10.07-.38l58.81,44.11L218.73,90a8,8,0,1,1,10.54,12l-64,56a8,8,0,0,1-10.07.38L96.39,114.29,40,163.63V200H224A8,8,0,0,1,232,208Z"/></svg>', route: '/chat' },
+  { id: 2, label: '写作', icon: '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 256 256"><path d="M227.31,73.37,182.63,28.68a16,16,0,0,0-22.63,0L36.69,152A15.86,15.86,0,0,0,32,163.31V208a16,16,0,0,0,16,16H92.69A15.86,15.86,0,0,0,104,219.31L227.31,96a16,16,0,0,0,0-22.63ZM92.69,208H48V163.31l88-88L180.69,120ZM192,108.68,147.31,64l24-24L216,84.68Z"/></svg>', route: '/chat' },
+  { id: 3, label: '学习', icon: '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 256 256"><path d="M251.76,88.94l-120-64a8,8,0,0,0-7.52,0l-120,64a8,8,0,0,0,0,14.12L32,117.87v48.42a15.91,15.91,0,0,0,4.06,10.65C49.16,191.53,78.51,216,128,216a130,130,0,0,0,48-8.76V240a8,8,0,0,0,16,0V199.51a115.63,115.63,0,0,0,27.94-22.57A15.91,15.91,0,0,0,224,166.29V117.87l27.76-14.81a8,8,0,0,0,0-14.12ZM128,200c-43.27,0-68.72-21.14-80-33.71V126.4l76.24,40.6a8,8,0,0,0,7.52,0L208,126.4v39.89C196.72,178.83,171.26,200,128,200Z"/></svg>', route: '/chat' },
+  { id: 4, label: '编程', icon: '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 256 256"><path d="M69.12,94.15,28.5,128l40.62,33.85a8,8,0,1,1-10.24,12.29l-48-40a8,8,0,0,1,0-12.29l48-40a8,8,0,0,1,10.24,12.3Zm176,27.7-48-40a8,8,0,1,0-10.24,12.3L227.5,128l-40.62,33.85a8,8,0,1,0,10.24,12.29l48-40a8,8,0,0,0,0-12.29ZM162.73,32.48a8,8,0,0,0-10.25,4.79l-64,176a8,8,0,0,0,4.79,10.26A8.14,8.14,0,0,0,96,224a8,8,0,0,0,7.52-5.27l64-176A8,8,0,0,0,162.73,32.48Z"/></svg>', route: '/code' },
+  { id: 5, label: '生活', icon: '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" viewBox="0 0 256 256"><path d="M80,56V24a8,8,0,0,1,16,0V56a8,8,0,0,1-16,0Zm40,8a8,8,0,0,0,8-8V24a8,8,0,0,0-16,0V56A8,8,0,0,0,120,64Zm32,0a8,8,0,0,0,8-8V24a8,8,0,0,0-16,0V56A8,8,0,0,0,152,64Zm96,56v8a40,40,0,0,1-37.51,39.91,96.59,96.59,0,0,1-27,40.09H208a8,8,0,0,1,0,16H32a8,8,0,0,1,0-16H56.54A96.3,96.3,0,0,1,24,136V88a8,8,0,0,1,8-8H208A40,40,0,0,1,248,120ZM200,96H40v40a80.14,80.14,0,0,0,80,80h16a80.14,80.14,0,0,0,80-80V96Z"/></svg>', route: '/chat' },
 ]
 
 const autoResize = (event: Event) => {
@@ -237,6 +242,6 @@ onUnmounted(() => {
 
 <style scoped>
 .shortcut-btn {
-  @apply px-3 py-[5px] border border-[#e0e0df] dark:border-white/10 rounded-full text-[13px] text-[#787774] dark:text-gray-400 hover:text-[#5c5b58] hover:border-[#cfcfce] dark:hover:border-white/20 hover:bg-black/[0.03] dark:hover:bg-white/5 transition-all duration-150 flex items-center gap-1.5 leading-none;
+  @apply px-2.5 h-8 border border-[#e5e5e4]/[0.15] dark:border-white/10 rounded-lg text-sm text-[#c3c2b7] dark:text-gray-400 hover:text-[#e8e7e0] dark:hover:text-gray-200 hover:border-[#cfcfce]/30 dark:hover:border-white/20 bg-transparent dark:bg-transparent hover:bg-black/[0.03] dark:hover:bg-white/5 transition-all duration-150 flex items-center gap-1.5 leading-none;
 }
 </style>

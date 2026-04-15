@@ -1,8 +1,8 @@
 <template>
-  <div class="min-h-screen bg-[#f9f8f5] dark:bg-[#1a1a1a] text-[#1a1a1a] dark:text-gray-200">
+  <div class="min-h-screen bg-[#f9f8f5] dark:bg-[#1f1f1e] text-[#1a1a1a] dark:text-gray-200">
     <AppNavigation @sidebar-change="onSidebarChange" />
 
-    <main :class="['min-h-screen transition-all duration-200 ease-in-out', isCollapsed ? 'ml-[48px]' : 'ml-[260px]']">
+    <main :class="['min-h-screen transition-all duration-200 ease-in-out', isCollapsed ? 'ml-[48px]' : 'ml-[288px]']">
       <div class="max-w-4xl mx-auto px-6 pt-6 pb-32">
         <!-- 标题栏 -->
         <div class="flex items-center justify-between mb-5">
@@ -81,10 +81,10 @@
 
         <!-- 结果展示区域 -->
         <div v-if="result" class="mt-6 bg-white dark:bg-[#2a2a2a] border border-[#e5e5e4] dark:border-white/10 rounded-lg overflow-hidden">
-          <div class="flex items-center justify-between px-4 py-2.5 border-b border-[#e5e5e4] dark:border-white/10 bg-[#fafaf8] dark:bg-[#222]">
+          <div class="flex items-center justify-between px-4 py-2.5 border-b border-[#e5e5e4] dark:border-white/10 bg-[#fafaf8] dark:bg-[#2a2a2a]">
             <span class="text-[13px] font-medium text-[#1a1a1a] dark:text-white">{{ resultTitle }}</span>
             <div class="flex items-center gap-2">
-              <select v-model="resultLanguage" v-if="selectedTool === 'generate'" class="text-[12px] border border-[#e0e0df] dark:border-white/10 rounded px-2 py-1 bg-white dark:bg-[#333] text-[#1a1a1a] dark:text-white">
+              <select v-model="resultLanguage" v-if="selectedTool === 'generate'" class="text-[12px] border border-[#e0e0df] dark:border-white/10 rounded px-2 py-1 bg-white dark:bg-[#2a2a2a] text-[#1a1a1a] dark:text-white">
                 <option>JavaScript</option><option>TypeScript</option><option>Python</option><option>Go</option>
               </select>
               <button class="px-3 py-1 bg-[#1a1a1a] dark:bg-white dark:text-[#1a1a1a] text-white dark:text-[#1a1a1a] rounded text-[12px]" @click="handleCopyResult">复制</button>

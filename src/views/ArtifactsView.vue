@@ -1,8 +1,8 @@
 <template>
-  <div class="min-h-screen bg-[#f9f8f5] dark:bg-[#1a1a1a] text-[#1a1a1a] dark:text-gray-200">
+  <div class="min-h-screen bg-[#f9f8f5] dark:bg-[#1f1f1e] text-[#1a1a1a] dark:text-gray-200">
     <AppNavigation @sidebar-change="onSidebarChange" />
 
-    <main :class="['min-h-screen transition-all duration-200 ease-in-out', isCollapsed ? 'ml-[48px]' : 'ml-[260px]']">
+    <main :class="['min-h-screen transition-all duration-200 ease-in-out', isCollapsed ? 'ml-[48px]' : 'ml-[288px]']">
       <div class="max-w-4xl mx-auto px-6 pt-6 pb-8">
         <!-- 标题栏 -->
         <div class="flex items-center justify-between mb-5">
