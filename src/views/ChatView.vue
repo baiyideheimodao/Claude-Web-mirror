@@ -131,24 +131,25 @@
                   </div>
                 </div>
 
-                <!-- AI消息底部操作栏（官网风格：仅复制/点赞/点踩/转发，4个图标，无重答、无时间戳、无分隔线） -->
-                <div class="flex items-center gap-0.5 mt-2 max-w-none">
+                <!-- AI消息底部操作栏（官网100%复刻：Copy/Thumbs Up/Thumbs Down/Retry，32×32px按钮 + 20×20px实心图标） -->
+                <div class="flex items-center max-w-none">
                   <button class="action-btn" title="复制" @click="handleCopy(msg.content)">
-                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.75"><path stroke-linecap="round" stroke-linejoin="round" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8z"/></svg>
+                    <svg class="w-5 h-5" viewBox="0 0 20 20" fill="currentColor"><path d="M12.5 3A1.5 1.5 0 0 1 14 4.5V6h1.5A1.5 1.5 0 0 1 17 7.5v8a1.5 1.5 0 0 1-1.5 1.5h-8A1.5 1.5 0 0 1 6 15.5V14H4.5A1.5 1.5 0 0 1 3 12.5v-8A1.5 1.5 0 0 1 4.5 3zm1.5 9.5a1.5 1.5 0 0 1-1.5 1.5H7v1.5a.5.5 0 0 0 .5.5h8a.5.5 0 0 0 .5-.5v-8a.5.5 0 0 0-.5-.5H14zM4.5 4a.5.5 0 0 0-.5.5v8a.5.5 0 0 0 .5.5h8a.5.5 0 0 0 .5-.5v-8a.5.5 0 0 0-.5-.5z"/></svg>
                   </button>
                   <button class="action-btn" title="好的回复">
-                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.75"><path stroke-linecap="round" stroke-linejoin="round" d="M14 10h4.764a2 2 0 011.789 2.894l-3.5 7A2 2 0 0115.263 21h-4.017c-.163 0-.326-.02-.485-.06L7 20m7-10V5a2 2 0 00-2-2h-.095c-.5 0-.905.405-.905.905 0 .714-.211 1.412-.608 2.006L7 11v9m7-10h-2M7 20H5a2 2 0 01-2-2v-6a2 2 0 012-2h2.5"/></svg>
+                    <svg class="w-5 h-5" viewBox="0 0 20 20" fill="currentColor"><path d="M9.56 2a2.5 2.5 0 0 1 2.452 2.99L11.609 7h2.235a2.75 2.75 0 0 1 2.713 3.202l-.681 4.082A3.25 3.25 0 0 1 12.67 17H4.5A1.5 1.5 0 0 1 3 15.5V9.238a1.5 1.5 0 0 1 1.059-1.433l1.14-.35.139-.048a2.75 2.75 0 0 0 1.56-1.453L8.41 2.59l.07-.13A1 1 0 0 1 9.322 2zM7.81 6.365a3.75 3.75 0 0 1-2.126 1.98l-.192.065-1.14.35A.5.5 0 0 0 4 9.239V15.5a.5.5 0 0 0 .5.5h8.17a2.25 2.25 0 0 0 2.22-1.88l.68-4.082A1.75 1.75 0 0 0 13.844 8H11a.5.5 0 0 1-.49-.598l.521-2.608A1.5 1.5 0 0 0 9.561 3h-.238z"/></svg>
                   </button>
                   <button class="action-btn" title="不好的回复">
-                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.75"><path stroke-linecap="round" stroke-linejoin="round" d="M10 14H5.236a2 2 0 01-1.789-2.894l3.5-7A2 2 0 018.736 3h4.018a2 2 0 01.485.06l3.76.94m-7 10v5a2 2 0 002 2h.096c.5 0 .905-.405.905-.904 0-.715.211-1.413.608-2.008L17 13V4m-7 10h2m5-10h2a2 2 0 012 2v6a2 2 0 01-2 2h-2m-5 10h-2m0 0a2 2 0 01-2-2v-6m2 2v4"/></svg>
+                    <svg class="w-5 h-5" viewBox="0 0 20 20" fill="currentColor"><path d="M12.67 3a3.25 3.25 0 0 1 3.206 2.716l.68 4.082A2.75 2.75 0 0 1 13.845 13H11.61l.403 2.01A2.5 2.5 0 0 1 9.56 18h-.238a1 1 0 0 1-.843-.46l-.069-.13-1.514-3.364a2.75 2.75 0 0 0-1.56-1.453l-.139-.047-1.14-.35A1.5 1.5 0 0 1 3 10.761V4.5A1.5 1.5 0 0 1 4.5 3zM4.5 4a.5.5 0 0 0-.5.5v6.262a.5.5 0 0 0 .353.477l1.14.35.19.065a3.75 3.75 0 0 1 2.127 1.98L9.323 17h.238a1.5 1.5 0 0 0 1.47-1.794l-.521-2.608A.5.5 0 0 1 11 12h2.844a1.75 1.75 0 0 0 1.726-2.038l-.68-4.082A2.25 2.25 0 0 0 12.67 4z"/></svg>
                   </button>
-                  <button class="action-btn" title="转发">
-                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.75"><path stroke-linecap="round" stroke-linejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3"/></svg>
+                  <button class="action-btn" title="重新生成" @click="handleRegenerate(msg.id)">
+                    <svg class="w-5 h-5" viewBox="0 0 20 20" fill="currentColor"><path d="M10.386 2.51A7.5 7.5 0 1 1 5.499 4H3a.5.5 0 0 1 0-1h3.5a.5.5 0 0 1 .49.402L7 3.5V7a.5.5 0 0 1-1 0V4.879a6.5 6.5 0 1 0 4.335-1.37L10 3.5l-.1-.01a.5.5 0 0 1 .1-.99z"/></svg>
                   </button>
                 </div>
 
-                <div v-if="isLastAiMessage(msg)" class="mt-3">
-                  <svg ref="aiLogoRef" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" class="w-7 h-7 fill-current text-[#d97757]"><path d="m19.6 66.5 19.7-11 .3-1-.3-.5h-1l-3.3-.2-11.2-.3L14 53l-9.5-.5-2.4-.5L0 49l.2-1.5 2-1.3 2.9.2 6.3.5 9.5.6 6.9.4L38 49.1h1.6l.2-.7-.5-.4-.4-.4L29 41l-10.6-7-5.6-4.1-3-2-1.5-2-.6-4.2 2.7-3 3.7.3.9.2 3.7 2.9 8 6.1L37 36l1.5 1.2.6-.4.1-.3-.7-1.1L33 25l-6-10.4-2.7-4.3-.7-2.6c-.3-1-.4-2-.4-3l3-4.2L28 0l4.2.6L33.8 2l2.6 6 4.1 9.3L47 29.9l2 3.8 1 3.4.3 1h.7v-.5l.5-7.2 1-8.7 1-11.2.3-3.2 1.6-3.8 3-2L61 2.6l2 2.9-.3 1.8-1.1 7.7L59 27.1l-1.5 8.2h.9l1-1.1 4.1-5.4 6.9-8.6 3-3.5L77 13l2.3-1.8h4.3l3.1 4.7-1.4 4.9-4.4 5.6-3.7 4.7-5.3 7.1-3.2 5.7.3.4h.7l12-2.6 6.4-1.1 7.6-1.3 3.5 1.6.4 1.6-1.4 3.4-8.2 2-9.6 2-14.3 3.3-.2.1.2.3 6.4.6 2.8.2h6.8l12.6 1 3.3 2 1.9 2.7-.3 2-5.1 2.6-6.8-1.6-16-3.8-5.4-1.3h-.8v.4l4.6 4.5 8.3 7.5L89 80.1l.5 2.4-1.3 2-1.4-.2-9.2-7-3.6-3-8-6.8h-.5v.7l1.8 2.7 9.8 14.7.5 4.5-.7 1.4-2.6 1-2.7-.6-5.8-8-6-9-4.7-8.2-.5.4-2.9 30.2-1.3 1.5-3 1.2-2.5-2-1.4-3 1.4-6.2 1.6-8 1.3-6.4 1.2-7.9.7-2.6v-.2H49L43 72l-9 12.3-7.2 7.6-1.7.7-3-1.5.3-2.8L24 86l10-12.8 6-7.9 4-4.6-.1-.5h-.3L17.2 77.4l-4.7.6-2-2 .2-3 1-1 8-5.5Z"/></svg>
+                <!-- Starburst AI Logo 图标 20×20px，橙色 -->
+                <div v-if="isLastAiMessage(msg)" class="mt-2">
+                  <svg ref="aiLogoRef" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" class="w-5 h-5 fill-current text-[#d97757]"><path d="m19.6 66.5 19.7-11 .3-1-.3-.5h-1l-3.3-.2-11.2-.3L14 53l-9.5-.5-2.4-.5L0 49l.2-1.5 2-1.3 2.9.2 6.3.5 9.5.6 6.9.4L38 49.1h1.6l.2-.7-.5-.4-.4-.4L29 41l-10.6-7-5.6-4.1-3-2-1.5-2-.6-4.2 2.7-3 3.7.3.9.2 3.7 2.9 8 6.1L37 36l1.5 1.2.6-.4.1-.3-.7-1.1L33 25l-6-10.4-2.7-4.3-.7-2.6c-.3-1-.4-2-.4-3l3-4.2L28 0l4.2.6L33.8 2l2.6 6 4.1 9.3L47 29.9l2 3.8 1 3.4.3 1h.7v-.5l.5-7.2 1-8.7 1-11.2.3-3.2 1.6-3.8 3-2L61 2.6l2 2.9-.3 1.8-1.1 7.7L59 27.1l-1.5 8.2h.9l1-1.1 4.1-5.4 6.9-8.6 3-3.5L77 13l2.3-1.8h4.3l3.1 4.7-1.4 4.9-4.4 5.6-3.7 4.7-5.3 7.1-3.2 5.7.3.4h.7l12-2.6 6.4-1.1 7.6-1.3 3.5 1.6.4 1.6-1.4 3.4-8.2 2-9.6 2-14.3 3.3-.2.1.2.3 6.4.6 2.8.2h6.8l12.6 1 3.3 2 1.9 2.7-.3 2-5.1 2.6-6.8-1.6-16-3.8-5.4-1.3h-.8v.4l4.6 4.5 8.3 7.5L89 80.1l.5 2.4-1.3 2-1.4-.2-9.2-7-3.6-3-8-6.8h-.5v.7l1.8 2.7 9.8 14.7.5 4.5-.7 1.4-2.6 1-2.7-.6-5.8-8-6-9-4.7-8.2-.5.4-2.9 30.2-1.3 1.5-3 1.2-2.5-2-1.4-3 1.4-6.2 1.6-8 1.3-6.4 1.2-7.9.7-2.6v-.2H49L43 72l-9 12.3-7.2 7.6-1.7.7-3-1.5.3-2.8L24 86l10-12.8 6-7.9 4-4.6-.1-.5h-.3L17.2 77.4l-4.7.6-2-2 .2-3 1-1 8-5.5Z"/></svg>
                 </div>
             </div>
           </template>
@@ -188,20 +189,44 @@
                 ref="inputRef"
                 v-model="messageInput"
                 rows="1"
-                class="w-full bg-transparent border-0 rounded-[20px] pt-4 pb-14 px-4 text-[16px] text-[#1a1a1a] dark:text-[#f8f8f6] placeholder-[#9b9a97] focus:outline-none focus:ring-0 resize-none min-h-[56px] max-h-[200px] leading-relaxed"
+                :class="[
+                  'w-full bg-transparent border-0 rounded-[20px] pt-4 pb-14 px-4 text-[16px] text-[#1a1a1a] dark:text-[#f8f8f6] placeholder-[#9b9a97] focus:outline-none focus:ring-0 resize-none min-h-[56px] max-h-[200px] leading-relaxed',
+                  pendingAttachments.length > 0 ? 'pb-24' : 'pb-14'
+                ]"
                 placeholder="Reply..."
                 @input="autoResize"
                 @keydown.enter.exact.prevent="handleSend"
+                @paste="handlePaste"
               ></textarea>
+
+              <!-- 附件预览条 -->
+              <div v-if="pendingAttachments.length > 0" class="absolute bottom-12 left-3 right-3 flex flex-wrap gap-1.5">
+                <div
+                  v-for="att in pendingAttachments"
+                  :key="att.id"
+                  class="inline-flex items-center gap-1 px-2 py-1 bg-[#2f3030] dark:bg-[#2f3030] rounded-lg border border-[#3e3e3e] group/att"
+                >
+                  <span class="text-[12px] text-[#e5e5e5]">@{{ att.filename }}</span>
+                  <!-- 移除按钮 -->
+                  <button
+                    type="button"
+                    @click.stop="removePendingAttachment(att.id)"
+                    class="p-0.5 rounded hover:bg-white/10 opacity-0 group-hover/att:opacity-100 transition-opacity cursor-pointer"
+                    title="移除附件"
+                  >
+                    <svg class="w-3 h-3 text-[#9b9a97]" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+                  </button>
+                </div>
+              </div>
 
               <div class="absolute bottom-3 left-3 right-3 flex items-center justify-between">
                 <!-- 左侧：附件按钮 -->
-                <label class="p-1.5 hover:bg-black/[0.04] dark:hover:bg-white/5 rounded-md transition-colors group cursor-pointer" title="附件">
+                <button type="button" class="p-1.5 hover:bg-black/[0.04] dark:hover:bg-white/5 rounded-md transition-colors group cursor-pointer" title="附件" @click="fileInputRef?.click()">
                   <svg class="w-[17px] h-[17px] text-[#9b9a97] group-hover:text-[#787774]" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.75">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
                   </svg>
-                  <input type="file" class="hidden" accept="image/*,.pdf,.txt,.md,.doc,.docx" multiple @change="handleFileUpload" />
-                </label>
+                  <input ref="fileInputRef" type="file" class="hidden" accept="image/*,.pdf,.txt,.md,.doc,.docx,.csv,.json,.html,.css,.js,.ts,.py,.java,.go,.rs,.xml,.yaml,.yml,.log,.c,.cpp,.h,.hpp,.rb,.php,.sql,.vue" multiple @change="handleFileUpload" />
+                </button>
 
                 <!-- 右侧：空状态=模型名+语音，有内容=发送/停止 -->
                 <div class="flex items-center gap-1">
@@ -338,6 +363,7 @@ import AppNavigation from '@/components/layout/AppNavigation.vue'
 import { useAppStore } from '@/stores/useAppStore'
 import { dialogApi } from '@/api/dialog'
 import { fileApi } from '@/api/file'
+import { readFileContent } from '@/utils/fileReader'
 
 const router = useRouter()
 const route = useRoute()
@@ -353,6 +379,36 @@ const isDragging = ref(false)
 const isAiWaiting = ref(false)
 let abortController: AbortController | null = null
 const inputRef = ref<HTMLTextAreaElement | null>(null)
+const fileInputRef = ref<HTMLInputElement | null>(null)
+
+/** 待发送的附件列表（上传成功后暂存，随消息一起提交） */
+interface PendingAttachment {
+  id: string
+  filename: string
+  fileType: string
+  size: number
+  previewUrl?: string | null
+  /** 可读文本文件的读取内容（txt/md/html/docx 等） */
+  textContent?: string | null
+}
+const pendingAttachments = ref<PendingAttachment[]>([])
+
+/** 将文件大小格式化为可读字符串 */
+const formatFileSize = (bytes: number): string => {
+  if (bytes < 1024) return bytes + ' B'
+  if (bytes < 1048576) return (bytes / 1024).toFixed(1) + ' KB'
+  return (bytes / 1048576).toFixed(1) + ' MB'
+}
+
+/** 移除待发送附件 */
+const removePendingAttachment = (id: string) => {
+  pendingAttachments.value = pendingAttachments.value.filter(f => f.id !== id)
+}
+
+/** 清空所有待发送附件 */
+const clearPendingAttachments = () => {
+  pendingAttachments.value = []
+}
 const msgContainerRef = ref<HTMLElement | null>(null)
 const aiLogoRef = ref<SVGSVGElement | null>(null)
 const artifactPanelRef = ref<HTMLElement | null>(null)
@@ -465,8 +521,33 @@ watch(dialogId, async (newId) => {
   if (newId) {
     await loadDialog(newId)
     const msg = route.query.msg as string
+    const fileIdsQuery = route.query.fileIds as string | undefined
+    
+    // 处理从 HomeView 传来的文件ID列表
+    if (fileIdsQuery && !msg) {
+      // 有文件ID但没有消息内容，等待用户输入后发送（暂存fileIds到pendingAttachments）
+      // 注意：HomeView上传的文件已存到服务器，这里只记录ID以便发送时附带
+      console.log(`[CHATVIEW] Received fileIds from HomeView: ${fileIdsQuery}`)
+    }
+    
     if (msg) {
       messageInput.value = msg
+      
+      // 如果同时有文件ID，先添加到待发送列表
+      if (fileIdsQuery) {
+        const ids = fileIdsQuery.split(',').filter(Boolean)
+        // 从 HomeView 传来的文件 ID 直接使用（这些文件已经上传到服务器）
+        for (const id of ids) {
+          pendingAttachments.value.push({
+            id,
+            filename: `file_${id.slice(0, 6)}`,
+            fileType: 'document',
+            size: 0,
+          })
+        }
+        console.log(`[CHATVIEW] Pre-loaded ${ids.length} file IDs from HomeView`)
+      }
+      
       setTimeout(() => handleSend(), 300)
       router.replace({ path: `/chat/${newId}` })
     } else if (artifactType.value) {
@@ -942,10 +1023,24 @@ const scrollToBottom = () => {
 
 /** 发送消息（流式） */
 const handleSend = async () => {
-  const content = messageInput.value.trim()
+  let content = messageInput.value.trim()
   const id = dialogId.value
 
-  if (!content || !id || isSending.value) return
+  // 有附件时允许发送（即使没有文字输入）
+  if ((!content && pendingAttachments.value.length === 0) || !id || isSending.value) return
+
+  // 将可读文件内容注入消息
+  if (pendingAttachments.value.length > 0) {
+    const parts: string[] = []
+    for (const att of pendingAttachments.value) {
+      if (att.textContent) {
+        parts.push(`\n\n--- 附件: ${att.filename} (${formatFileSize(att.size)}) ---\n${att.textContent}\n--- 结束 ---`)
+      } else {
+        parts.push(`\n[附件: ${att.filename}]`)
+      }
+    }
+    content += parts.join('')
+  }
 
   console.log(`[FRONTEND] ====== handleSend START ======`)
   console.log(`[FRONTEND] dialogId: ${id}`)
@@ -957,8 +1052,9 @@ const handleSend = async () => {
   abortController = new AbortController()
   savedArtifactType.value &&= undefined // 用完即清除
 
-  // 立即清空输入框
+  // 立即清空输入框和附件
   messageInput.value = ''
+  clearPendingAttachments()
   autoResizeByRef()
 
   // 推一条用户消息到列表
@@ -982,8 +1078,17 @@ const handleSend = async () => {
 
   try {
     const effectiveArtifactType = savedArtifactType.value || (route.query.artifact_type as string) || undefined
-    console.log(`[FRONTEND] calling dialogApi.sendMessageStream(${id}, ...)`)
-    const stream = dialogApi.sendMessageStream(id, content, undefined, effectiveArtifactType)
+
+    // 收集待发送的附件 ID 列表
+    const fileIds = pendingAttachments.value.length > 0
+      ? pendingAttachments.value.map(f => f.id)
+      : undefined
+
+    console.log(`[FRONTEND] calling dialogApi.sendMessageStream(${id}, ...), files:`, fileIds)
+    const stream = dialogApi.sendMessageStream(id, content, fileIds, effectiveArtifactType, abortController.signal)
+
+    // 发送成功后清空待发送附件
+    clearPendingAttachments()
     console.log(`[FRONTEND] stream object created, type: ${typeof stream}`)
 
     let eventCount = 0
@@ -1124,25 +1229,14 @@ const handleSwitchModel = async (model: any) => {
   await appStore.switchModel(model.id)
 }
 
-/** 文件上传 */
+/** 文件上传（通过 file input 选择） */
 const handleFileUpload = async (event: Event) => {
   const input = event.target as HTMLInputElement
   if (!input.files?.length) return
-  try {
-    let fileNames = ''
-    for (let i = 0; i < input.files.length; i++) {
-      const res = await fileApi.upload(input.files[i])
-      if (res.success && res.data) {
-        fileNames += `[附件: ${(res.data as any).filename}] `
-      }
-    }
-    messageInput.value += '\n' + fileNames.trim()
-  } catch {
-    for (let i = 0; i < input.files.length; i++) {
-      messageInput.value += `\n[附件: ${input.files[i].name}]`
-    }
+  for (let i = 0; i < input.files.length; i++) {
+    await uploadAndAddFile(input.files[i])
   }
-  input.value = ''
+  input.value = '' // 允许重复选择同一文件
 }
 
 /** 拖拽上传 */
@@ -1152,24 +1246,74 @@ const handleDrop = async (e: DragEvent) => {
   if (!files?.length) return
 
   // 过滤允许的文件类型
-  const allowedTypes = ['image/', 'application/pdf', 'text/', '.md', '.doc', '.docx']
-  let fileNames = ''
+  const allowedTypes = ['image/', 'application/pdf', 'text/plain', 'application/json', '.md', '.docx',
+    '.csv', '.html', '.css', '.js', '.ts', '.py', '.java', '.go', '.rs', '.xml', '.yaml', '.yml', '.log']
   for (let i = 0; i < files.length; i++) {
     const file = files[i]
     if (!allowedTypes.some(t => file.type.startsWith(t) || file.name.endsWith(t))) continue
-    try {
-      const res = await fileApi.upload(file)
-      if (res.success && res.data) {
-        fileNames += `[附件: ${(res.data as any).filename}] `
-      }
-    } catch {
-      fileNames += `[附件: ${file.name}] `
-    }
+    await uploadAndAddFile(file)
   }
+  autoResizeByRef()
+}
 
-  if (fileNames.trim()) {
-    messageInput.value += '\n' + fileNames.trim()
+/** 统一的上传+添加附件方法（供 file upload / drop / paste 共用）
+ *
+ *  策略：
+ *  - 可读文本文件（txt/md/html/css/js/py...）：读取文件内容 → 上传到服务器 → 同时保存 textContent
+ *  - docx 文件：用 mammoth 解析纯文本 → 上传到服务器 → 保存解析后的 textContent
+ *  - 图片/PDF/其他：仅上传到服务器（只存 fileId，AI 无法读取内容）
+ */
+const uploadAndAddFile = async (file: File): Promise<void> => {
+  try {
+    // 1) 先尝试读取文件内容
+    const readResult = await readFileContent(file)
+
+    // 2) 上传到服务器
+    const res = await fileApi.upload(file, dialogId?.value)
+    if (res.success && res.data) {
+      const uploaded = res.data as UploadedFile
+      pendingAttachments.value.push({
+        id: uploaded.id,
+        filename: uploaded.filename,
+        fileType: uploaded.file_type,
+        size: uploaded.size,
+        previewUrl: uploaded.preview_url,
+        textContent: readResult?.content ?? null,
+      })
+      if (readResult) {
+        console.log(`[UPLOAD] 文件上传+读取成功: ${uploaded.filename} (${readResult.method}, ${readResult.content.length}字符, id=${uploaded.id})`)
+      } else {
+        console.log(`[UPLOAD] 文件上传成功(不可读): ${uploaded.filename} (id=${uploaded.id})`)
+      }
+    } else {
+      if (readResult) {
+        messageInput.value += `\n\n--- 附件: ${file.name} ---\n${readResult.content}\n--- 结束 ---`
+      } else {
+        messageInput.value += `\n[附件: ${file.name}]`
+      }
+      autoResizeByRef()
+    }
+  } catch (err: any) {
+    console.error('[UPLOAD] 处理失败:', err)
+    messageInput.value += `\n[附件: ${file.name}]`
     autoResizeByRef()
+  }
+}
+
+/** 粘贴处理（支持 Ctrl+V 粘贴图片/文件） */
+const handlePaste = async (e: ClipboardEvent): Promise<void> => {
+  const items = e.clipboardData?.items
+  if (!items) return
+
+  for (let i = 0; i < items.length; i++) {
+    const item = items[i]
+    if (item.kind === 'file') {
+      e.preventDefault() // 阻止默认粘贴行为
+      const file = item.getAsFile()
+      if (file) {
+        await uploadAndAddFile(file)
+      }
+    }
   }
 }
 
@@ -1656,11 +1800,14 @@ watch(isAiWaiting, (val) => {
 </script>
 
 <style scoped>
+/* 官网100%复刻：32×32px按钮，无padding，圆角6px，颜色#97958c */
 .action-btn {
-  @apply p-1 hover:bg-black/[0.04] dark:hover:bg-white/5 rounded transition-colors;
+  @apply w-8 h-8 inline-flex items-center justify-center shrink-0 rounded-md border-transparent
+         transition duration-300 ease-[cubic-bezier(0.165,0.85,0.45,1)]
+         hover:bg-black/[0.04] dark:hover:bg-white/5 cursor-pointer select-none;
 }
 .action-btn svg {
-  @apply w-3.5 h-3.5 text-[#9b9a97] hover:text-[#787774];
+  @apply w-5 h-5 text-[#97958c] group-hover:text-text-100;
 }
 @keyframes bounce {
   0%, 80%, 100% { transform: translateY(0); }

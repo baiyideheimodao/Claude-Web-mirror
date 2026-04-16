@@ -81,9 +81,12 @@ class ApiClient {
 
   /**
    * 流式 POST（SSE / fetch 原生 ReadableStream）
+   * @param url 请求路径（会自动加 /api/v1 前缀）
+   * @data 请求体 JSON 数据
+   * @param signal 可选的 AbortSignal，用于中断流式请求（停止生成）
    * @returns AsyncGenerator 逐块 yield Server-Sent Event data
    */
-  async *streamPost(url: string, data?: any): AsyncGenerator<any> {
+  async *streamPost(url: string, data?: any, signal?: AbortSignal): AsyncGenerator<any> {
     const token = localStorage.getItem('claude-token')
     // 统一走 Vite 代理 (/api/* → localhost:3001)，避免跨域和端口不匹配问题
     const fullUrl = `/api/v1${url}`
@@ -98,7 +101,8 @@ class ApiClient {
         'Authorization': token ? `Bearer ${token}` : '',
         Accept: 'text/event-stream'
       },
-      body: JSON.stringify(data)
+      body: JSON.stringify(data),
+      signal
     })
 
     console.log('[FRONTEND stream] response status:', response.status, 'ok:', response.ok)

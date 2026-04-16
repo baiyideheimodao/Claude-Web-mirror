@@ -16,28 +16,66 @@
 
         <!-- 输入框区域 -->
         <div class="mb-6 flex justify-center">
-          <div class="relative bg-white rounded-[20px] dark:bg-[#2c2c2a] dark:border-[rgba(226,225,218,0.12)] dark:shadow-none transition-colors duration-200 border border-[#e5e5e4] hover:border-[#d0d0cd] hover:dark:border-[rgba(226,225,218,0.2)] w-full max-w-[674px]" style="min-height: 122px;">
+          <div
+            class="relative bg-white rounded-[20px] dark:bg-[#2c2c2a] dark:border-[rgba(226,225,218,0.12)] dark:shadow-none transition-colors duration-200 border border-[#e5e5e4] hover:border-[#d0d0cd] hover:dark:border-[rgba(226,225,218,0.2)] w-full max-w-[674px]"
+            :class="{ 'ring-2 ring-[#d97757]/20': isDragging }"
+            style="min-height: 122px;"
+            @dragenter.prevent="isDragging = true"
+            @dragover.prevent="isDragging = true"
+            @dragleave.prevent="(e: DragEvent) => { if (!(e.currentTarget as Element)?.contains(e.relatedTarget as Node)) isDragging = false }"
+            @drop.prevent="handleDrop"
+          >
+            <!-- 拖拽提示遮罩 -->
+            <div v-if="isDragging" class="absolute inset-0 rounded-[20px] bg-[#d97757]/5 flex items-center justify-center z-10 pointer-events-none">
+              <div class="text-center">
+                <svg class="w-10 h-10 mx-auto text-[#d97757] mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/>
+                </svg>
+                <p class="text-[14px] font-medium text-[#d97757]">释放以上传附件</p>
+              </div>
+            </div>
+
             <textarea
               ref="inputRef"
               v-model="userInput"
               rows="1"
-              class="w-full bg-transparent border-0 rounded-[20px] pt-4 pb-14 px-4 text-[16px] text-[#1a1a1a] dark:text-[#f8f8f6] placeholder-[#9b9a97] focus:outline-none focus:ring-0 resize-none min-h-[68px] max-h-[240px] leading-relaxed"
+              :class="[
+                'w-full bg-transparent border-0 rounded-[20px] pt-4 px-4 text-[16px] text-[#1a1a1a] dark:text-[#f8f8f6] placeholder-[#9b9a97] focus:outline-none focus:ring-0 resize-none min-h-[68px] max-h-[240px] leading-relaxed',
+                pendingAttachments.length > 0 ? 'pb-24' : 'pb-14'
+              ]"
               placeholder="今天有什么可以帮您的？"
               @input="autoResize"
               @keydown.enter.exact.prevent="handleSend"
+              @paste="handlePaste"
             ></textarea>
+
+            <!-- 附件预览条 -->
+            <div v-if="pendingAttachments.length > 0" class="absolute bottom-12 left-3 right-3 flex flex-wrap gap-1.5">
+              <div
+                v-for="att in pendingAttachments"
+                :key="att.id"
+                class="inline-flex items-center gap-1.5 px-2.5 py-1 bg-black/[0.04] dark:bg-white/[0.06] rounded-lg border border-black/[0.06] dark:border-white/10 group/att"
+              >
+                <svg v-if="att.fileType === 'image'" class="w-4 h-4 text-[#d97757] shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.75"><path stroke-linecap="round" stroke-linejoin="round" d="m2.25 15.75 5.159-5.159a2.25 2.25 0 0 1 3.182 0l5.159 5.159m-1.5-1.5 1.409-1.409a2.25 2.25 0 0 1 3.182 0l2.909 2.909M3.75 21h16.5A2.25 2.25 0 0 0 22.5 18.75V5.25A2.25 2.25 0 0 0 20.25 3H3.75A2.25 2.25 0 0 0 1.5 5.25v13.5A2.25 2.25 0 0 0 3.75 21Z"/></svg>
+                <svg v-else class="w-4 h-4 text-[#787774] shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.75"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z"/></svg>
+                <span class="text-[12px] text-[#5c5b58] dark:text-[#b4b3b0] truncate max-w-[120px]" :title="`${att.filename} (${formatFileSize(att.size)})`">{{ att.filename }}</span>
+                <button type="button" @click.stop="removePendingAttachment(att.id)" class="p-0.5 rounded hover:bg-black/[0.08] dark:hover:bg-white/10 opacity-0 group-hover/att:opacity-100 transition-opacity cursor-pointer" title="移除附件">
+                  <svg class="w-3.5 h-3.5 text-[#9b9a97]" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+                </button>
+              </div>
+            </div>
 
             <!-- 底部工具栏 -->
             <div class="absolute bottom-3 left-3 right-3 flex items-center justify-between">
               <!-- 左侧：附件按钮（始终显示） -->
               <label
-                v-tooltip="'Attach file (支持拖拽上传)'"
+                v-tooltip="'Attach file (支持拖拽/粘贴上传)'"
                 class="p-1.5 hover:bg-black/[0.04] dark:hover:bg-white/5 rounded-md transition-colors duration-150 group cursor-pointer"
               >
                 <svg class="w-[17px] h-[17px] text-[#9b9a97] group-hover:text-[#787774]" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.75">
                   <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
                 </svg>
-                <input type="file" class="hidden" accept="image/*,.pdf,.txt,.md,.doc,.docx,.csv,.json,.html,.css,.js,.ts,.py,.java,.go,.rs" multiple @change="handleFileUpload" />
+                <input type="file" class="hidden" accept="image/*,.pdf,.txt,.md,.doc,.docx,.csv,.json,.html,.css,.js,.ts,.py,.java,.go,.rs,.xml,.yaml,.yml,.log,.c,.cpp,.h,.hpp,.rb,.php,.sql,.vue" multiple @change="handleFileUpload" />
               </label>
 
               <!-- 右侧：模型选择器 / 发送按钮 -->
@@ -130,6 +168,7 @@ import { useRouter } from 'vue-router'
 import AppNavigation from '@/components/layout/AppNavigation.vue'
 import { useAppStore } from '@/stores/useAppStore'
 import { fileApi } from '@/api/file'
+import { readFileContent, isTextReadableFile, isBinaryDocFile } from '@/utils/fileReader'
 
 const router = useRouter()
 const appStore = useAppStore()
@@ -139,6 +178,36 @@ const isCollapsed = ref(false)
 const isSending = ref(false)
 const showModelMenu = ref(false)
 const inputRef = ref<HTMLTextAreaElement | null>(null)
+const isDragging = ref(false)
+
+/** 待发送的附件列表（上传成功后暂存，随消息一起提交到新对话） */
+interface PendingAttachment {
+  id: string
+  filename: string
+  fileType: string
+  size: number
+  previewUrl?: string | null
+  /** 可读文本文件的读取内容（txt/md/html/docx 等） */
+  textContent?: string | null
+}
+const pendingAttachments = ref<PendingAttachment[]>([])
+
+/** 将文件大小格式化为可读字符串 */
+const formatFileSize = (bytes: number): string => {
+  if (bytes < 1024) return bytes + ' B'
+  if (bytes < 1048576) return (bytes / 1024).toFixed(1) + ' KB'
+  return (bytes / 1048576).toFixed(1) + ' MB'
+}
+
+/** 移除待发送附件 */
+const removePendingAttachment = (id: string) => {
+  pendingAttachments.value = pendingAttachments.value.filter(f => f.id !== id)
+}
+
+/** 清空所有待发送附件 */
+const clearPendingAttachments = () => {
+  pendingAttachments.value = []
+}
 
 const onSidebarChange = (collapsed: boolean) => {
   isCollapsed.value = collapsed
@@ -154,18 +223,43 @@ const greeting = computed(() => {
 
 /** 创建对话并发送消息 */
 const handleSend = async () => {
-  if (!userInput.value.trim() || isSending.value) return
+  if (!userInput.value.trim() && pendingAttachments.value.length === 0 || isSending.value) return
 
   isSending.value = true
   showModelMenu.value = false
 
   try {
+    // 收集待发送的附件 ID 列表
+    const fileIds = pendingAttachments.value.length > 0
+      ? pendingAttachments.value.map(f => f.id)
+      : undefined
+
+    // 构建包含可读文件内容的完整消息文本
+    let fullMessage = userInput.value.trim()
+    if (pendingAttachments.value.length > 0) {
+      const textParts: string[] = []
+      for (const att of pendingAttachments.value) {
+        if (att.textContent) {
+          textParts.push(`\n\n--- 附件: ${att.filename} (${formatFileSize(att.size)}) ---\n${att.textContent}\n--- 结束 ---`)
+        } else {
+          textParts.push(`\n[附件: ${att.filename}]`)
+        }
+      }
+      fullMessage += textParts.join('')
+    }
+
     // 先创建对话
-    const dialog = await appStore.createDialog(userInput.value.slice(0, 60))
+    const dialog = await appStore.createDialog(fullMessage.slice(0, 60))
     if (!dialog) return
 
-    // 跳转到聊天页面
-    router.push({ path: `/chat/${dialog.id}`, query: { msg: userInput.value } })
+    clearPendingAttachments()
+
+    // 跳转到聊天页面（携带完整消息，含文件内容）
+    const query: Record<string, string> = { msg: fullMessage }
+    if (fileIds && fileIds.length > 0) {
+      query.fileIds = fileIds.join(',')
+    }
+    router.push({ path: `/chat/${dialog.id}`, query })
   } catch (e) {
     console.error('发送失败:', e)
   } finally {
@@ -179,30 +273,98 @@ const handleSwitchModel = async (model: any) => {
   await appStore.switchModel(model.id)
 }
 
-/** 文件上传处理 */
+/** 文件上传处理（通过 file input 选择） */
 const handleFileUpload = async (event: Event) => {
   const input = event.target as HTMLInputElement
-  const files = input.files
-  if (!files || files.length === 0) return
+  if (!input.files?.length) return
+  for (let i = 0; i < input.files.length; i++) {
+    await uploadAndAddFile(input.files[i])
+  }
+  input.value = '' // 允许重复选择同一文件
+}
 
+/** 拖拽上传 */
+const handleDrop = async (e: DragEvent) => {
+  isDragging.value = false
+  const files = e.dataTransfer?.files
+  if (!files?.length) return
+
+  // 过滤允许的文件类型
+  const allowedTypes = ['image/', 'application/pdf', 'text/plain', 'application/json', '.md', '.docx',
+    '.csv', '.html', '.css', '.js', '.ts', '.py', '.java', '.go', '.rs', '.xml', '.yaml', '.yml', '.log']
+  for (let i = 0; i < files.length; i++) {
+    const file = files[i]
+    if (!allowedTypes.some(t => file.type.startsWith(t) || file.name.endsWith(t))) continue
+    await uploadAndAddFile(file)
+  }
+  autoResizeByRef()
+}
+
+/** 统一的上传+添加附件方法（供 file upload / drop / paste 共用）
+ *
+ *  策略：
+ *  - 可读文本文件（txt/md/html/css/js/py...）：读取文件内容 → 上传到服务器 → 同时保存 textContent
+ *  - docx 文件：用 mammoth 解析纯文本 → 上传到服务器 → 保存解析后的 textContent
+ *  - 图片/PDF/其他：仅上传到服务器（只存 fileId，AI 无法读取内容）
+ */
+const uploadAndAddFile = async (file: File): Promise<void> => {
   try {
-    let fileNames = ''
-    for (let i = 0; i < files.length; i++) {
-      const file = files[i]
-      const res = await fileApi.upload(file)
-      if (res.success && res.data) {
-        fileNames += `[附件: ${(res.data as any).filename}] `
+    // 1) 先尝试读取文件内容
+    const readResult = await readFileContent(file)
+
+    // 2) 同时上传文件到服务器（获取 fileId 用于关联消息）
+    const res = await fileApi.upload(file)
+    if (res.success && res.data) {
+      const uploaded = res.data as any
+
+      const att: PendingAttachment = {
+        id: uploaded.id,
+        filename: uploaded.filename,
+        fileType: uploaded.file_type,
+        size: uploaded.size,
+        previewUrl: uploaded.preview_url,
+        textContent: readResult?.content ?? null,
+      }
+
+      pendingAttachments.value.push(att)
+
+      if (readResult) {
+        console.log(`[UPLOAD] 文件上传+读取成功: ${uploaded.filename} (${readResult.method}, ${readResult.content.length}字符, id=${uploaded.id})`)
+      } else {
+        console.log(`[UPLOAD] 文件上传成功(不可读): ${uploaded.filename} (id=${uploaded.id})`)
+      }
+    } else {
+      // 上传失败但有本地可读内容时，仍然把内容注入输入框
+      if (readResult) {
+        userInput.value += `\n\n--- 附件: ${file.name} ---\n${readResult.content}\n--- 结束 ---`
+        console.log(`[UPLOAD] 上传失败但已读取内容: ${file.name}`)
+      } else {
+        userInput.value += `\n[附件: ${file.name}]`
+      }
+      autoResizeByRef()
+    }
+  } catch (err: any) {
+    console.error('[UPLOAD] 处理失败:', err)
+    userInput.value += `\n[附件: ${file.name}]`
+    autoResizeByRef()
+  }
+}
+
+/** 粘贴处理（支持 Ctrl+V 粘贴图片/文件） */
+const handlePaste = async (e: ClipboardEvent): Promise<void> => {
+  const items = e.clipboardData?.items
+  if (!items) return
+
+  for (let i = 0; i < items.length; i++) {
+    const item = items[i]
+    if (item.kind === 'file') {
+      e.preventDefault()
+      const file = item.getAsFile()
+      if (file) {
+        await uploadAndAddFile(file)
       }
     }
-    userInput.value += '\n' + fileNames.trim()
-  } catch (e) {
-    console.error('上传失败:', e)
-    // fallback
-    for (let i = 0; i < files.length; i++) {
-      userInput.value += `\n[附件: ${files[i].name}]`
-    }
   }
-  input.value = ''
 }
 
 // 快捷按钮 - 每个都有对应功能（使用官网同款 fill 图标，viewBox 0 0 256 256）
@@ -218,6 +380,13 @@ const autoResize = (event: Event) => {
   const textarea = event.target as HTMLTextAreaElement
   textarea.style.height = 'auto'
   textarea.style.height = Math.min(textarea.scrollHeight, 240) + 'px'
+}
+
+const autoResizeByRef = () => {
+  if (inputRef.value) {
+    inputRef.value.style.height = 'auto'
+    inputRef.value.style.height = Math.min(inputRef.value.scrollHeight, 240) + 'px'
+  }
 }
 
 /** 点击外部关闭模型菜单 */

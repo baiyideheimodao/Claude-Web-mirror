@@ -157,16 +157,18 @@ export const useAppStore = defineStore('app', () => {
   }
 
   const openDialog = async (dialogId: string) => {
+    // 切换到不同对话时，先清空旧消息（避免新对话显示旧内容）
+    if (currentConversationId.value !== dialogId) {
+      messages.value = []
+    }
     setCurrentConversation(dialogId)
     try {
       const res = await dialogApi.getDetail(dialogId)
       if (res.success && res.data) {
         const payload = (res.data as any).data || res.data
         currentDialogDetail.value = payload
-        // 只在服务器返回有效消息列表时才替换；空响应不清空已有消息
-        if (payload.messages && payload.messages.length > 0) {
-          messages.value = payload.messages
-        }
+        // 用服务器返回的消息列表替换本地消息（空列表也会清空）
+        messages.value = payload.messages || []
         return true
       }
       return false

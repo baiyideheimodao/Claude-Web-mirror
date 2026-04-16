@@ -30,8 +30,8 @@ export const dialogApi = {
     apiClient.post<Message>(`/dialogs/${dialogId}/messages`, { content, files, artifact_type: artifactType }),
 
   /** 发送消息（流式） */
-  sendMessageStream: (dialogId: string, content: string, files?: string[], artifactType?: string) =>
-    apiClient.streamPost(`/dialogs/${dialogId}/messages/stream`, { content, files, artifact_type: artifactType }),
+  sendMessageStream: (dialogId: string, content: string, files?: string[], artifactType?: string, signal?: AbortSignal) =>
+    apiClient.streamPost(`/dialogs/${dialogId}/messages/stream`, { content, files, artifact_type: artifactType }, signal),
 
   /** 编辑已发送消息 */
   editMessage: (dialogId: string, messageId: string, content: string) =>
