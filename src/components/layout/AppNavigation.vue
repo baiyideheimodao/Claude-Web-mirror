@@ -1,10 +1,20 @@
 <template>
   <nav
     :class="[
-      'fixed top-0 left-0 h-[100vh] z-50 flex flex-col transition-all duration-200 ease-in-out',
-      isCollapsed ? 'w-[48px]' : 'w-[288px]',
+      'fixed top-0 left-0 h-[100vh] z-50 flex flex-col shrink-0',
+      isResizing ? '' : 'transition-all duration-200 ease-in-out',
       'bg-[#fafaf8] border-r border-[#e5e5e4] dark:bg-[#1f1f1e] dark:border-white/10'
-    ]">
+    ]"
+    :style="{ width: sidebarWidth + 'px' }">
+
+    <!-- 拖拽手柄（右侧边缘，可左右拖拽调整宽度） -->
+    <div
+      v-if="!isCollapsed"
+      class="absolute right-0 top-0 bottom-0 cursor-col-resize z-[9999] hover:bg-[#d97757]/60 active:bg-[#d97757]"
+      :style="{ width: '8px', marginRight: '-4px', paddingRight: '4px' }"
+      @mousedown="onResizeStart($event)"
+      @click="console.log('[HANDLE] click! isCollapsed=', !!isCollapsed)"
+    ></div>
 
     <!-- ========== 展开状态 ========== -->
     <template v-if="!isCollapsed">
@@ -399,8 +409,16 @@ import { ref, computed, watch, nextTick, onMounted, onUnmounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useAppStore } from '@/stores/useAppStore'
 
+const props = withDefaults(defineProps<{
+  sidebarWidth?: number
+}>(), {
+  sidebarWidth: 288,
+})
+
 const emit = defineEmits<{
   (e: 'sidebar-change', collapsed: boolean): void
+  (e: 'resize', width: number): void
+  (e: 'resizing', value: boolean): void
 }>()
 
 const router = useRouter()
@@ -410,6 +428,64 @@ const appStore = useAppStore()
 const isCollapsed = ref(false)
 const toggleCollapse = () => { isCollapsed.value = !isCollapsed.value }
 watch(isCollapsed, (val) => { emit('sidebar-change', val) })
+
+// ============ 侧边栏拖拽调整宽度 ============
+const isResizing = ref(false)
+
+const onResizeStart = (e: MouseEvent) => {
+  console.log('[RESIZE-RAW] mousedown fired!', e.type, e.clientX, 'isCollapsed:', isCollapsed.value, 'handle v-if condition:', !isCollapsed.value)
+  e.preventDefault()
+  e.stopPropagation()
+  isResizing.value = true  // 拖拽时禁用 transition，避免跟手性差
+  emit('resizing', true)   // 通知父组件也禁用 transition
+  const startX = e.clientX
+  const startWidth = props.sidebarWidth
+  const navEl = document.querySelector('nav.fixed') as HTMLElement | null
+
+  console.log('[RESIZE] === 拖拽开始 ===')
+  console.log('[RESIZE]', { startX, startWidth, innerWidth: window.innerWidth, maxAllowed: window.innerWidth * 0.6 })
+  console.log('[RESIZE] nav element:', navEl?.offsetWidth)
+
+  let moveCount = 0
+
+  const onMove = (ev: MouseEvent) => {
+    moveCount++
+    // 向右拉宽（delta 为正值），向左收窄
+    const deltaX = ev.clientX - startX
+    const rawNewWidth = startWidth + deltaX
+    const clampedWidth = Math.min(Math.max(rawNewWidth, 200), window.innerWidth * 0.6)
+    const roundedWidth = Math.round(clampedWidth)
+
+    if (moveCount <= 5 || moveCount % 10 === 0) {
+      console.log(`[RESIZE] #${moveCount}`, {
+        clientX: ev.clientX,
+        deltaX: deltaX.toFixed(1),
+        rawNewWidth: rawNewWidth.toFixed(1),
+        clampedWidth,
+        roundedWidth,
+        currentNavWidth: navEl?.offsetWidth,
+        direction: deltaX >= 0 ? '→ 向右(加宽)' : '← 向左(收窄)'
+      })
+    }
+
+    emit('resize', roundedWidth)
+  }
+
+  const onUp = () => {
+    isResizing.value = false  // 恢复 transition
+    emit('resizing', false)   // 通知父组件恢复 transition
+    document.removeEventListener('mousemove', onMove)
+    document.removeEventListener('mouseup', onUp)
+    document.body.style.cursor = ''
+    document.body.style.userSelect = ''
+    console.log('[RESIZE] === 拖拽结束 ===', { totalMoves: moveCount, finalWidth: props.sidebarWidth })
+  }
+
+  document.body.style.cursor = 'col-resize'
+  document.body.style.userSelect = 'none'
+  document.addEventListener('mousemove', onMove)
+  document.addEventListener('mouseup', onUp)
+}
 
 // UI状态
 const showUserMenu = ref(false)

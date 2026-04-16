@@ -1,10 +1,16 @@
 <template>
-  <div class="min-h-screen bg-[#f9f8f5] dark:bg-[#1f1f1e] text-[#1a1a1a] dark:text-gray-200">
-    <!-- 左侧导航栏 -->
-    <AppNavigation @sidebar-change="onSidebarChange" />
+  <div class="h-screen bg-[#f9f8f5] dark:bg-[#1f1f1e] text-[#1a1a1a] dark:text-gray-200 flex overflow-hidden">
+    <!-- 左侧导航栏（可拖拽调整宽度） -->
+    <AppNavigation
+      :sidebar-width="sidebarWidth"
+      @sidebar-change="onSidebarChange"
+      @resize="onSidebarResize"
+      @resizing="onSidebarResizing"
+    />
 
-    <!-- 主聊天区域 -->
-    <main :class="['min-h-screen transition-all duration-200 ease-in-out', isCollapsed ? 'ml-[48px]' : 'ml-[288px]', showArtifactPanel ? 'mr-[520px]' : '']">
+    <!-- 主聊天区域（独立滚动，侧边栏悬浮不影响） -->
+    <main :class="['h-full flex-1 min-w-0 overflow-y-auto', isSidebarResizing ? '' : 'transition-all duration-200 ease-in-out', showArtifactPanel ? '' : '']"
+          :style="{ marginLeft: sidebarWidth + 'px' }">
       <!-- 标题栏（官网风格：独立于消息容器，撑满内容区宽度，标题左 + Share右边缘） -->
       <div class="px-6 pt-6 mb-4">
         <div class="flex items-center justify-between">
@@ -71,10 +77,10 @@
                   </div>
                 </div>
 
-                <!-- 制品向导选项卡（固定在底部，覆盖输入框上方） -->
+                <!-- 制品向导选项卡（固定在底部，覆盖输入框上方，宽度自适应） -->
                 <div v-if="choiceWizard.active && !choiceWizard.completed && msg.id === choiceWizard.currentMsgId && !closedPanels[msg.id]"
-                  class="fixed left-0 right-0 bottom-0 z-50" :style="{ marginLeft: isCollapsed ? '48px' : '288px', transition: 'margin-left 200ms ease-in-out' }">
-                  <div class="wizard-panel mx-auto mb-4 max-w-3xl">
+                  class="fixed left-0 right-0 bottom-0 z-50" :style="{ marginLeft: sidebarWidth + 'px', marginRight: showArtifactPanel ? artifactPanelWidth + 'px' : '0', transition: isSidebarResizing ? 'none' : 'margin-left 200ms ease-in-out, margin-right 200ms ease-in-out' }">
+                  <div class="wizard-panel mx-auto mb-4" style="max-width: 768px; padding: 0 24px;">
                     <!-- 标题栏：问题 + 步骤导航 + 关闭 -->
                     <div class="wizard-header">
                       <span class="wizard-title">{{ getWizardPanel()?.question || '请选择' }}</span>
@@ -148,7 +154,7 @@
           </template>
 
         </div>
-        <div class="fixed bottom-6 left-0 right-0 z-40" :style="{ marginLeft: isCollapsed ? '48px' : '288px', transition: 'margin-left 200ms ease-in-out' }">
+        <div class="fixed bottom-6 left-0 right-0 z-40" :style="{ marginLeft: sidebarWidth + 'px', marginRight: showArtifactPanel ? artifactPanelWidth + 'px' : '0', transition: isSidebarResizing ? 'none' : 'margin-left 200ms ease-in-out, margin-right 200ms ease-in-out' }">
           <div class="max-w-3xl mx-auto px-6">
             <!-- "Want to be notified when Claude responds?" 提示条 -->
             <div v-if="showNotifyBar" class="mb-3 flex items-center justify-between px-4 py-2.5 bg-white dark:bg-[#2c2c2a] border border-[#e5e5e4] dark:border-white/10 rounded-lg shadow-sm">
@@ -235,7 +241,7 @@
                   <!-- 有内容时：发送 / 终止按钮 -->
                   <button
                     v-if="isSending || messageInput.trim()"
-                    :disabled="!messageInput.trim()"
+                    :disabled="!isSending && !messageInput.trim()"
                     class="w-8 h-8 flex items-center justify-center bg-[#d97757] hover:bg-[#c96a4a] disabled:bg-[#cfcfce] disabled:cursor-not-allowed text-white rounded-lg transition-colors duration-150"
                     :title="isSending ? '停止生成' : '发送消息'"
                     @click="isSending ? handleStopGeneration() : handleSend()"
@@ -259,9 +265,16 @@
       </div>
     </main>
 
-    <!-- 右侧制品预览面板 -->
+    <!-- 右侧制品预览面板（可拖拽调整宽度） -->
     <Transition name="panel">
-      <div v-if="showArtifactPanel" class="fixed top-0 right-0 w-[520px] h-screen bg-white dark:bg-[#1f1f1e] border-l border-[#e0e0df] dark:border-white/10 z-50 flex flex-col shadow-xl">
+      <div v-if="showArtifactPanel" ref="artifactPanelRef"
+        :class="['h-screen bg-white dark:bg-[#1f1f1e] border-l border-[#e0e0df] dark:border-white/10 flex flex-col shadow-xl shrink-0 relative', isArtifactResizing ? '' : 'transition-all duration-200 ease-in-out']"
+        :style="{ width: artifactPanelWidth + 'px' }">
+        <!-- 拖拽手柄（左侧边缘） -->
+        <div class="absolute left-0 top-0 bottom-0 cursor-col-resize z-[9999] hover:bg-[#d97757]/60 active:bg-[#d97757]"
+          :style="{ width: '12px', marginLeft: '-6px', paddingLeft: '6px' }"
+          @mousedown="onArtifactResizeStart($event)">
+        </div>
         <!-- 面板头部 -->
         <div class="flex items-center justify-between px-4 py-3 border-b border-[#f0ede7] dark:border-white/5 shrink-0">
           <div class="flex items-center gap-3">
@@ -332,6 +345,8 @@ const appStore = useAppStore()
 
 const messageInput = ref('')
 const isCollapsed = ref(false)
+// 侧边栏宽度（可拖拽调整，默认288px，收起时48px）
+const sidebarWidth = ref(288)
 const isSending = ref(false)
 const streamingContent = ref('')
 const isDragging = ref(false)
@@ -340,10 +355,79 @@ let abortController: AbortController | null = null
 const inputRef = ref<HTMLTextAreaElement | null>(null)
 const msgContainerRef = ref<HTMLElement | null>(null)
 const aiLogoRef = ref<SVGSVGElement | null>(null)
+const artifactPanelRef = ref<HTMLElement | null>(null)
 const showModelMenu = ref(false)
 const showNotifyBar = ref(false)
 const selectedChoices = reactive<Record<string, number>>({})
 const closedPanels = reactive<Record<string, boolean>>({})
+
+/** 侧边栏折叠/展开切换 */
+const onSidebarChange = (collapsed: boolean) => {
+  isCollapsed.value = collapsed
+  sidebarWidth.value = collapsed ? 48 : 288
+}
+
+/** 侧边栏宽度拖拽回调（由 AppNavigation 组件触发） */
+const onSidebarResize = (newWidth: number) => {
+  sidebarWidth.value = Math.round(newWidth)
+}
+
+/** 侧边栏正在拖拽中（用于禁用 transition 提高跟手性） */
+const isSidebarResizing = ref(false)
+const onSidebarResizing = (value: boolean) => {
+  isSidebarResizing.value = value
+}
+
+// ============ 制品面板拖拽调整宽度 ============
+// 彻底重写：使用 iframe 遮罩方案解决 iframe 吞事件问题
+const artifactPanelWidth = ref(520) // 默认宽度 px
+const isArtifactResizing = ref(false)
+let _artifactResizeState: { startX: number; startWidth: number; moveCount: number } | null = null
+
+/** 创建一个覆盖整个视口的透明遮罩，拦截所有鼠标事件（防止被 iframe 吞掉） */
+function _createResizeOverlay(): HTMLDivElement {
+  const overlay = document.createElement('div')
+  overlay.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;z-index:99999;cursor:col-resize;'
+  document.body.appendChild(overlay)
+  return overlay
+}
+
+const onArtifactResizeStart = (e: MouseEvent) => {
+  e.preventDefault()
+  e.stopPropagation()
+
+  isArtifactResizing.value = true
+  _artifactResizeState = { startX: e.clientX, startWidth: artifactPanelWidth.value, moveCount: 0 }
+
+  // 创建全屏透明遮罩，防止鼠标移到 iframe 区域后丢失事件
+  const overlay = _createResizeOverlay()
+
+  const onMove = (ev: MouseEvent) => {
+    if (!_artifactResizeState || !isArtifactResizing.value) return
+    const state = _artifactResizeState
+    state.moveCount++
+    const delta = state.startX - ev.clientX
+    const rawNewWidth = state.startWidth + delta
+    const clampedWidth = Math.min(Math.max(rawNewWidth, 360), window.innerWidth * 0.7)
+    artifactPanelWidth.value = Math.round(clampedWidth)
+  }
+
+  const onUp = () => {
+    // 清理
+    isArtifactResizing.value = false
+    _artifactResizeState = null
+    overlay.remove()
+    window.removeEventListener('mousemove', onMove)
+    window.removeEventListener('mouseup', onUp)
+    document.body.style.cursor = ''
+    document.body.style.userSelect = ''
+  }
+
+  document.body.style.cursor = 'col-resize'
+  document.body.style.userSelect = 'none'
+  window.addEventListener('mousemove', onMove)
+  window.addEventListener('mouseup', onUp)
+}
 
 // ============ 制品选项卡向导（流式传输完成后智能注入） ============
 const choiceWizard = reactive({
@@ -366,10 +450,6 @@ const dialogDetail = computed(() => appStore.currentDialogDetail)
 
 // 制品模式：从 query 中读取 artifact_type
 const artifactType = computed(() => route.query.artifact_type as string | undefined)
-
-const onSidebarChange = (collapsed: boolean) => {
-  isCollapsed.value = collapsed
-}
 
 // 加载对话详情
 const loadDialog = async (id: string) => {
@@ -483,14 +563,17 @@ const getWizardPanel = (): { question: string; choices: string[] } | null => {
 
 /** 检测流式回复是否为制品相关请求，并激活向导模式 */
 const detectAndActivateWizard = (userMsg: string, aiContent: string): void => {
-  if (choiceWizard.completed || choiceWizard.active) return
-
   // 检测用户的首次请求是否为制品类型请求
   const artifactKeywords = /创建|生成|制作|构建|开发|build|create|make|制品|应用|网站|文档|模板|工具|游戏|问卷|survey|app|web|doc|game|tool|creative/i
   const isArtifactRequest = artifactKeywords.test(userMsg)
 
   // 如果用户请求包含制品关键词且 AI 回复内容较长（说明是有意义的回复）
+  // 注意：每次新的制品类请求都应重新激活向导（支持用户在完成一轮后发起新的制品请求）
   if (isArtifactRequest && aiContent.length > 100) {
+    // 如果向导已完成但用户又发起了全新的制品请求，重置向导状态
+    if (choiceWizard.completed) {
+      console.log(`[WIZARD] Previous wizard was completed. Resetting for new artifact request.`)
+    }
     console.log(`[WIZARD] Activating choice wizard. User msg keywords detected.`)
     choiceWizard.active = true
     choiceWizard.round = 0
@@ -579,8 +662,28 @@ const renderContent = (content: string): string => {
   let html = content
     .replace(/\[QUESTION\][\s\S]*?\[\/QUESTION\]/g, '')
     .replace(/\[CHOICE\][\s\S]*?\[\/CHOICE\]/g, '')
-    .replace(/\[ARTIFACT\][\s\S]*?\[\/ARTIFACT\]/g, '')
     .trim()
+
+  // 核心逻辑：如果包含 [ARTIFACT] 标签，说明有制品数据
+  // 制品的代码内容不应该在对话框中显示，只能通过卡片点击后在右侧面板查看
+  const hasArtifact = /\[ARTIFACT\]/.test(content)
+  if (hasArtifact) {
+    // 移除整个 ARTIFACT 块（不渲染到对话框）
+    html = html.replace(/\[ARTIFACT\][\s\S]*?\[\/ARTIFACT\]/g, '')
+  }
+
+  // 如果没有 ARTIFACT 但有大段代码块（html/vue/react等），也隐藏代码只留文字说明
+  // 这样确保所有制品类回复都以卡片形式呈现
+  if (!hasArtifact) {
+    // 检测是否有可提取为制品的代码块
+    const codeBlockMatch = content.match(/```(html|vue|jsx|tsx|css|javascript|js)\n([\s\S]{50,}?)```/)
+    if (codeBlockMatch && /<(html|!DOCTYPE|head|body|div)\b/i.test(codeBlockMatch[2])) {
+      // 有完整HTML代码时，直接隐藏代码块（不渲染到对话框），制品通过卡片展示
+      html = html.replace(/```(?:html|vue|jsx|tsx|css|javascript|js)\n[\s\S]{50,}?```/g, '')
+    }
+  }
+
+  html = html.trim()
 
   html = html
     .replace(/&/g, '&amp;')
@@ -588,7 +691,10 @@ const renderContent = (content: string): string => {
     .replace(/>/g, '&gt;')
 
   // 代码块 (```language\n...\n```)
+  // 注意：如果已有ARTIFAST标记，这里不再渲染任何大代码块（避免重复）
   html = html.replace(/```(\w*)\n([\s\S]*?)```/g, (_match, _lang, code) => {
+    // 超过200字符的代码块（很可能是制品代码），不在对话框中显示
+    if (code.length > 200) return ''
     return `<pre class="bg-[#f5f4f0] dark:bg-[#1f1f1e] rounded-lg p-3 my-3 overflow-x-auto font-mono text-[13px] border border-[#eee] dark:border-white/5"><code class="text-[#1a1a1a] dark:text-gray-200">${code}</code></pre>`
   })
 
@@ -690,32 +796,57 @@ interface ArtifactData {
   description: string
 }
 
-/** 从消息内容中提取制品数据 [ARTIFACT]...[/ARTIFACT] */
+/** 从消息内容中提取制品数据 [ARTIFACT]...[/ARTIFACT]，或从代码块中自动提取 */
 const getArtifact = (content: string): ArtifactData | null => {
+  // 优先匹配已有的 [ARTIFACT] 标签
   const match = content.match(/\[ARTIFACT\]([\s\S]*?)\[\/ARTIFACT\]/)
-  if (!match) return null
-  try {
-    // 尝试解析为 JSON 格式：{"title":"...", "content":"...", "type":"web", "description":"..."}
-    let parsed: ArtifactData
+  if (match) {
     try {
-      parsed = JSON.parse(match[1].trim())
-    } catch {
-      // 非 JSON 时，content 就是整个文本，title 取第一行
-      const lines = match[1].split('\n').filter(Boolean)
-      parsed = {
-        title: lines[0] || '未命名制品',
-        content: match[1].trim(),
-        type: detectArtifactType(lines[0]),
-        description: lines.length > 1 ? lines.slice(0, 3).join(' ') : '',
+      let parsed: ArtifactData
+      try {
+        parsed = JSON.parse(match[1].trim())
+      } catch {
+        const lines = match[1].split('\n').filter(Boolean)
+        parsed = {
+          title: lines[0] || '未命名制品',
+          content: match[1].trim(),
+          type: detectArtifactType(lines[0]),
+          description: lines.length > 1 ? lines.slice(0, 3).join(' ') : '',
+        }
       }
+      if (!parsed.title && parsed.content) {
+        const firstLine = parsed.content.split('\n')[0]
+        parsed.title = firstLine || '未命名制品'
+        parsed.type = detectArtifactType(firstLine)
+      }
+      return parsed
+    } catch { return null }
+  }
+
+  // 没有ARTIFACT标签时，自动从大代码块中提取（兼容已加载的历史消息）
+  const codeBlockMatch = content.match(/```(html|vue|jsx|tsx|css|javascript|js)\n([\s\S]{50,}?)```/)
+  if (codeBlockMatch && /<(html|!DOCTYPE|head|body|div)\b/i.test(codeBlockMatch[2])) {
+    let extractedType = codeBlockMatch[1]
+    let extractedContent = codeBlockMatch[2].trim()
+    let extractedTitle = '生成的制品'
+
+    // 尝试从代码块中提取标题
+    const titleFromComment = extractedContent.match(/<!--\s*(.+?)\s*-->/)
+    if (titleFromComment) extractedTitle = titleFromComment[1].trim()
+    else {
+      const titleTag = extractedContent.match(/<title>(.*?)<\/title>/i)
+      if (titleTag) extractedTitle = titleTag[1].trim()
     }
-    if (!parsed.title && parsed.content) {
-      const firstLine = parsed.content.split('\n')[0]
-      parsed.title = firstLine || '未命名制品'
-      parsed.type = detectArtifactType(firstLine)
-    }
-    return parsed
-  } catch { return null }
+
+    // 描述取正文前两行
+    const plainText = content.replace(/```[\s\S]*?```/g, '').replace(/[#*\-\[\]>]/g, ' ').trim()
+    const description = plainText.split('\n').filter(l => l.trim()).slice(0, 2).join(' ').substring(0, 120) || '点击查看预览'
+
+    // console.log(`[ARTIFACT] Auto-extracted from code block: type=${extractedType}, title=${extractedTitle}`)
+    return { title: extractedTitle, content: extractedContent, type: extractedType, description }
+  }
+
+  return null
 }
 
 const ARTIFACT_TYPE_LABELS: Record<string, string> = {
