@@ -109,9 +109,9 @@
                     <!-- 选项列表 -->
                     <div class="wizard-options">
                       <button v-for="(choice, ci) in getWizardPanel()!.choices" :key="ci"
-                        :class="['wizard-option', selectedChoices[msg.id] === ci ? 'wizard-option-active' : '']"
+                        :class="['wizard-option', getWizardSelectedChoiceIndex() === ci ? 'wizard-option-active' : '']"
                         @click="handleSelectChoice(msg.id, ci, choice)">
-                        <span :class="['wizard-opt-num', selectedChoices[msg.id] === ci ? 'wizard-opt-num-active' : '']">{{ ci + 1 }}</span>
+                        <span :class="['wizard-opt-num', getWizardSelectedChoiceIndex() === ci ? 'wizard-opt-num-active' : '']">{{ ci + 1 }}</span>
                         <span class="wizard-opt-text">{{ choice }}</span>
                         <svg class="wizard-opt-arrow" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3"/></svg>
                       </button>
@@ -159,9 +159,9 @@
                   </button>
                 </div>
 
-                <!-- Starburst AI Logo 图标 20×20px，橙色 -->
+                <!-- Starburst AI Logo 图标 24×24px，橙色 -->
                 <div v-if="isLastAiMessage(msg)" class="mt-2">
-                  <svg ref="aiLogoRef" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" class="w-5 h-5 fill-current text-[#d97757]"><path d="m19.6 66.5 19.7-11 .3-1-.3-.5h-1l-3.3-.2-11.2-.3L14 53l-9.5-.5-2.4-.5L0 49l.2-1.5 2-1.3 2.9.2 6.3.5 9.5.6 6.9.4L38 49.1h1.6l.2-.7-.5-.4-.4-.4L29 41l-10.6-7-5.6-4.1-3-2-1.5-2-.6-4.2 2.7-3 3.7.3.9.2 3.7 2.9 8 6.1L37 36l1.5 1.2.6-.4.1-.3-.7-1.1L33 25l-6-10.4-2.7-4.3-.7-2.6c-.3-1-.4-2-.4-3l3-4.2L28 0l4.2.6L33.8 2l2.6 6 4.1 9.3L47 29.9l2 3.8 1 3.4.3 1h.7v-.5l.5-7.2 1-8.7 1-11.2.3-3.2 1.6-3.8 3-2L61 2.6l2 2.9-.3 1.8-1.1 7.7L59 27.1l-1.5 8.2h.9l1-1.1 4.1-5.4 6.9-8.6 3-3.5L77 13l2.3-1.8h4.3l3.1 4.7-1.4 4.9-4.4 5.6-3.7 4.7-5.3 7.1-3.2 5.7.3.4h.7l12-2.6 6.4-1.1 7.6-1.3 3.5 1.6.4 1.6-1.4 3.4-8.2 2-9.6 2-14.3 3.3-.2.1.2.3 6.4.6 2.8.2h6.8l12.6 1 3.3 2 1.9 2.7-.3 2-5.1 2.6-6.8-1.6-16-3.8-5.4-1.3h-.8v.4l4.6 4.5 8.3 7.5L89 80.1l.5 2.4-1.3 2-1.4-.2-9.2-7-3.6-3-8-6.8h-.5v.7l1.8 2.7 9.8 14.7.5 4.5-.7 1.4-2.6 1-2.7-.6-5.8-8-6-9-4.7-8.2-.5.4-2.9 30.2-1.3 1.5-3 1.2-2.5-2-1.4-3 1.4-6.2 1.6-8 1.3-6.4 1.2-7.9.7-2.6v-.2H49L43 72l-9 12.3-7.2 7.6-1.7.7-3-1.5.3-2.8L24 86l10-12.8 6-7.9 4-4.6-.1-.5h-.3L17.2 77.4l-4.7.6-2-2 .2-3 1-1 8-5.5Z"/></svg>
+                  <svg :ref="setAiLogoRef" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" class="w-6 h-6 fill-current text-[#d97757]"><path d="m19.6 66.5 19.7-11 .3-1-.3-.5h-1l-3.3-.2-11.2-.3L14 53l-9.5-.5-2.4-.5L0 49l.2-1.5 2-1.3 2.9.2 6.3.5 9.5.6 6.9.4L38 49.1h1.6l.2-.7-.5-.4-.4-.4L29 41l-10.6-7-5.6-4.1-3-2-1.5-2-.6-4.2 2.7-3 3.7.3.9.2 3.7 2.9 8 6.1L37 36l1.5 1.2.6-.4.1-.3-.7-1.1L33 25l-6-10.4-2.7-4.3-.7-2.6c-.3-1-.4-2-.4-3l3-4.2L28 0l4.2.6L33.8 2l2.6 6 4.1 9.3L47 29.9l2 3.8 1 3.4.3 1h.7v-.5l.5-7.2 1-8.7 1-11.2.3-3.2 1.6-3.8 3-2L61 2.6l2 2.9-.3 1.8-1.1 7.7L59 27.1l-1.5 8.2h.9l1-1.1 4.1-5.4 6.9-8.6 3-3.5L77 13l2.3-1.8h4.3l3.1 4.7-1.4 4.9-4.4 5.6-3.7 4.7-5.3 7.1-3.2 5.7.3.4h.7l12-2.6 6.4-1.1 7.6-1.3 3.5 1.6.4 1.6-1.4 3.4-8.2 2-9.6 2-14.3 3.3-.2.1.2.3 6.4.6 2.8.2h6.8l12.6 1 3.3 2 1.9 2.7-.3 2-5.1 2.6-6.8-1.6-16-3.8-5.4-1.3h-.8v.4l4.6 4.5 8.3 7.5L89 80.1l.5 2.4-1.3 2-1.4-.2-9.2-7-3.6-3-8-6.8h-.5v.7l1.8 2.7 9.8 14.7.5 4.5-.7 1.4-2.6 1-2.7-.6-5.8-8-6-9-4.7-8.2-.5.4-2.9 30.2-1.3 1.5-3 1.2-2.5-2-1.4-3 1.4-6.2 1.6-8 1.3-6.4 1.2-7.9.7-2.6v-.2H49L43 72l-9 12.3-7.2 7.6-1.7.7-3-1.5.3-2.8L24 86l10-12.8 6-7.9 4-4.6-.1-.5h-.3L17.2 77.4l-4.7.6-2-2 .2-3 1-1 8-5.5Z"/></svg>
                 </div>
             </div>
           </template>
@@ -369,7 +369,8 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, watch, reactive } from 'vue'
+import { ref, computed, onMounted, onBeforeUnmount, watch, reactive, nextTick } from 'vue'
+import type { VNodeRef } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import AppNavigation from '@/components/layout/AppNavigation.vue'
 import { useAppStore } from '@/stores/useAppStore'
@@ -429,6 +430,9 @@ const hasPersistedAttachmentId = (attachment?: Partial<PendingAttachment> | null
 }
 const msgContainerRef = ref<HTMLElement | null>(null)
 const aiLogoRef = ref<SVGSVGElement | null>(null)
+const setAiLogoRef: VNodeRef = (el) => {
+  aiLogoRef.value = el instanceof SVGSVGElement ? el : null
+}
 const artifactPanelRef = ref<HTMLElement | null>(null)
 const showModelMenu = ref(false)
 const showNotifyBar = ref(false)
@@ -504,6 +508,16 @@ const onArtifactResizeStart = (e: MouseEvent) => {
 }
 
 // ============ 制品选项卡向导（流式传输完成后智能注入） ============
+const WIZARD_TOTAL_ROUNDS = 3
+const wizardQuestions = [
+  '你希望这个制品的主要用途是什么？',
+  '你对界面风格有什么偏好？',
+  '还需要添加哪些功能或特性？',
+]
+
+const createWizardAnswerSlots = () => Array.from({ length: WIZARD_TOTAL_ROUNDS }, () => null as string | null)
+const createWizardSelectionSlots = () => Array.from({ length: WIZARD_TOTAL_ROUNDS }, () => null as number | null)
+
 const choiceWizard = reactive({
   active: false,           // 是否处于制品向导模式
   round: 0,                // 当前轮次（0-2，共 3 轮）
@@ -517,6 +531,20 @@ const showArtifactPanel = ref(false)
 const currentArtifact = ref<{ title: string; content: string; type: string; description: string } | null>(null)
 const artifactViewMode = ref<'code' | 'preview'>('preview')
 const artifactPreviewRef = ref<HTMLIFrameElement | null>(null)
+
+choiceWizard.completed = false
+choiceWizard.totalRounds = WIZARD_TOTAL_ROUNDS
+
+const wizardAnswers = ref<(string | null)[]>(createWizardAnswerSlots())
+const wizardSelectionIndices = ref<(number | null)[]>(createWizardSelectionSlots())
+
+const resetWizardProgress = () => {
+  choiceWizard.round = 0
+  choiceWizard.completed = false
+  choiceWizard.currentMsgId = ''
+  wizardAnswers.value = createWizardAnswerSlots()
+  wizardSelectionIndices.value = createWizardSelectionSlots()
+}
 
 const dialogId = computed(() => route.params.id as string | undefined)
 const messages = computed(() => appStore.messages)
@@ -671,12 +699,43 @@ const getWizardPanel = (): { question: string; choices: string[] } | null => {
 
   const round = Math.min(choiceWizard.round, 2)
   return {
-    question: questions[round],
+    question: wizardQuestions[round],
     choices: allChoices[round % 3][Math.floor(round / 3)] || allChoices[2][2],
   }
 }
 
 /** 检测流式回复是否为制品相关请求，并激活向导模式 */
+const getWizardSelectedChoiceIndex = (): number | null => {
+  return wizardSelectionIndices.value[choiceWizard.round] ?? null
+}
+
+const buildWizardFinalPrompt = () => {
+  const confirmedAnswers = wizardQuestions
+    .map((question, index) => {
+      const answer = wizardAnswers.value[index]
+      return answer ? `${index + 1}. ${question}\n- ${answer}` : null
+    })
+    .filter((item): item is string => Boolean(item))
+
+  const unspecifiedQuestions = wizardQuestions
+    .map((question, index) => (!wizardAnswers.value[index] ? `${index + 1}. ${question}` : null))
+    .filter((item): item is string => Boolean(item))
+
+  const sections = ['请基于我刚才提出的制品需求，结合下面已经确认的信息生成最终结果。']
+
+  if (confirmedAnswers.length > 0) {
+    sections.push(`已确认选项：\n${confirmedAnswers.join('\n')}`)
+  }
+
+  if (unspecifiedQuestions.length > 0) {
+    sections.push(`以下项目未指定，请你自行做出合理、专业的默认决策：\n${unspecifiedQuestions.join('\n')}`)
+  }
+
+  sections.push('重要要求：请将所有 HTML、CSS、JavaScript 全部写在同一个文件中输出，不要拆分成多个文件，以便直接预览和运行最终效果。')
+
+  return sections.join('\n\n')
+}
+
 const detectAndActivateWizard = (userMsg: string, aiContent: string): void => {
   // 检测用户的首次请求是否为制品类型请求
   const artifactKeywords = /创建|生成|制作|构建|开发|build|create|make|制品|应用|网站|文档|模板|工具|游戏|问卷|survey|app|web|doc|game|tool|creative/i
@@ -691,8 +750,7 @@ const detectAndActivateWizard = (userMsg: string, aiContent: string): void => {
     }
     console.log(`[WIZARD] Activating choice wizard. User msg keywords detected.`)
     choiceWizard.active = true
-    choiceWizard.round = 0
-    choiceWizard.completed = false
+    resetWizardProgress()
   }
 }
 
@@ -844,21 +902,27 @@ const handleSelectChoice = async (msgId: string, choiceIndex: number, choiceText
 
   // 向导模式：记录选择并推进到下一轮
   if (choiceWizard.active && !choiceWizard.completed && msgId === choiceWizard.currentMsgId) {
+    wizardSelectionIndices.value[choiceWizard.round] = choiceIndex
+    wizardAnswers.value[choiceWizard.round] = choiceText
     console.log(`[WIZARD] Round ${choiceWizard.round + 1}/${choiceWizard.totalRounds}: selected "${choiceText}"`)
-    choiceWizard.round++
 
-    if (choiceWizard.round >= choiceWizard.totalRounds) {
+    if (choiceWizard.round >= choiceWizard.totalRounds - 1) {
       // 所有轮次完成，退出向导模式，发送最终汇总消息（强制要求单文件输出）
       choiceWizard.completed = true
-      console.log(`[WIZARD] All ${choiceWizard.totalRounds} rounds completed! Switching to normal conversation.`)
+      closedPanels[msgId] = true
+      console.log(`[WIZARD] All ${choiceWizard.totalRounds} rounds completed! Sending one combined request.`)
       messageInput.value = '基于以上所有选择，请生成完整的制品代码和详细说明。【重要】请将所有 HTML、CSS、JavaScript 全部写在一个文件中输出，不要拆分成多个文件，以便直接预览和运行最终效果。'
+      messageInput.value = buildWizardFinalPrompt()
+      if (!id || isSending.value) return
+      await handleSend()
+      return
     } else {
       // 还有下一轮，将用户的选择作为上下文继续提问
-      messageInput.value = choiceText
+      choiceWizard.round++
+      messageInput.value = ''
+      return
     }
     closedPanels[msgId] = true // 关闭当前面板
-    if (!id || isSending.value) return
-    await handleSend()
     return
   }
 
@@ -878,7 +942,9 @@ const handleSkipChoice = async (msgId: string) => {
     console.log(`[WIZARD] User skipped at round ${choiceWizard.round + 1}. Completing wizard.`)
     choiceWizard.completed = true
     closedPanels[msgId] = true
+    messageInput.value = buildWizardFinalPrompt()
     messageInput.value = '好的，请根据已有信息直接生成制品。【重要】请将所有 HTML、CSS、JavaScript 全部写在一个文件中输出，不要拆分成多个文件，以便直接预览和运行最终效果。'
+    messageInput.value = buildWizardFinalPrompt()
     if (!id || isSending.value) return
     await handleSend()
     return
@@ -1180,6 +1246,7 @@ const handleSend = async () => {
       // 不再额外 push，避免重复
     }
   } finally {
+    isAiWaiting.value = false
     isSending.value = false
     streamingContent.value = ''
     abortController = null
@@ -1466,6 +1533,7 @@ let aiLogoPathElement: SVGPathElement | null = null
 /** AI Logo 思考动画 */
 const startAiLogoAnimation = (svg: SVGSVGElement | null) => {
   if (!svg || typeof svg.querySelector !== 'function') return
+  stopAiLogoAnimation()
   const pathElement = svg.querySelector('path')
   if (!pathElement) return
 
@@ -1803,11 +1871,8 @@ const startAiLogoAnimation = (svg: SVGSVGElement | null) => {
         // ---------- 6. 动画系统: 呼吸/收缩恢复来回循环 (无限循环) ----------
         let animationId = null;
         let startTimestamp = null;
-        let cycleDuration = 2800; // 一个完整收缩+恢复周期 2.8秒 (收缩1.4s，恢复1.4s)
-        let direction = 1;        // 不再需要方向，用正弦或三角波? 使用三角波来回更自然: factor = 1 - |2*t - 1|? 
-        // 为了视觉更平滑: 采用 sin 但需要持续收缩恢复: factor 范围 [0,1] 的往复, 使用 0.5+0.5*cos(pi + 2*pi*t)? 
-        // 最好使用 三角波: factor = 1 - | (time % cycleDuration) / (cycleDuration/2) - 1 | 
-        // 实现收缩(0->1)然后恢复(1->0)
+        let cycleDuration = 800; // 一个完整收缩+恢复周期 
+        let direction = 2;       
         function computeFactorByTime(nowMs) {
             if (startTimestamp === null) startTimestamp = nowMs;
             const elapsed = (nowMs - startTimestamp) % cycleDuration;   // 周期内位置
@@ -1844,6 +1909,7 @@ const startAiLogoAnimation = (svg: SVGSVGElement | null) => {
             const factor = computeFactorByTime(timestamp);
             updatePathByFactor(factor);
             animationId = requestAnimationFrame(animate);
+            aiAnimFrameId = animationId;
         }
         
         // 重置为原始形态 (停止动画，设置为完全原始形态，再可选重启)
@@ -1858,6 +1924,7 @@ const startAiLogoAnimation = (svg: SVGSVGElement | null) => {
             startTimestamp = null;
             // 重新启动动画
             animationId = requestAnimationFrame(animate);
+            aiAnimFrameId = animationId;
             const stateSpan = document.getElementById('animState');
             if (stateSpan) stateSpan.innerHTML = `🔄 已重置 · 继续动态收缩恢复`;
             // 闪烁重置提示
@@ -1880,7 +1947,7 @@ const startAiLogoAnimation = (svg: SVGSVGElement | null) => {
         // 开始动画
         animationId = requestAnimationFrame(animate);
         
-    aiAnimFrameId = requestAnimationFrame(animate)
+    aiAnimFrameId = animationId
   }
 
 const stopAiLogoAnimation = () => {
@@ -1895,6 +1962,34 @@ const stopAiLogoAnimation = () => {
     aiLogoOriginalD = null
   }
 }
+
+const syncAiLogoAnimation = async () => {
+  if (!isAiWaiting.value) {
+    stopAiLogoAnimation()
+    return
+  }
+
+  await nextTick()
+
+  if (!isAiWaiting.value || !aiLogoRef.value) {
+    stopAiLogoAnimation()
+    return
+  }
+
+  try {
+    startAiLogoAnimation(aiLogoRef.value)
+  } catch (e) {
+    stopAiLogoAnimation()
+  }
+}
+
+watch([isAiWaiting, aiLogoRef], () => {
+  void syncAiLogoAnimation()
+}, { flush: 'post' })
+
+onBeforeUnmount(() => {
+  stopAiLogoAnimation()
+})
 
 watch(isAiWaiting, (val) => {
   try {
