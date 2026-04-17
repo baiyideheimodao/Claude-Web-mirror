@@ -1219,6 +1219,22 @@ const handleSend = async () => {
 
     // ============ 流式完成后的向导检测 & 自动制品注入 ============
     const finalContent = tempMsg?.content || ''
+    const shouldAttemptArtifactInjection = Boolean(
+      effectiveArtifactType ||
+      savedArtifactType.value ||
+      artifactType.value ||
+      choiceWizard.active ||
+      choiceWizard.completed ||
+      /创建|生成|制作|构建|制品|网站|应用|模板|demo|landing|app|web|html/i.test(content)
+    )
+
+    if (tempMsg && shouldAttemptArtifactInjection && !/\[ARTIFACT\]/.test(finalContent)) {
+      const injectedArtifact = autoInjectArtifact(finalContent)
+      if (injectedArtifact.injected) {
+        tempMsg.content = injectedArtifact.content
+        console.log('[ARTIFACT] Injected artifact into final AI message for card/preview rendering.')
+      }
+    }
 
     // 制品自动注入已禁用：只在 AI 回复明确包含 [ARTIFACT] 标签或对话指定了 artifact_type 时才触发制品流程
 
