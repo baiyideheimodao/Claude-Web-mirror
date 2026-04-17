@@ -852,6 +852,8 @@ const renderContent = (content: string): string => {
   if (hasArtifact) {
     // 移除整个 ARTIFACT 块（不渲染到对话框）
     html = html.replace(/\[ARTIFACT\][\s\S]*?\[\/ARTIFACT\]/g, '')
+    html = html.replace(/```[\s\S]*?```/g, '')
+    html = html.replace(/(<!DOCTYPE[\s\S]*?<\/html>|<html[\s\S]*?<\/html>)/gi, '')
   }
 
   html = html.trim()
