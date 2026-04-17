@@ -1,8 +1,8 @@
 <template>
   <div class="min-h-screen bg-[#f9f8f5] dark:bg-[#1f1f1e] text-[#1a1a1a] dark:text-gray-200">
-    <AppNavigation @sidebar-change="onSidebarChange" />
+    <AppNavigation :sidebar-width="sidebarWidth" @sidebar-change="onSidebarChange" />
 
-    <main :class="['min-h-screen transition-all duration-200 ease-in-out', isCollapsed ? 'ml-[48px]' : 'ml-[288px]']">
+    <main class="min-h-screen transition-all duration-200 ease-in-out" :style="{ marginLeft: sidebarWidth + 'px' }">
       <div class="max-w-4xl mx-auto px-6 pt-6 pb-8">
         <!-- 标题栏 -->
         <div class="flex items-center justify-between mb-5">
@@ -102,6 +102,7 @@ import { useAppStore } from '@/stores/useAppStore'
 const router = useRouter()
 const appStore = useAppStore()
 const isCollapsed = ref(false)
+const sidebarWidth = ref(288)
 const activeTab = ref('yours')
 const showCreateModal = ref(false)
 const selectedCategory = ref('')
@@ -120,7 +121,10 @@ const artifactCategories = [
   { id: 'code', label: '从零开始', icon: '✨' },
 ]
 
-const onSidebarChange = (collapsed: boolean) => { isCollapsed.value = collapsed }
+const onSidebarChange = (collapsed: boolean) => {
+  isCollapsed.value = collapsed
+  sidebarWidth.value = collapsed ? 48 : 288
+}
 
 const openArtifact = (artifact: any) => {
   // 如果有关联的对话，跳转到聊天页

@@ -1,10 +1,14 @@
 <template>
-  <div class="min-h-screen bg-[#f9f8f5] dark:bg-[#1f1f1e] text-text-100">
+  <div class="h-screen bg-[#f9f8f5] dark:bg-[#1f1f1e] text-text-100 flex overflow-hidden">
     <!-- 左侧导航栏 -->
-    <AppNavigation @sidebar-change="onSidebarChange" />
+    <AppNavigation
+      :sidebar-width="sidebarWidth"
+      @sidebar-change="onSidebarChange"
+    />
 
     <!-- 主内容区域 -->
-    <main :class="['min-h-screen transition-all duration-200 ease-in-out', isCollapsed ? 'ml-[48px]' : 'ml-[288px]']">
+    <main class="h-full flex-1 min-w-0 overflow-y-auto transition-all duration-200 ease-in-out"
+          :style="{ marginLeft: sidebarWidth + 'px' }">
       <div class="max-w-[800px] mx-auto px-6 pt-[25vh] pb-8">
         <!-- 问候语区域 -->
         <div class="text-center mb-8">
@@ -68,15 +72,17 @@
             <!-- 底部工具栏 -->
             <div class="absolute bottom-3 left-3 right-3 flex items-center justify-between">
               <!-- 左侧：附件按钮（始终显示） -->
-              <label
-                v-tooltip="'Attach file (支持拖拽/粘贴上传)'"
+              <button
+                type="button"
+                title="附件"
                 class="p-1.5 hover:bg-black/[0.04] dark:hover:bg-white/5 rounded-md transition-colors duration-150 group cursor-pointer"
+                @click.stop="handleAttachClick"
               >
                 <svg class="w-[17px] h-[17px] text-[#9b9a97] group-hover:text-[#787774]" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.75">
                   <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
                 </svg>
-                <input type="file" class="hidden" accept="image/*,.pdf,.txt,.md,.doc,.docx,.csv,.json,.html,.css,.js,.ts,.py,.java,.go,.rs,.xml,.yaml,.yml,.log,.c,.cpp,.h,.hpp,.rb,.php,.sql,.vue" multiple @change="handleFileUpload" />
-              </label>
+              </button>
+              <input ref="fileInputRef" type="file" class="absolute -left-full opacity-0" accept="image/*,.pdf,.txt,.md,.doc,.docx,.csv,.json,.html,.css,.js,.ts,.py,.java,.go,.rs,.xml,.yaml,.yml,.log,.c,.cpp,.h,.hpp,.rb,.php,.sql,.vue" multiple @change="handleFileUpload" />
 
               <!-- 右侧：模型选择器 / 发送按钮 -->
               <div class="flex items-center gap-0.5">
@@ -168,16 +174,20 @@ import { useRouter } from 'vue-router'
 import AppNavigation from '@/components/layout/AppNavigation.vue'
 import { useAppStore } from '@/stores/useAppStore'
 import { fileApi } from '@/api/file'
-import { readFileContent, isTextReadableFile, isBinaryDocFile } from '@/utils/fileReader'
+import { readFileContent } from '@/utils/fileReader'
+import { getDisplayFilename } from '@/utils/fileName'
+import type { UploadedFile } from '@/types/api'
 
 const router = useRouter()
 const appStore = useAppStore()
 
 const userInput = ref('')
 const isCollapsed = ref(false)
+const sidebarWidth = ref(288)
 const isSending = ref(false)
 const showModelMenu = ref(false)
 const inputRef = ref<HTMLTextAreaElement | null>(null)
+const fileInputRef = ref<HTMLInputElement | null>(null)
 const isDragging = ref(false)
 
 /** 待发送的附件列表（上传成功后暂存，随消息一起提交到新对话） */
@@ -209,8 +219,13 @@ const clearPendingAttachments = () => {
   pendingAttachments.value = []
 }
 
+const hasPersistedAttachmentId = (attachment?: Partial<PendingAttachment> | null): attachment is PendingAttachment => {
+  return typeof attachment?.id === 'string' && attachment.id.length > 0 && !attachment.id.startsWith('temp_')
+}
+
 const onSidebarChange = (collapsed: boolean) => {
   isCollapsed.value = collapsed
+  sidebarWidth.value = collapsed ? 48 : 288
 }
 
 /** 根据时间生成问候语 */
@@ -229,36 +244,53 @@ const handleSend = async () => {
   showModelMenu.value = false
 
   try {
-    // 收集待发送的附件 ID 列表
-    const fileIds = pendingAttachments.value.length > 0
-      ? pendingAttachments.value.map(f => f.id)
-      : undefined
+    // 保存附件信息（在清空之前），过滤掉临时附件（ID以temp_开头）
+    const validAttachments = pendingAttachments.value.filter(hasPersistedAttachmentId)
+    const attachments = validAttachments.map(att => ({
+      id: att.id,
+      filename: att.filename,
+      fileType: att.fileType,
+      size: att.size,
+      previewUrl: att.previewUrl,
+    }))
+    const fileIds = attachments.length > 0 ? attachments.map(f => f.id) : undefined
 
-    // 构建包含可读文件内容的完整消息文本
-    let fullMessage = userInput.value.trim()
-    if (pendingAttachments.value.length > 0) {
+    // 构建包含可读文件内容的完整消息文本（发送给 API）
+    let apiMessage = userInput.value.trim()
+    if (validAttachments.length > 0) {
       const textParts: string[] = []
-      for (const att of pendingAttachments.value) {
+      for (const att of validAttachments) {
         if (att.textContent) {
           textParts.push(`\n\n--- 附件: ${att.filename} (${formatFileSize(att.size)}) ---\n${att.textContent}\n--- 结束 ---`)
         } else {
           textParts.push(`\n[附件: ${att.filename}]`)
         }
       }
-      fullMessage += textParts.join('')
+      apiMessage += textParts.join('')
     }
 
+    // 用户输入文本（不含文件内容，用于前端显示）
+    const displayMessage = userInput.value.trim()
+
     // 先创建对话
-    const dialog = await appStore.createDialog(fullMessage.slice(0, 60))
+    const dialog = await appStore.createDialog(apiMessage.slice(0, 60))
     if (!dialog) return
 
     clearPendingAttachments()
 
-    // 跳转到聊天页面（携带完整消息，含文件内容）
-    const query: Record<string, string> = { msg: fullMessage }
+    // 跳转到聊天页面（携带显示消息 + 附件元数据）
+    const query: Record<string, string> = { msg: displayMessage }
     if (fileIds && fileIds.length > 0) {
       query.fileIds = fileIds.join(',')
+      query.files = JSON.stringify(attachments.map(a => ({
+        id: a.id,
+        filename: a.filename,
+        file_type: a.fileType === 'image' ? 'image' : 'document',
+        size: a.size,
+      })))
     }
+    // 同时传递完整消息供 API 使用
+    query.apiMsg = apiMessage
     router.push({ path: `/chat/${dialog.id}`, query })
   } catch (e) {
     console.error('发送失败:', e)
@@ -273,7 +305,75 @@ const handleSwitchModel = async (model: any) => {
   await appStore.switchModel(model.id)
 }
 
-/** 文件上传处理（通过 file input 选择） */
+// 防止附件点击重复执行
+let isAttachHandling = false
+
+/** 附件按钮点击 */
+const handleAttachClick = () => {
+  // 防止重复执行
+  if (isAttachHandling) {
+    console.warn('附件点击处理中，忽略重复点击')
+    return
+  }
+  
+  if (!fileInputRef.value) {
+    console.error('fileInputRef 为 null')
+    return
+  }
+  
+  isAttachHandling = true
+  
+  try {
+    // 方案1：直接点击原始输入框
+    fileInputRef.value.click()
+  } catch (error) {
+    console.error('点击文件输入框失败:', error)
+    // 方案2：创建新的文件输入框作为备用
+    createAndClickFallbackFileInput(fileInputRef.value)
+  } finally {
+    // 短暂延迟后重置标志，避免快速连续点击
+    setTimeout(() => {
+      isAttachHandling = false
+    }, 100)
+  }
+}
+
+/** 创建并点击备用文件输入框 */
+const createAndClickFallbackFileInput = (originalInput: HTMLInputElement) => {
+  const tempInput = document.createElement('input')
+  tempInput.type = 'file'
+  tempInput.multiple = true
+  tempInput.accept = originalInput.accept
+  
+  // 使用不可见但可点击的位置
+  tempInput.style.position = 'fixed'
+  tempInput.style.left = '-9999px'
+  tempInput.style.opacity = '0'
+  tempInput.style.pointerEvents = 'auto'
+  
+  document.body.appendChild(tempInput)
+  
+  tempInput.addEventListener('change', () => {
+    // 将文件传递给原始输入框
+    const event = new Event('change', { bubbles: true })
+    Object.defineProperty(event, 'target', { value: { files: tempInput.files } })
+    originalInput.dispatchEvent(event)
+    
+    // 清理临时输入框
+    document.body.removeChild(tempInput)
+  })
+  
+  // 确保临时输入框已经添加到DOM后立即点击（同步执行以保持用户激活上下文）
+  try {
+    tempInput.click()
+  } catch (error) {
+    console.error('点击临时文件输入框失败:', error)
+    // 清理临时输入框
+    document.body.removeChild(tempInput)
+  }
+}
+
+/** 文件上传处理 */
 const handleFileUpload = async (event: Event) => {
   const input = event.target as HTMLInputElement
   if (!input.files?.length) return
@@ -315,11 +415,15 @@ const uploadAndAddFile = async (file: File): Promise<void> => {
     // 2) 同时上传文件到服务器（获取 fileId 用于关联消息）
     const res = await fileApi.upload(file)
     if (res.success && res.data) {
-      const uploaded = res.data as any
+      // 后端返回嵌套结构: { success, message, data: { id, filename, ... } }
+      const raw = res.data as any
+      const uploaded: UploadedFile = raw.data ? raw.data : raw
+      // 使用服务器返回的文件名，如果为空则使用原始文件名
+      const filename = getDisplayFilename(file.name, uploaded.filename)
 
       const att: PendingAttachment = {
         id: uploaded.id,
-        filename: uploaded.filename,
+        filename,
         fileType: uploaded.file_type,
         size: uploaded.size,
         previewUrl: uploaded.preview_url,
@@ -329,23 +433,43 @@ const uploadAndAddFile = async (file: File): Promise<void> => {
       pendingAttachments.value.push(att)
 
       if (readResult) {
-        console.log(`[UPLOAD] 文件上传+读取成功: ${uploaded.filename} (${readResult.method}, ${readResult.content.length}字符, id=${uploaded.id})`)
+        console.log(`[UPLOAD] 文件上传+读取成功: ${filename} (${readResult.method}, ${readResult.content.length}字符, id=${uploaded.id})`)
       } else {
-        console.log(`[UPLOAD] 文件上传成功(不可读): ${uploaded.filename} (id=${uploaded.id})`)
+        console.log(`[UPLOAD] 文件上传成功(不可读): ${filename} (id=${uploaded.id})`)
       }
     } else {
-      // 上传失败但有本地可读内容时，仍然把内容注入输入框
-      if (readResult) {
-        userInput.value += `\n\n--- 附件: ${file.name} ---\n${readResult.content}\n--- 结束 ---`
-        console.log(`[UPLOAD] 上传失败但已读取内容: ${file.name}`)
-      } else {
-        userInput.value += `\n[附件: ${file.name}]`
+      // 上传失败时，仍然创建本地附件预览（使用临时ID）
+      const tempId = `temp_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
+      const att: PendingAttachment = {
+        id: tempId,
+        filename: file.name,
+        fileType: file.type.startsWith('image/') ? 'image' : 'document',
+        size: file.size,
+        previewUrl: null,
+        textContent: readResult?.content ?? null,
       }
+      
+      pendingAttachments.value.push(att)
+      console.log(`[UPLOAD] 上传失败但已创建本地附件预览: ${file.name} (临时ID: ${tempId})`)
+      
+      // 不再将内容直接注入输入框，保持附件样式显示
       autoResizeByRef()
     }
   } catch (err: any) {
     console.error('[UPLOAD] 处理失败:', err)
-    userInput.value += `\n[附件: ${file.name}]`
+    // 异常时也创建本地附件预览
+    const tempId = `temp_err_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
+    const att: PendingAttachment = {
+      id: tempId,
+      filename: file.name,
+      fileType: file.type.startsWith('image/') ? 'image' : 'document',
+      size: file.size,
+      previewUrl: null,
+      textContent: null,
+    }
+    
+    pendingAttachments.value.push(att)
+    console.log(`[UPLOAD] 处理异常但已创建本地附件预览: ${file.name} (临时ID: ${tempId})`)
     autoResizeByRef()
   }
 }

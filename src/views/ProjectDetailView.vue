@@ -1,8 +1,8 @@
 <template>
   <div class="min-h-screen bg-[#f9f8f5] dark:bg-[#1f1f1e] text-[#1a1a1a] dark:text-gray-200">
-    <AppNavigation @sidebar-change="onSidebarChange" />
+    <AppNavigation :sidebar-width="sidebarWidth" @sidebar-change="onSidebarChange" />
 
-    <main :class="['min-h-screen transition-all duration-200 ease-in-out', isCollapsed ? 'ml-[48px]' : 'ml-[288px]']">
+    <main class="min-h-screen transition-all duration-200 ease-in-out" :style="{ marginLeft: sidebarWidth + 'px' }">
       <div class="max-w-4xl mx-auto px-6 pt-6 pb-32">
         <!-- 顶部导航 -->
         <div class="flex items-center gap-2 mb-6 text-[13px]">
@@ -115,6 +115,7 @@ const route = useRoute()
 const appStore = useAppStore()
 
 const isCollapsed = ref(false)
+const sidebarWidth = ref(288)
 const messageInput = ref('')
 const showInstructionEdit = ref(false)
 const systemPrompt = ref('')
@@ -135,7 +136,10 @@ onMounted(async () => {
 
 const currentModel = computed(() => appStore.currentModel?.name || 'Haiku 4.5')
 
-const onSidebarChange = (collapsed: boolean) => { isCollapsed.value = collapsed }
+const onSidebarChange = (collapsed: boolean) => {
+  isCollapsed.value = collapsed
+  sidebarWidth.value = collapsed ? 48 : 288
+}
 
 const handleSend = async () => {
   if (!messageInput.value.trim()) return

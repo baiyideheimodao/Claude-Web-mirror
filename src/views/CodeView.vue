@@ -1,8 +1,8 @@
 <template>
   <div class="min-h-screen bg-[#f9f8f5] dark:bg-[#1f1f1e] text-[#1a1a1a] dark:text-gray-200">
-    <AppNavigation @sidebar-change="onSidebarChange" />
+    <AppNavigation :sidebar-width="sidebarWidth" @sidebar-change="onSidebarChange" />
 
-    <main :class="['min-h-screen transition-all duration-200 ease-in-out', isCollapsed ? 'ml-[48px]' : 'ml-[288px]']">
+    <main class="min-h-screen transition-all duration-200 ease-in-out" :style="{ marginLeft: sidebarWidth + 'px' }">
       <div class="max-w-4xl mx-auto px-6 pt-6 pb-32">
         <!-- 标题栏 -->
         <div class="flex items-center justify-between mb-5">
@@ -127,6 +127,7 @@ import AppNavigation from '@/components/layout/AppNavigation.vue'
 import { agentApi } from '@/api/agent'
 
 const isCollapsed = ref(false)
+const sidebarWidth = ref(288)
 const selectedTool = ref('generate')
 const isGenerating = ref(false)
 
@@ -139,7 +140,10 @@ const resultTitle = ref('Generated Code')
 const resultLanguage = ref('JavaScript')
 const debugResult = ref<{ cause: string; fixed_code: string; suggestion: string } | null>(null)
 
-const onSidebarChange = (collapsed: boolean) => { isCollapsed.value = collapsed }
+const onSidebarChange = (collapsed: boolean) => {
+  isCollapsed.value = collapsed
+  sidebarWidth.value = collapsed ? 48 : 288
+}
 
 const handleGenerate = async () => {
   if (!genForm.value.requirement.trim()) return

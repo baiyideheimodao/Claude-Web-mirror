@@ -1,8 +1,8 @@
 <template>
   <div class="min-h-screen bg-[#f9f8f5] dark:bg-[#1f1f1e] text-text-100" :class="{ 'dark': appStore.isDarkMode }">
-    <AppNavigation @sidebar-change="onSidebarChange" />
+    <AppNavigation :sidebar-width="sidebarWidth" @sidebar-change="onSidebarChange" />
 
-    <main :class="['min-h-screen transition-all duration-200 ease-in-out', isCollapsed ? 'ml-[48px]' : 'ml-[288px]']">
+    <main class="min-h-screen transition-all duration-200 ease-in-out" :style="{ marginLeft: sidebarWidth + 'px' }">
       <div class="max-w-3xl mx-auto px-6 pt-6 pb-8">
         <h1 class="text-xl font-semibold text-[#1a1a1a] dark:text-white mb-6">设置</h1>
 
@@ -185,6 +185,7 @@ import { userApi } from '@/api/user'
 
 const appStore = useAppStore()
 const isCollapsed = ref(false)
+const sidebarWidth = ref(288)
 const activeSection = ref('general')
 const backgroundAnimation = ref('enabled')
 
@@ -222,7 +223,10 @@ const animOptions = [
   { value: 'disabled', label: '禁用', dots: false, bgClass: 'bg-[#f9f8f5] dark:bg-[#2a2a2a]' },
 ]
 
-const onSidebarChange = (collapsed: boolean) => { isCollapsed.value = collapsed }
+const onSidebarChange = (collapsed: boolean) => {
+  isCollapsed.value = collapsed
+  sidebarWidth.value = collapsed ? 48 : 288
+}
 
 const saveProfile = async () => {
   await appStore.updateUserProfile({

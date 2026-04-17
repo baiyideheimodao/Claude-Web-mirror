@@ -46,7 +46,19 @@
             <div v-if="msg.role === 'user'" class="flex justify-end">
               <!-- 用户消息（官网风格：无边框无阴影，深色背景，圆角，无时间戳） -->
               <div class="max-w-[80%] bg-[#121212] dark:bg-[#121212] rounded-xl px-4 py-2.5">
-                <p class="text-[15px] text-[#f8f8f6] leading-relaxed whitespace-pre-wrap">{{ msg.content }}</p>
+                <!-- 附件列表 -->
+                <div v-if="msg.files && msg.files.length > 0" class="flex flex-wrap gap-1.5 mb-1.5">
+                  <div
+                    v-for="file in msg.files"
+                    :key="file.id"
+                    class="inline-flex items-center gap-1 px-2 py-0.5 bg-white/10 rounded-lg border border-white/10"
+                  >
+                    <svg v-if="file.file_type === 'image'" class="w-3.5 h-3.5 text-[#d97757] shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.75"><path stroke-linecap="round" stroke-linejoin="round" d="m2.25 15.75 5.159-5.159a2.25 2.25 0 0 1 3.182 0l5.159 5.159m-1.5-1.5 1.409-1.409a2.25 2.25 0 0 1 3.182 0l2.909 2.909M3.75 21h16.5A2.25 2.25 0 0 0 22.5 18.75V5.25A2.25 2.25 0 0 0 20.25 3H3.75A2.25 2.25 0 0 0 1.5 5.25v13.5A2.25 2.25 0 0 0 3.75 21Z"/></svg>
+                    <svg v-else class="w-3.5 h-3.5 text-[#9b9a97] shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.75"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z"/></svg>
+                    <span class="text-[12px] text-[#e5e5e5] truncate max-w-[120px]">{{ file.filename }}</span>
+                  </div>
+                </div>
+                <p v-if="stripAttachmentContent(msg.content)" class="text-[15px] text-[#f8f8f6] leading-relaxed whitespace-pre-wrap">{{ stripAttachmentContent(msg.content) }}</p>
               </div>
             </div>
 
@@ -206,7 +218,7 @@
                   :key="att.id"
                   class="inline-flex items-center gap-1 px-2 py-1 bg-[#2f3030] dark:bg-[#2f3030] rounded-lg border border-[#3e3e3e] group/att"
                 >
-                  <span class="text-[12px] text-[#e5e5e5]">@{{ att.filename }}</span>
+                  <span class="text-[12px] text-[#e5e5e5] truncate max-w-[120px]" :title="`${att.filename} (${formatFileSize(att.size)})`">{{ att.filename }}</span>
                   <!-- 移除按钮 -->
                   <button
                     type="button"
@@ -221,11 +233,11 @@
 
               <div class="absolute bottom-3 left-3 right-3 flex items-center justify-between">
                 <!-- 左侧：附件按钮 -->
-                <button type="button" class="p-1.5 hover:bg-black/[0.04] dark:hover:bg-white/5 rounded-md transition-colors group cursor-pointer" title="附件" @click="fileInputRef?.click()">
+                <button type="button" class="p-1.5 hover:bg-black/[0.04] dark:hover:bg-white/5 rounded-md transition-colors group cursor-pointer" title="附件" @click.stop="handleAttachClick">
                   <svg class="w-[17px] h-[17px] text-[#9b9a97] group-hover:text-[#787774]" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.75">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
                   </svg>
-                  <input ref="fileInputRef" type="file" class="hidden" accept="image/*,.pdf,.txt,.md,.doc,.docx,.csv,.json,.html,.css,.js,.ts,.py,.java,.go,.rs,.xml,.yaml,.yml,.log,.c,.cpp,.h,.hpp,.rb,.php,.sql,.vue" multiple @change="handleFileUpload" />
+                  <input ref="fileInputRef" type="file" class="absolute -left-full opacity-0" accept="image/*,.pdf,.txt,.md,.doc,.docx,.csv,.json,.html,.css,.js,.ts,.py,.java,.go,.rs,.xml,.yaml,.yml,.log,.c,.cpp,.h,.hpp,.rb,.php,.sql,.vue" multiple @change="handleFileUpload" />
                 </button>
 
                 <!-- 右侧：空状态=模型名+语音，有内容=发送/停止 -->
@@ -364,6 +376,8 @@ import { useAppStore } from '@/stores/useAppStore'
 import { dialogApi } from '@/api/dialog'
 import { fileApi } from '@/api/file'
 import { readFileContent } from '@/utils/fileReader'
+import { getDisplayFilename } from '@/utils/fileName'
+import type { UploadedFile } from '@/types/api'
 
 const router = useRouter()
 const route = useRoute()
@@ -408,6 +422,10 @@ const removePendingAttachment = (id: string) => {
 /** 清空所有待发送附件 */
 const clearPendingAttachments = () => {
   pendingAttachments.value = []
+}
+
+const hasPersistedAttachmentId = (attachment?: Partial<PendingAttachment> | null): attachment is PendingAttachment => {
+  return typeof attachment?.id === 'string' && attachment.id.length > 0 && !attachment.id.startsWith('temp_')
 }
 const msgContainerRef = ref<HTMLElement | null>(null)
 const aiLogoRef = ref<SVGSVGElement | null>(null)
@@ -531,12 +549,29 @@ watch(dialogId, async (newId) => {
     }
     
     if (msg) {
-      messageInput.value = msg
-      
-      // 如果同时有文件ID，先添加到待发送列表
-      if (fileIdsQuery) {
+      // 优先使用 apiMsg（含文件内容，供 API 使用），msg 仅用于显示
+      const apiMsg = route.query.apiMsg as string | undefined
+      messageInput.value = apiMsg || msg
+
+      // 如果同时有文件元数据，先添加到待发送列表
+      const filesQuery = route.query.files as string | undefined
+      if (filesQuery) {
+        try {
+          const files = JSON.parse(filesQuery)
+          for (const f of files) {
+            pendingAttachments.value.push({
+              id: f.id,
+              filename: f.filename,
+              fileType: f.file_type,
+              size: f.size,
+            })
+          }
+        } catch (e) {
+          console.error('[CHATVIEW] Failed to parse files query:', e)
+        }
+      } else if (fileIdsQuery) {
+        // 兼容旧格式：只有 fileIds 没有文件元数据
         const ids = fileIdsQuery.split(',').filter(Boolean)
-        // 从 HomeView 传来的文件 ID 直接使用（这些文件已经上传到服务器）
         for (const id of ids) {
           pendingAttachments.value.push({
             id,
@@ -545,9 +580,8 @@ watch(dialogId, async (newId) => {
             size: 0,
           })
         }
-        console.log(`[CHATVIEW] Pre-loaded ${ids.length} file IDs from HomeView`)
       }
-      
+
       setTimeout(() => handleSend(), 300)
       router.replace({ path: `/chat/${newId}` })
     } else if (artifactType.value) {
@@ -738,6 +772,15 @@ const autoInjectArtifact = (content: string): { content: string; injected: boole
 }
 
 /** 渲染消息内容时，移除 [QUESTION]、[CHOICE] 和 [ARTIFACT] 标签块 */
+/** 清理用户消息中的附件注入内容，仅用于前端显示 */
+const stripAttachmentContent = (content: string): string => {
+  if (!content) return ''
+  return content
+    .replace(/\n\n--- 附件:.*?--- 结束 ---/gs, '')
+    .replace(/\n\[附件:.*?\]/g, '')
+    .trim()
+}
+
 const renderContent = (content: string): string => {
   if (!content) return ''
   let html = content
@@ -753,17 +796,6 @@ const renderContent = (content: string): string => {
     html = html.replace(/\[ARTIFACT\][\s\S]*?\[\/ARTIFACT\]/g, '')
   }
 
-  // 如果没有 ARTIFACT 但有大段代码块（html/vue/react等），也隐藏代码只留文字说明
-  // 这样确保所有制品类回复都以卡片形式呈现
-  if (!hasArtifact) {
-    // 检测是否有可提取为制品的代码块
-    const codeBlockMatch = content.match(/```(html|vue|jsx|tsx|css|javascript|js)\n([\s\S]{50,}?)```/)
-    if (codeBlockMatch && /<(html|!DOCTYPE|head|body|div)\b/i.test(codeBlockMatch[2])) {
-      // 有完整HTML代码时，直接隐藏代码块（不渲染到对话框），制品通过卡片展示
-      html = html.replace(/```(?:html|vue|jsx|tsx|css|javascript|js)\n[\s\S]{50,}?```/g, '')
-    }
-  }
-
   html = html.trim()
 
   html = html
@@ -771,11 +803,7 @@ const renderContent = (content: string): string => {
     .replace(/</g, '&lt;')
     .replace(/>/g, '&gt;')
 
-  // 代码块 (```language\n...\n```)
-  // 注意：如果已有ARTIFAST标记，这里不再渲染任何大代码块（避免重复）
   html = html.replace(/```(\w*)\n([\s\S]*?)```/g, (_match, _lang, code) => {
-    // 超过200字符的代码块（很可能是制品代码），不在对话框中显示
-    if (code.length > 200) return ''
     return `<pre class="bg-[#f5f4f0] dark:bg-[#1f1f1e] rounded-lg p-3 my-3 overflow-x-auto font-mono text-[13px] border border-[#eee] dark:border-white/5"><code class="text-[#1a1a1a] dark:text-gray-200">${code}</code></pre>`
   })
 
@@ -879,7 +907,7 @@ interface ArtifactData {
 
 /** 从消息内容中提取制品数据 [ARTIFACT]...[/ARTIFACT]，或从代码块中自动提取 */
 const getArtifact = (content: string): ArtifactData | null => {
-  // 优先匹配已有的 [ARTIFACT] 标签
+  // 匹配 [ARTIFACT] 标签
   const match = content.match(/\[ARTIFACT\]([\s\S]*?)\[\/ARTIFACT\]/)
   if (match) {
     try {
@@ -904,29 +932,7 @@ const getArtifact = (content: string): ArtifactData | null => {
     } catch { return null }
   }
 
-  // 没有ARTIFACT标签时，自动从大代码块中提取（兼容已加载的历史消息）
-  const codeBlockMatch = content.match(/```(html|vue|jsx|tsx|css|javascript|js)\n([\s\S]{50,}?)```/)
-  if (codeBlockMatch && /<(html|!DOCTYPE|head|body|div)\b/i.test(codeBlockMatch[2])) {
-    let extractedType = codeBlockMatch[1]
-    let extractedContent = codeBlockMatch[2].trim()
-    let extractedTitle = '生成的制品'
-
-    // 尝试从代码块中提取标题
-    const titleFromComment = extractedContent.match(/<!--\s*(.+?)\s*-->/)
-    if (titleFromComment) extractedTitle = titleFromComment[1].trim()
-    else {
-      const titleTag = extractedContent.match(/<title>(.*?)<\/title>/i)
-      if (titleTag) extractedTitle = titleTag[1].trim()
-    }
-
-    // 描述取正文前两行
-    const plainText = content.replace(/```[\s\S]*?```/g, '').replace(/[#*\-\[\]>]/g, ' ').trim()
-    const description = plainText.split('\n').filter(l => l.trim()).slice(0, 2).join(' ').substring(0, 120) || '点击查看预览'
-
-    // console.log(`[ARTIFACT] Auto-extracted from code block: type=${extractedType}, title=${extractedTitle}`)
-    return { title: extractedTitle, content: extractedContent, type: extractedType, description }
-  }
-
+  // 没有 [ARTIFACT] 标签时不自动提取，避免普通代码片段被误判为制品
   return null
 }
 
@@ -1026,25 +1032,44 @@ const handleSend = async () => {
   let content = messageInput.value.trim()
   const id = dialogId.value
 
-  // 有附件时允许发送（即使没有文字输入）
-  if ((!content && pendingAttachments.value.length === 0) || !id || isSending.value) return
+  // 有附件时允许发送（即使没有文字输入），过滤掉临时附件（ID以temp_开头）
+  const hasValidAttachments = pendingAttachments.value.some(hasPersistedAttachmentId)
+  if ((!content && !hasValidAttachments) || !id || isSending.value) return
 
-  // 将可读文件内容注入消息
-  if (pendingAttachments.value.length > 0) {
+  // 保存附件信息（在清空之前），过滤掉临时附件（ID以temp_开头）
+  const validAttachments = pendingAttachments.value.filter(hasPersistedAttachmentId)
+  const attachments = validAttachments.map(att => ({
+    id: att.id,
+    filename: att.filename,
+    fileType: att.fileType,
+    size: att.size,
+    previewUrl: att.previewUrl,
+  }))
+  const fileIds = attachments.length > 0 ? attachments.map(f => f.id) : undefined
+
+  // 将可读文件内容注入消息（仅发送给 API，不用于前端显示）
+  let apiContent = content
+  if (validAttachments.length > 0) {
     const parts: string[] = []
-    for (const att of pendingAttachments.value) {
+    for (const att of validAttachments) {
       if (att.textContent) {
         parts.push(`\n\n--- 附件: ${att.filename} (${formatFileSize(att.size)}) ---\n${att.textContent}\n--- 结束 ---`)
       } else {
         parts.push(`\n[附件: ${att.filename}]`)
       }
     }
-    content += parts.join('')
+    apiContent += parts.join('')
   }
+
+  // 从 HomeView 跳转来的消息中可能已包含注入的文件内容，清理掉用于显示的 content
+  const displayContent = content
+    .replace(/\n\n--- 附件:.*?--- 结束 ---/gs, '')
+    .replace(/\n\[附件:.*?\]/g, '')
+    .trim()
 
   console.log(`[FRONTEND] ====== handleSend START ======`)
   console.log(`[FRONTEND] dialogId: ${id}`)
-  console.log(`[FRONTEND] content: ${content.substring(0, 80)}`)
+  console.log(`[FRONTEND] content: ${apiContent.substring(0, 80)}`)
 
   isSending.value = true
   isAiWaiting.value = true
@@ -1057,13 +1082,22 @@ const handleSend = async () => {
   clearPendingAttachments()
   autoResizeByRef()
 
-  // 推一条用户消息到列表
+  // 推一条用户消息到列表（content 只包含用户输入文字，附件通过 files 字段展示）
   appStore.messages.push({
     id: `user_${Date.now()}`,
     role: 'user',
-    content,
+    content: displayContent,
     timestamp: new Date().toISOString(),
     status: 'sent', parent_id: null, version: 1,
+    files: attachments.map(a => ({
+      id: a.id,
+      filename: a.filename,
+      file_path: '',
+      file_type: a.fileType === 'image' ? 'image' as const : 'document' as const,
+      size: a.size,
+      uploaded_at: new Date().toISOString(),
+      preview_url: a.previewUrl ?? null,
+    })),
   })
 
   // 推一条临时 AI 消息到消息列表（流式内容直接写在这里）
@@ -1079,16 +1113,9 @@ const handleSend = async () => {
   try {
     const effectiveArtifactType = savedArtifactType.value || (route.query.artifact_type as string) || undefined
 
-    // 收集待发送的附件 ID 列表
-    const fileIds = pendingAttachments.value.length > 0
-      ? pendingAttachments.value.map(f => f.id)
-      : undefined
-
     console.log(`[FRONTEND] calling dialogApi.sendMessageStream(${id}, ...), files:`, fileIds)
-    const stream = dialogApi.sendMessageStream(id, content, fileIds, effectiveArtifactType, abortController.signal)
+    const stream = dialogApi.sendMessageStream(id, apiContent, fileIds, effectiveArtifactType, abortController.signal)
 
-    // 发送成功后清空待发送附件
-    clearPendingAttachments()
     console.log(`[FRONTEND] stream object created, type: ${typeof stream}`)
 
     let eventCount = 0
@@ -1127,14 +1154,7 @@ const handleSend = async () => {
     // ============ 流式完成后的向导检测 & 自动制品注入 ============
     const finalContent = tempMsg?.content || ''
 
-    // 自动从 AI 回复中提取代码块，注入 [ARTIFACT] 标签生成可预览卡片
-    if (tempMsg && finalContent.length > 50) {
-      const { content: enriched, injected } = autoInjectArtifact(finalContent)
-      if (injected) {
-        tempMsg.content = enriched
-        console.log(`[FRONTEND] Artifact auto-injected into msg ${tempAiMsgId}`)
-      }
-    }
+    // 制品自动注入已禁用：只在 AI 回复明确包含 [ARTIFACT] 标签或对话指定了 artifact_type 时才触发制品流程
 
     if (!choiceWizard.completed) {
       // 首次请求时检测是否需要激活向导
@@ -1229,6 +1249,74 @@ const handleSwitchModel = async (model: any) => {
   await appStore.switchModel(model.id)
 }
 
+// 防止附件点击重复执行
+let isAttachHandling = false
+
+/** 附件按钮点击 */
+const handleAttachClick = () => {
+  // 防止重复执行
+  if (isAttachHandling) {
+    console.warn('附件点击处理中，忽略重复点击')
+    return
+  }
+  
+  if (!fileInputRef.value) {
+    console.error('fileInputRef 为 null')
+    return
+  }
+  
+  isAttachHandling = true
+  
+  try {
+    // 方案1：直接点击原始输入框
+    fileInputRef.value.click()
+  } catch (error) {
+    console.error('点击文件输入框失败:', error)
+    // 方案2：创建新的文件输入框作为备用
+    createAndClickFallbackFileInput(fileInputRef.value)
+  } finally {
+    // 短暂延迟后重置标志，避免快速连续点击
+    setTimeout(() => {
+      isAttachHandling = false
+    }, 100)
+  }
+}
+
+/** 创建并点击备用文件输入框 */
+const createAndClickFallbackFileInput = (originalInput: HTMLInputElement) => {
+  const tempInput = document.createElement('input')
+  tempInput.type = 'file'
+  tempInput.multiple = true
+  tempInput.accept = originalInput.accept
+  
+  // 使用不可见但可点击的位置
+  tempInput.style.position = 'fixed'
+  tempInput.style.left = '-9999px'
+  tempInput.style.opacity = '0'
+  tempInput.style.pointerEvents = 'auto'
+  
+  document.body.appendChild(tempInput)
+  
+  tempInput.addEventListener('change', () => {
+    // 将文件传递给原始输入框
+    const event = new Event('change', { bubbles: true })
+    Object.defineProperty(event, 'target', { value: { files: tempInput.files } })
+    originalInput.dispatchEvent(event)
+    
+    // 清理临时输入框
+    document.body.removeChild(tempInput)
+  })
+  
+  // 确保临时输入框已经添加到DOM后立即点击（同步执行以保持用户激活上下文）
+  try {
+    tempInput.click()
+  } catch (error) {
+    console.error('点击临时文件输入框失败:', error)
+    // 清理临时输入框
+    document.body.removeChild(tempInput)
+  }
+}
+
 /** 文件上传（通过 file input 选择） */
 const handleFileUpload = async (event: Event) => {
   const input = event.target as HTMLInputElement
@@ -1271,31 +1359,53 @@ const uploadAndAddFile = async (file: File): Promise<void> => {
     // 2) 上传到服务器
     const res = await fileApi.upload(file, dialogId?.value)
     if (res.success && res.data) {
-      const uploaded = res.data as UploadedFile
+      // 后端返回嵌套结构: { success, message, data: { id, filename, ... } }
+      const raw = res.data as any
+      const uploaded: UploadedFile = raw.data ? raw.data : raw
+      // 使用服务器返回的文件名，如果为空则使用原始文件名
+      const filename = getDisplayFilename(file.name, uploaded.filename)
       pendingAttachments.value.push({
         id: uploaded.id,
-        filename: uploaded.filename,
+        filename,
         fileType: uploaded.file_type,
         size: uploaded.size,
         previewUrl: uploaded.preview_url,
         textContent: readResult?.content ?? null,
       })
       if (readResult) {
-        console.log(`[UPLOAD] 文件上传+读取成功: ${uploaded.filename} (${readResult.method}, ${readResult.content.length}字符, id=${uploaded.id})`)
+        console.log(`[UPLOAD] 文件上传+读取成功: ${filename} (${readResult.method}, ${readResult.content.length}字符, id=${uploaded.id})`)
       } else {
-        console.log(`[UPLOAD] 文件上传成功(不可读): ${uploaded.filename} (id=${uploaded.id})`)
+        console.log(`[UPLOAD] 文件上传成功(不可读): ${filename} (id=${uploaded.id})`)
       }
     } else {
-      if (readResult) {
-        messageInput.value += `\n\n--- 附件: ${file.name} ---\n${readResult.content}\n--- 结束 ---`
-      } else {
-        messageInput.value += `\n[附件: ${file.name}]`
-      }
+      // 上传失败时，仍然创建本地附件预览（使用临时ID）
+      const tempId = `temp_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
+      pendingAttachments.value.push({
+        id: tempId,
+        filename: file.name,
+        fileType: file.type.startsWith('image/') ? 'image' : 'document',
+        size: file.size,
+        previewUrl: null,
+        textContent: readResult?.content ?? null,
+      })
+      console.log(`[UPLOAD] 上传失败但已创建本地附件预览: ${file.name} (临时ID: ${tempId})`)
+      
+      // 不再将内容直接注入输入框，保持附件样式显示
       autoResizeByRef()
     }
   } catch (err: any) {
     console.error('[UPLOAD] 处理失败:', err)
-    messageInput.value += `\n[附件: ${file.name}]`
+    // 异常时也创建本地附件预览
+    const tempId = `temp_err_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
+    pendingAttachments.value.push({
+      id: tempId,
+      filename: file.name,
+      fileType: file.type.startsWith('image/') ? 'image' : 'document',
+      size: file.size,
+      previewUrl: null,
+      textContent: null,
+    })
+    console.log(`[UPLOAD] 处理异常但已创建本地附件预览: ${file.name} (临时ID: ${tempId})`)
     autoResizeByRef()
   }
 }
