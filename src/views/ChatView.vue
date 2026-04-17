@@ -1180,6 +1180,13 @@ const handleSend = async () => {
 
   try {
     const effectiveArtifactType = savedArtifactType.value || (route.query.artifact_type as string) || undefined
+    const shouldBufferArtifactStream = Boolean(
+      effectiveArtifactType ||
+      savedArtifactType.value ||
+      artifactType.value ||
+      choiceWizard.completed ||
+      /创建|生成|制作|构建|制品|网站|应用|模板|demo|landing|app|web|html/i.test(content)
+    )
 
     console.log(`[FRONTEND] calling dialogApi.sendMessageStream(${id}, ...), files:`, fileIds)
     const stream = dialogApi.sendMessageStream(id, apiContent, fileIds, effectiveArtifactType, abortController.signal)
@@ -1188,6 +1195,7 @@ const handleSend = async () => {
 
     let eventCount = 0
     const startTime = performance.now()
+    let bufferedArtifactContent = ''
     // 找到临时消息的引用，用于流式更新
     let tempMsg = appStore.messages.find(m => m.id === tempAiMsgId)
     for await (const event of stream) {
@@ -1196,6 +1204,12 @@ const handleSend = async () => {
       console.log(`[FRONTEND] event #${eventCount} at +${elapsedMs}ms:`, JSON.stringify(event)?.substring(0, 200))
 
       if (event.type === 'chunk') {
+        if (shouldBufferArtifactStream) {
+          bufferedArtifactContent += event.text
+          streamingContent.value = ''
+          scrollToBottom()
+          continue
+        }
         // 直接更新消息列表中的内容，触发 Vue 响应式渲染
         if (tempMsg) tempMsg.content += event.text
         streamingContent.value = tempMsg?.content ?? ''
@@ -1220,7 +1234,7 @@ const handleSend = async () => {
     console.log(`[FRONTEND] for-await loop ended. total events received: ${eventCount}`)
 
     // ============ 流式完成后的向导检测 & 自动制品注入 ============
-    const finalContent = tempMsg?.content || ''
+    const finalContent = shouldBufferArtifactStream ? bufferedArtifactContent : (tempMsg?.content || '')
     const shouldAttemptArtifactInjection = Boolean(
       effectiveArtifactType ||
       savedArtifactType.value ||
@@ -1235,7 +1249,11 @@ const handleSend = async () => {
       if (injectedArtifact.injected) {
         tempMsg.content = injectedArtifact.content
         console.log('[ARTIFACT] Injected artifact into final AI message for card/preview rendering.')
+      } else if (shouldBufferArtifactStream) {
+        tempMsg.content = finalContent
       }
+    } else if (tempMsg && shouldBufferArtifactStream && !tempMsg.content) {
+      tempMsg.content = finalContent
     }
 
     // 制品自动注入已禁用：只在 AI 回复明确包含 [ARTIFACT] 标签或对话指定了 artifact_type 时才触发制品流程
