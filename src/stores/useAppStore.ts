@@ -197,7 +197,16 @@ export const useAppStore = defineStore('app', () => {
 
   const renameDialog = async (dialogId: string, title: string) => {
     try {
-      await dialogApi.rename(dialogId, title)
+      const res = await dialogApi.rename(dialogId, title)
+      const payload = (res.data as any)?.data || res.data
+
+      if (currentDialogDetail.value?.id === dialogId) {
+        currentDialogDetail.value = {
+          ...currentDialogDetail.value,
+          title: payload?.title || title
+        }
+      }
+
       await fetchDialogList()
       return true
     } catch {

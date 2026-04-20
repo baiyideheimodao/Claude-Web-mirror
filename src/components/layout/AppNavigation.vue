@@ -66,7 +66,7 @@
         </button>
       </div>
 
-      <div class="mx-2.5 border-t border-[#e5e5e4]/70 dark:border-white/10 my-1.5 shrink-0"></div>
+
 
       <!-- 主菜单项 - 全部可点击路由 -->
       <div class="px-2 space-y-0.5 mb-1.5 shrink-0">
@@ -108,7 +108,7 @@
         </router-link>
       </div>
 
-      <div class="mx-2.5 border-t border-[#e5e5e4]/70 dark:border-white/10 my-1.5 shrink-0"></div>
+
 
       <!-- 最近聊天列表 -->
       <div class="flex-1 overflow-y-auto min-h-0 px-1 nav-scrollbar">
