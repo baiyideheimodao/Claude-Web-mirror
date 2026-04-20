@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <div class="h-screen bg-[#f9f8f5] dark:bg-[#1f1f1e] text-[#1a1a1a] dark:text-gray-200 flex overflow-hidden">
     <!-- 左侧导航栏（可拖拽调整宽度） -->
     <AppNavigation
@@ -14,14 +14,27 @@
       <!-- 标题栏（官网风格：独立于消息容器，撑满内容区宽度，标题左 + Share右边缘） -->
       <div class="px-6 pt-6 mb-4">
         <div class="flex items-center justify-between">
-          <button
-            class="flex items-center gap-1 text-[13px] text-[#787774] dark:text-[#9b9a97] hover:text-[#5c5b58] dark:hover:text-[#e8e7e0] transition-colors cursor-pointer"
-            @click="!dialogId || messages.length === 0 ? $router.push('/chats') : null"
-          >
-            <svg v-if="!dialogId || messages.length === 0" class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.75"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
-            {{ dialogDetail?.title || '今天有什么可以帮我的' }}
-            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg>
-          </button>
+          <div class="min-w-0 max-w-[min(60vw,32rem)]">
+            <button
+              v-if="!isEditingTitle"
+              class="flex items-center gap-1 text-[13px] text-[#787774] dark:text-[#9b9a97] hover:text-[#5c5b58] dark:hover:text-[#e8e7e0] transition-colors cursor-pointer min-w-0"
+              @click="handleTitleClick"
+            >
+              <svg v-if="!canRenameCurrentDialog" class="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.75"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
+              <span class="truncate">{{ currentDialogTitle }}</span>
+              <svg class="w-3 h-3 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg>
+            </button>
+
+            <input
+              v-else
+              ref="titleInputRef"
+              v-model="editableTitle"
+              type="text"
+              maxlength="200"
+              class="h-7 min-w-[160px] max-w-full rounded-[4px] border border-[#3b82f6] bg-white px-1.5 text-[13px] leading-none text-[#1a1a1a] shadow-none outline-none dark:bg-[#2c2c2a] dark:text-[#f8f8f6]"
+              @blur="handleTitleInputBlur"
+            >
+          </div>
 
           <!-- 官网风格：Share 文字按钮（带边框） -->
           <button class="px-3 py-1 text-[12px] font-medium text-[#787774] dark:text-[#b8b7b4] border border-[#e5e5e4] dark:border-white/10 rounded-lg hover:bg-black/[0.03] dark:hover:bg-white/5 transition-colors" @click="handleShare">
@@ -392,9 +405,13 @@ const isSending = ref(false)
 const streamingContent = ref('')
 const isDragging = ref(false)
 const isAiWaiting = ref(false)
+const isEditingTitle = ref(false)
+const isRenamingTitle = ref(false)
+const editableTitle = ref('')
 let abortController: AbortController | null = null
 const inputRef = ref<HTMLTextAreaElement | null>(null)
 const fileInputRef = ref<HTMLInputElement | null>(null)
+const titleInputRef = ref<HTMLInputElement | null>(null)
 
 /** 待发送的附件列表（上传成功后暂存，随消息一起提交） */
 interface PendingAttachment {
@@ -549,6 +566,8 @@ const resetWizardProgress = () => {
 const dialogId = computed(() => route.params.id as string | undefined)
 const messages = computed(() => appStore.messages)
 const dialogDetail = computed(() => appStore.currentDialogDetail)
+const canRenameCurrentDialog = computed(() => Boolean(dialogId.value && dialogDetail.value))
+const currentDialogTitle = computed(() => dialogDetail.value?.title || '今天有什么可以帮我的')
 
 // 制品模式：从 query 中读取 artifact_type
 const artifactType = computed(() => route.query.artifact_type as string | undefined)
@@ -564,6 +583,10 @@ const savedArtifactType = ref<string | undefined>(undefined)
 
 // 如果URL有query参数 msg 或 artifact_type，自动发送
 watch(dialogId, async (newId) => {
+  isEditingTitle.value = false
+  isRenamingTitle.value = false
+  editableTitle.value = ''
+
   if (newId) {
     await loadDialog(newId)
     const msg = route.query.msg as string
@@ -643,6 +666,80 @@ watch(dialogId, async (newId) => {
     }
   }
 }, { immediate: true })
+
+watch(() => dialogDetail.value?.title, (title) => {
+  if (!isEditingTitle.value) {
+    editableTitle.value = title || ''
+  }
+})
+
+const startTitleRename = async () => {
+  if (!canRenameCurrentDialog.value || isRenamingTitle.value) return
+
+  editableTitle.value = dialogDetail.value?.title || ''
+  isEditingTitle.value = true
+  await nextTick()
+  titleInputRef.value?.focus()
+  titleInputRef.value?.select()
+}
+
+const cancelTitleRename = () => {
+  isEditingTitle.value = false
+  isRenamingTitle.value = false
+  editableTitle.value = dialogDetail.value?.title || ''
+}
+
+const submitTitleRename = async () => {
+  const id = dialogId.value
+  const currentTitle = dialogDetail.value?.title || ''
+  const nextTitle = editableTitle.value.trim()
+
+  if (!id || !dialogDetail.value) {
+    cancelTitleRename()
+    return
+  }
+
+  if (!nextTitle) {
+    cancelTitleRename()
+    return
+  }
+
+  if (nextTitle === currentTitle) {
+    isEditingTitle.value = false
+    return
+  }
+
+  isRenamingTitle.value = true
+  const renamed = await appStore.renameDialog(id, nextTitle)
+
+  if (renamed) {
+    editableTitle.value = nextTitle
+    isEditingTitle.value = false
+  } else {
+    editableTitle.value = currentTitle
+    await nextTick()
+    titleInputRef.value?.focus()
+    titleInputRef.value?.select()
+  }
+
+  isRenamingTitle.value = false
+}
+
+const handleTitleInputBlur = async () => {
+  if (!isEditingTitle.value || isRenamingTitle.value) return
+  await submitTitleRename()
+}
+
+const handleTitleClick = async () => {
+  if (canRenameCurrentDialog.value) {
+    await startTitleRename()
+    return
+  }
+
+  if (!dialogId.value || messages.value.length === 0) {
+    router.push('/chats')
+  }
+}
 
 /** 从 AI 消息内容中提取选项面板数据 { question, choices[] } */
 const getChoicePanel = (content: string): { question: string; choices: string[] } | null => {

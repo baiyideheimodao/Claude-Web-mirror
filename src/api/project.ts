@@ -13,6 +13,10 @@ export const projectApi = {
   getList: () =>
     apiClient.get<Project[]>('/projects'),
 
+  /** 将对话加入项目 */
+  addDialog: (projectId: string, dialogId: string) =>
+    apiClient.post(`/projects/${projectId}/dialogs`, { dialog_id: dialogId }),
+
   /** 上传知识库文件 */
   uploadKnowledgeBase: (projectId: string, file: File): Promise<any> => {
     const formData = new FormData()

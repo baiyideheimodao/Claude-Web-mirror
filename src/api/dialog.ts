@@ -21,6 +21,10 @@ export const dialogApi = {
   rename: (dialogId: string, title: string) =>
     apiClient.put(`/dialogs/${dialogId}`, { title }),
 
+  /** 收藏/取消收藏对话 */
+  setPinned: (dialogId: string, isPinned: boolean) =>
+    apiClient.put(`/dialogs/${dialogId}/pin`, { is_pinned: isPinned }),
+
   /** 删除对话 */
   delete: (dialogId: string) =>
     apiClient.delete(`/dialogs/${dialogId}`),

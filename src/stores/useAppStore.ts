@@ -214,6 +214,25 @@ export const useAppStore = defineStore('app', () => {
     }
   }
 
+  const setDialogPinned = async (dialogId: string, isPinned: boolean) => {
+    try {
+      const res = await dialogApi.setPinned(dialogId, isPinned)
+      const payload = (res.data as any)?.data || res.data
+
+      if (currentDialogDetail.value?.id === dialogId && payload) {
+        currentDialogDetail.value = {
+          ...currentDialogDetail.value,
+          ...(payload as any)
+        }
+      }
+
+      await fetchDialogList()
+      return true
+    } catch {
+      return false
+    }
+  }
+
   const deleteDialog = async (dialogId: string) => {
     try {
       await dialogApi.delete(dialogId)
@@ -495,6 +514,7 @@ export const useAppStore = defineStore('app', () => {
     openDialog,
     sendMessage,
     renameDialog,
+    setDialogPinned,
     deleteDialog,
     regenerateMessage,
     editMessage,

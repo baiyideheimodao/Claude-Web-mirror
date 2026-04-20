@@ -110,17 +110,200 @@
 
 
 
-      <!-- 最近聊天列表 -->
+      <!-- 收藏 / 最近聊天列表 -->
       <div class="flex-1 overflow-y-auto min-h-0 px-1 nav-scrollbar">
-        <h3 class="text-[11px] font-medium text-[#787774] uppercase tracking-wide px-2.5 mb-1.5 mt-0.5">最近对话</h3>
+        <div v-if="starredChatsList.length > 0" class="mb-3">
+          <h3 class="px-2.5 mb-1.5 mt-0.5 text-[11px] font-medium tracking-wide text-[#787774]">收藏</h3>
+          <ul class="space-y-[1px]">
+            <li v-for="chat in starredChatsList" :key="`starred-${chat.id}`" class="relative" :data-dialog-menu="chat.id">
+              <div
+                class="group/chat relative flex items-center rounded-md transition-colors duration-150"
+                :class="activeChatId === chat.id ? 'bg-[#ece9e2] dark:bg-white/5' : 'hover:bg-black/[0.04] dark:hover:bg-white/5'"
+              >
+                <input
+                  v-if="renamingDialogId === chat.id"
+                  ref="renameInputRef"
+                  v-model="renamingDialogTitle"
+                  type="text"
+                  maxlength="200"
+                  class="mx-2 my-1 h-7 min-w-0 flex-1 rounded-[4px] border border-[#3b82f6] bg-white px-2 text-[13px] text-[#1a1a1a] outline-none dark:bg-[#2c2c2a] dark:text-white"
+                  @click.stop
+                  @keydown.enter.prevent="saveDialogRename"
+                  @keydown.esc.prevent="cancelDialogRename"
+                  @blur="handleRenameBlur"
+                >
+
+                <router-link v-else :to="`/chat/${chat.id}`" custom v-slot="{ navigate }">
+                  <button
+                    class="flex min-w-0 flex-1 items-center gap-1.5 px-4 py-1.5 pr-10 text-left text-[13px] leading-normal transition-colors duration-150"
+                    :class="activeChatId === chat.id ? 'text-[#1a1a1a] dark:text-white' : 'text-[#5c5b58] dark:text-[#c3c2b7] hover:text-[#1a1a1a] dark:hover:text-[#e8e7e0]'"
+                    @click="navigate"
+                  >
+                    <span class="truncate">{{ chat.title }}</span>
+                  </button>
+                </router-link>
+
+                <button
+                  v-if="renamingDialogId !== chat.id && (activeChatId === chat.id || activeDialogMenuId === chat.id)"
+                  class="absolute right-1 top-1/2 flex h-7 w-7 -translate-y-1/2 items-center justify-center rounded-md text-[#6e6d68] transition-colors hover:bg-black/[0.06] hover:text-[#1a1a1a] dark:text-[#b8b7b4] dark:hover:bg-white/10 dark:hover:text-white"
+                  @click.stop="toggleDialogMenu(chat.id)"
+                >
+                  <svg class="h-[15px] w-[15px]" viewBox="0 0 20 20" fill="currentColor">
+                    <path d="M4 10a1.5 1.5 0 1 1 3 0 1.5 1.5 0 0 1-3 0Zm4.5 0a1.5 1.5 0 1 1 3 0 1.5 1.5 0 0 1-3 0Zm4.5 0a1.5 1.5 0 1 1 3 0 1.5 1.5 0 0 1-3 0Z" />
+                  </svg>
+                </button>
+
+                <Transition name="dropdown">
+                  <div
+                    v-if="activeDialogMenuId === chat.id"
+                    role="menu"
+                    aria-orientation="vertical"
+                    class="absolute right-0 top-[calc(100%+6px)] z-[120] min-w-[8rem] overflow-y-auto overflow-x-hidden rounded-xl border border-[#d3d0c8] bg-[#fcfbf8] p-1.5 text-[#3d3d39] shadow-[0px_2px_8px_0px_rgba(0,0,0,0.08)] dark:border-white/10 dark:bg-[#2a2a2a] dark:text-gray-200"
+                    @click.stop
+                  >
+                    <button class="dialog-menu-item" role="menuitem" @click="handleTogglePinned(chat)">
+                      <div class="dialog-menu-row">
+                        <div class="dialog-menu-icon-wrap">
+                          <svg class="dialog-menu-icon" width="20" height="20" viewBox="0 0 20 20" fill="currentColor" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                            <path d="M9.158 2.708c.414-.656 1.43-.609 1.758.14l1.697 3.886 4.263.39c.877.082 1.23 1.175.563 1.752l-3.206 2.775.94 4.11c.184.801-.613 1.444-1.336 1.157l-.143-.07L10 14.685l-3.694 2.163c-.756.442-1.675-.232-1.48-1.086l.94-4.11L2.56 8.875c-.666-.577-.315-1.67.563-1.751l4.262-.39 1.698-3.886zm-.974 4.698a.5.5 0 0 1-.346.287l-.067.011-4.556.416 3.432 2.973a.5.5 0 0 1 .16.489l-1.006 4.402 3.946-2.31.06-.03a.5.5 0 0 1 .446.03l3.946 2.31-1.007-4.402a.5.5 0 0 1 .16-.49l3.433-2.972-4.556-.416a.5.5 0 0 1-.413-.298L10 3.25z"></path>
+                          </svg>
+                        </div>
+                        <span class="dialog-menu-label">取消收藏</span>
+                      </div>
+                    </button>
+                    <button class="dialog-menu-item" role="menuitem" @click="startDialogRename(chat)">
+                      <div class="dialog-menu-row">
+                        <div class="dialog-menu-icon-wrap">
+                          <svg class="dialog-menu-icon" width="20" height="20" viewBox="0 0 20 20" fill="currentColor" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                            <path d="M9.728 2.88a1.5 1.5 0 0 1 1.946-.847l2.792 1.1a1.5 1.5 0 0 1 .845 1.945l-3.92 9.953a1.5 1.5 0 0 1-.452.615l-.088.066-3.143 2.186a.75.75 0 0 1-1.135-.362l-.026-.095-.81-3.742a1.5 1.5 0 0 1 .071-.867zm-2.99 10.319a.5.5 0 0 0-.023.288l.73 3.376 2.835-1.971.058-.047a.5.5 0 0 0 .122-.18l2.637-6.698-3.721-1.466zm4.57-10.236a.5.5 0 0 0-.65.283L9.743 5.57l3.722 1.467.917-2.327a.5.5 0 0 0-.283-.648z"></path>
+                          </svg>
+                        </div>
+                        <span class="dialog-menu-label">重命名</span>
+                      </div>
+                    </button>
+                    <button class="dialog-menu-item" role="menuitem" @click="openAddToProjectModal(chat.id)">
+                      <div class="dialog-menu-row">
+                        <div class="dialog-menu-icon-wrap">
+                          <svg class="dialog-menu-icon" width="20" height="20" viewBox="0 0 20 20" fill="currentColor" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                            <path fill-rule="evenodd" d="M15.82 7a1.5 1.5 0 0 1 1.498 1.576l-.019.171-1.165 7A1.5 1.5 0 0 1 14.654 17H5.347a1.5 1.5 0 0 1-1.48-1.253l-1.165-7A1.5 1.5 0 0 1 4.182 7zM4.181 8a.5.5 0 0 0-.493.582l1.166 7a.5.5 0 0 0 .493.418h9.307a.5.5 0 0 0 .493-.418l1.166-7 .006-.112A.5.5 0 0 0 15.82 8z" clip-rule="evenodd"></path><path d="M15.5 5a.5.5 0 0 1 0 1h-11a.5.5 0 0 1 0-1zM14 3a.5.5 0 0 1 0 1H6a.5.5 0 0 1 0-1z"></path>
+                          </svg>
+                        </div>
+                        <span class="dialog-menu-label">添加到项目</span>
+                      </div>
+                    </button>
+                    <div role="separator" aria-orientation="horizontal" class="mx-2 my-1.5 h-[0.5px] bg-[#d8d5ce] dark:bg-white/10"></div>
+                    <button class="dialog-menu-item dialog-menu-item-danger" role="menuitem" @click="handleDeleteChat(chat.id)">
+                      <div class="dialog-menu-row">
+                        <div class="dialog-menu-icon-wrap">
+                          <svg class="dialog-menu-icon" width="20" height="20" viewBox="0 0 20 20" fill="currentColor" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                            <path d="M11.323 1.5a1.5 1.5 0 0 1 1.393.943L13.338 4H17.5l.1.01a.5.5 0 0 1 0 .98l-.1.01h-1.537l-.894 11.615A1.5 1.5 0 0 1 13.574 18H6.426a1.5 1.5 0 0 1-1.478-1.24l-.017-.145L4.037 5H2.5a.5.5 0 0 1 0-1h4.162l.622-1.557.047-.104A1.5 1.5 0 0 1 8.677 1.5zM5.928 16.538a.5.5 0 0 0 .498.462h7.148a.5.5 0 0 0 .498-.462L14.961 5H5.039zM8.5 8a.5.5 0 0 1 .5.5v5a.5.5 0 0 1-1 0v-5a.5.5 0 0 1 .5-.5m3 0a.5.5 0 0 1 .5.5v5a.5.5 0 0 1-1 0v-5a.5.5 0 0 1 .5-.5M8.677 2.5a.5.5 0 0 0-.43.246l-.034.068L7.738 4h4.524l-.475-1.186a.5.5 0 0 0-.464-.314z"></path>
+                          </svg>
+                        </div>
+                        <span class="dialog-menu-label">删除</span>
+                      </div>
+                    </button>
+                  </div>
+                </Transition>
+              </div>
+            </li>
+          </ul>
+        </div>
+
+        <h3 class="px-2.5 mb-1.5 mt-0.5 text-[11px] font-medium tracking-wide text-[#787774]">最近对话</h3>
         <ul class="space-y-[1px]">
-          <li v-for="chat in recentChatsList" :key="chat.id">
-            <router-link :to="`/chat/${chat.id}`" custom v-slot="{ navigate }">
+          <li v-for="chat in recentChatsList" :key="chat.id" class="relative" :data-dialog-menu="chat.id">
+            <div
+              class="group/chat relative flex items-center rounded-md transition-colors duration-150"
+              :class="activeChatId === chat.id ? 'bg-[#ece9e2] dark:bg-white/5' : 'hover:bg-black/[0.04] dark:hover:bg-white/5'"
+            >
+              <input
+                v-if="renamingDialogId === chat.id"
+                ref="renameInputRef"
+                v-model="renamingDialogTitle"
+                type="text"
+                maxlength="200"
+                class="mx-2 my-1 h-7 min-w-0 flex-1 rounded-[4px] border border-[#3b82f6] bg-white px-2 text-[13px] text-[#1a1a1a] outline-none dark:bg-[#2c2c2a] dark:text-white"
+                @click.stop
+                @keydown.enter.prevent="saveDialogRename"
+                @keydown.esc.prevent="cancelDialogRename"
+                @blur="handleRenameBlur"
+              >
+
+              <router-link v-else :to="`/chat/${chat.id}`" custom v-slot="{ navigate }">
+                <button
+                  class="flex min-w-0 flex-1 items-center gap-1.5 px-4 py-1.5 pr-10 text-left text-[13px] leading-normal transition-colors duration-150"
+                  :class="activeChatId === chat.id ? 'text-[#1a1a1a] dark:text-white' : 'text-[#5c5b58] dark:text-[#c3c2b7] hover:text-[#1a1a1a] dark:hover:text-[#e8e7e0]'"
+                  @click="navigate"
+                >
+                  <svg v-if="chat.is_pinned" class="h-3.5 w-3.5 shrink-0 text-[#d97757]" fill="currentColor" viewBox="0 0 20 20">
+                    <path d="M9.25 2.75a.75.75 0 0 1 1.5 0v1.064c1.004.17 1.88.755 2.473 1.595.646.915.871 2.038.646 3.127l-.08.312 2.046 2.046a.75.75 0 0 1-.53 1.28H11.75v3a.75.75 0 0 1-1.5 0v-3H6.695a.75.75 0 0 1-.53-1.28l2.045-2.046-.079-.312c-.225-1.09 0-2.212.646-3.127.593-.84 1.469-1.426 2.473-1.595z"/>
+                  </svg>
+                  <span class="truncate">{{ chat.title }}</span>
+                </button>
+              </router-link>
+
               <button
-                class="w-full text-left px-4 py-1.5 rounded-md text-[13px] text-[#c3c2b7] hover:text-[#e8e7e0] dark:text-[#c3c2b7] dark:hover:text-[#e8e7e0] hover:bg-black/[0.04] dark:hover:bg-white/5 transition-colors duration-150 truncate leading-normal"
-                @click="navigate"
-              >{{ chat.title }}</button>
-            </router-link>
+                v-if="renamingDialogId !== chat.id && (activeChatId === chat.id || activeDialogMenuId === chat.id)"
+                class="absolute right-1 top-1/2 flex h-7 w-7 -translate-y-1/2 items-center justify-center rounded-md text-[#6e6d68] transition-colors hover:bg-black/[0.06] hover:text-[#1a1a1a] dark:text-[#b8b7b4] dark:hover:bg-white/10 dark:hover:text-white"
+                @click.stop="toggleDialogMenu(chat.id)"
+              >
+                <svg class="h-[15px] w-[15px]" viewBox="0 0 20 20" fill="currentColor">
+                  <path d="M4 10a1.5 1.5 0 1 1 3 0 1.5 1.5 0 0 1-3 0Zm4.5 0a1.5 1.5 0 1 1 3 0 1.5 1.5 0 0 1-3 0Zm4.5 0a1.5 1.5 0 1 1 3 0 1.5 1.5 0 0 1-3 0Z" />
+                </svg>
+              </button>
+
+              <Transition name="dropdown">
+                <div
+                  v-if="activeDialogMenuId === chat.id"
+                  role="menu"
+                  aria-orientation="vertical"
+                  class="absolute right-0 top-[calc(100%+6px)] z-[120] min-w-[8rem] overflow-y-auto overflow-x-hidden rounded-xl border border-[#d3d0c8] bg-[#fcfbf8] p-1.5 text-[#3d3d39] shadow-[0px_2px_8px_0px_rgba(0,0,0,0.08)] dark:border-white/10 dark:bg-[#2a2a2a] dark:text-gray-200"
+                  @click.stop
+                >
+                    <button class="dialog-menu-item" role="menuitem" @click="handleTogglePinned(chat)">
+                      <div class="dialog-menu-row">
+                        <div class="dialog-menu-icon-wrap">
+                        <svg class="dialog-menu-icon" width="20" height="20" viewBox="0 0 20 20" fill="currentColor" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                          <path d="M9.158 2.708c.414-.656 1.43-.609 1.758.14l1.697 3.886 4.263.39c.877.082 1.23 1.175.563 1.752l-3.206 2.775.94 4.11c.184.801-.613 1.444-1.336 1.157l-.143-.07L10 14.685l-3.694 2.163c-.756.442-1.675-.232-1.48-1.086l.94-4.11L2.56 8.875c-.666-.577-.315-1.67.563-1.751l4.262-.39 1.698-3.886zm-.974 4.698a.5.5 0 0 1-.346.287l-.067.011-4.556.416 3.432 2.973a.5.5 0 0 1 .16.489l-1.006 4.402 3.946-2.31.06-.03a.5.5 0 0 1 .446.03l3.946 2.31-1.007-4.402a.5.5 0 0 1 .16-.49l3.433-2.972-4.556-.416a.5.5 0 0 1-.413-.298L10 3.25z"></path>
+                          </svg>
+                        </div>
+                        <span class="dialog-menu-label">收藏</span>
+                      </div>
+                    </button>
+                  <button class="dialog-menu-item" role="menuitem" @click="startDialogRename(chat)">
+                    <div class="dialog-menu-row">
+                      <div class="dialog-menu-icon-wrap">
+                        <svg class="dialog-menu-icon" width="20" height="20" viewBox="0 0 20 20" fill="currentColor" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                          <path d="M9.728 2.88a1.5 1.5 0 0 1 1.946-.847l2.792 1.1a1.5 1.5 0 0 1 .845 1.945l-3.92 9.953a1.5 1.5 0 0 1-.452.615l-.088.066-3.143 2.186a.75.75 0 0 1-1.135-.362l-.026-.095-.81-3.742a1.5 1.5 0 0 1 .071-.867zm-2.99 10.319a.5.5 0 0 0-.023.288l.73 3.376 2.835-1.971.058-.047a.5.5 0 0 0 .122-.18l2.637-6.698-3.721-1.466zm4.57-10.236a.5.5 0 0 0-.65.283L9.743 5.57l3.722 1.467.917-2.327a.5.5 0 0 0-.283-.648z"></path>
+                        </svg>
+                      </div>
+                        <span class="dialog-menu-label">重命名</span>
+                      </div>
+                    </button>
+                  <button class="dialog-menu-item" role="menuitem" @click="openAddToProjectModal(chat.id)">
+                    <div class="dialog-menu-row">
+                      <div class="dialog-menu-icon-wrap">
+                        <svg class="dialog-menu-icon" width="20" height="20" viewBox="0 0 20 20" fill="currentColor" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                          <path fill-rule="evenodd" d="M15.82 7a1.5 1.5 0 0 1 1.498 1.576l-.019.171-1.165 7A1.5 1.5 0 0 1 14.654 17H5.347a1.5 1.5 0 0 1-1.48-1.253l-1.165-7A1.5 1.5 0 0 1 4.182 7zM4.181 8a.5.5 0 0 0-.493.582l1.166 7a.5.5 0 0 0 .493.418h9.307a.5.5 0 0 0 .493-.418l1.166-7 .006-.112A.5.5 0 0 0 15.82 8z" clip-rule="evenodd"></path><path d="M15.5 5a.5.5 0 0 1 0 1h-11a.5.5 0 0 1 0-1zM14 3a.5.5 0 0 1 0 1H6a.5.5 0 0 1 0-1z"></path>
+                        </svg>
+                      </div>
+                        <span class="dialog-menu-label">添加到项目</span>
+                      </div>
+                    </button>
+                  <div role="separator" aria-orientation="horizontal" class="mx-2 my-1.5 h-[0.5px] bg-[#d8d5ce] dark:bg-white/10"></div>
+                  <button class="dialog-menu-item dialog-menu-item-danger" role="menuitem" @click="handleDeleteChat(chat.id)">
+                    <div class="dialog-menu-row">
+                      <div class="dialog-menu-icon-wrap">
+                        <svg class="dialog-menu-icon" width="20" height="20" viewBox="0 0 20 20" fill="currentColor" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                          <path d="M11.323 1.5a1.5 1.5 0 0 1 1.393.943L13.338 4H17.5l.1.01a.5.5 0 0 1 0 .98l-.1.01h-1.537l-.894 11.615A1.5 1.5 0 0 1 13.574 18H6.426a1.5 1.5 0 0 1-1.478-1.24l-.017-.145L4.037 5H2.5a.5.5 0 0 1 0-1h4.162l.622-1.557.047-.104A1.5 1.5 0 0 1 8.677 1.5zM5.928 16.538a.5.5 0 0 0 .498.462h7.148a.5.5 0 0 0 .498-.462L14.961 5H5.039zM8.5 8a.5.5 0 0 1 .5.5v5a.5.5 0 0 1-1 0v-5a.5.5 0 0 1 .5-.5m3 0a.5.5 0 0 1 .5.5v5a.5.5 0 0 1-1 0v-5a.5.5 0 0 1 .5-.5M8.677 2.5a.5.5 0 0 0-.43.246l-.034.068L7.738 4h4.524l-.475-1.186a.5.5 0 0 0-.464-.314z"></path>
+                        </svg>
+                      </div>
+                        <span class="dialog-menu-label">删除</span>
+                      </div>
+                    </button>
+                </div>
+              </Transition>
+            </div>
           </li>
           <li v-if="recentChatsList.length === 0 && appStore.isAuthenticated">
             <p class="px-2.5 py-[5px] text-[12px] text-[#cfcfce]">暂无对话</p>
@@ -400,6 +583,39 @@
           </div>
         </div>
       </div>
+
+      <div v-if="showAddToProjectModal" class="fixed inset-0 z-[210] flex items-center justify-center bg-black/30 backdrop-blur-sm" @click.self="closeAddToProjectModal">
+        <div class="w-[420px] max-w-[90vw] rounded-2xl bg-white p-5 shadow-claude-lg dark:bg-[#2a2a2a]">
+          <div class="mb-4 flex items-center justify-between">
+            <div>
+              <h2 class="text-[16px] font-semibold text-[#1a1a1a] dark:text-white">添加到项目</h2>
+              <p class="mt-1 text-[12px] text-[#787774] dark:text-gray-400">选择一个项目来关联当前对话</p>
+            </div>
+            <button class="rounded p-1 text-[#9b9a97] transition-colors hover:bg-black/[0.04] hover:text-[#5c5b58] dark:hover:bg-white/5 dark:hover:text-white" @click="closeAddToProjectModal">
+              <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.75"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12"/></svg>
+            </button>
+          </div>
+
+          <div v-if="isLoadingProjects" class="py-8 text-center text-[13px] text-[#787774] dark:text-gray-400">加载项目中...</div>
+
+          <div v-else-if="projectOptions.length > 0" class="max-h-[320px] space-y-2 overflow-y-auto pr-1">
+            <button
+              v-for="project in projectOptions"
+              :key="project.id"
+              class="w-full rounded-xl border border-[#e5e5e4] px-3 py-3 text-left transition-colors hover:border-[#d0d0cd] hover:bg-black/[0.02] dark:border-white/10 dark:hover:bg-white/5"
+              @click="handleAddToProject(project.id)"
+            >
+              <div class="text-[14px] font-medium text-[#1a1a1a] dark:text-white">{{ project.name }}</div>
+              <div class="mt-1 line-clamp-2 text-[12px] text-[#787774] dark:text-gray-400">{{ project.description || '暂无描述' }}</div>
+            </button>
+          </div>
+
+          <div v-else class="py-8 text-center">
+            <p class="text-[13px] text-[#787774] dark:text-gray-400">还没有项目，先创建一个吧。</p>
+            <button class="mt-3 text-[13px] text-[#d97757] hover:underline" @click="router.push('/projects'); closeAddToProjectModal()">前往项目页</button>
+          </div>
+        </div>
+      </div>
     </Teleport>
   </nav>
 </template>
@@ -408,6 +624,7 @@
 import { ref, computed, watch, nextTick, onMounted, onUnmounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useAppStore } from '@/stores/useAppStore'
+import { projectApi } from '@/api/project'
 
 const props = withDefaults(defineProps<{
   sidebarWidth?: number
@@ -502,6 +719,15 @@ const searchQuery = ref('')
 const searchInputRef = ref<HTMLInputElement | null>(null)
 const searchResults = ref<any[]>([])
 const searchIdx = ref(0)
+const activeDialogMenuId = ref<string | null>(null)
+const renamingDialogId = ref<string | null>(null)
+const renamingDialogTitle = ref('')
+const renameInputRef = ref<HTMLInputElement | null>(null)
+const isDialogActionLoading = ref(false)
+const showAddToProjectModal = ref(false)
+const selectedDialogForProject = ref<string | null>(null)
+const projectOptions = ref<any[]>([])
+const isLoadingProjects = ref(false)
 
 // 表单数据
 const loginForm = ref({ username: '', password: '' })
@@ -509,9 +735,140 @@ const registerForm = ref({ username: '', email: '', password: '' })
 
 // 从store获取最近聊天列表
 const recentChatsList = computed(() => {
-  if (appStore.recentChatsFlat.length > 0) return appStore.recentChatsFlat as any
+  if (appStore.recentChatsFlat.length > 0) {
+    return (appStore.recentChatsFlat as any[]).filter(chat => !chat.is_pinned)
+  }
   return []
 })
+const starredChatsList = computed(() => {
+  if (appStore.recentChatsFlat.length > 0) {
+    return (appStore.recentChatsFlat as any[]).filter(chat => Boolean(chat.is_pinned))
+  }
+  return []
+})
+const activeChatId = computed(() => route.name === 'Chat' ? String(route.params.id || '') : '')
+
+const toggleDialogMenu = (chatId: string) => {
+  activeDialogMenuId.value = activeDialogMenuId.value === chatId ? null : chatId
+}
+
+const closeDialogMenu = () => {
+  activeDialogMenuId.value = null
+}
+
+const startDialogRename = async (chat: any) => {
+  closeDialogMenu()
+  renamingDialogId.value = chat.id
+  renamingDialogTitle.value = chat.title
+  await nextTick()
+  renameInputRef.value?.focus()
+  renameInputRef.value?.select()
+}
+
+const cancelDialogRename = () => {
+  renamingDialogId.value = null
+  renamingDialogTitle.value = ''
+}
+
+const saveDialogRename = async () => {
+  const dialogId = renamingDialogId.value
+  const nextTitle = renamingDialogTitle.value.trim()
+  const currentChat = [...starredChatsList.value, ...recentChatsList.value].find((chat: any) => chat.id === dialogId)
+
+  if (!dialogId || !currentChat) {
+    cancelDialogRename()
+    return
+  }
+
+  if (!nextTitle) {
+    renamingDialogTitle.value = currentChat.title
+    cancelDialogRename()
+    return
+  }
+
+  if (nextTitle === currentChat.title) {
+    cancelDialogRename()
+    return
+  }
+
+  isDialogActionLoading.value = true
+  const renamed = await appStore.renameDialog(dialogId, nextTitle)
+  isDialogActionLoading.value = false
+
+  if (renamed) {
+    cancelDialogRename()
+  } else {
+    renamingDialogTitle.value = currentChat.title
+    await nextTick()
+    renameInputRef.value?.focus()
+    renameInputRef.value?.select()
+  }
+}
+
+const handleRenameBlur = async () => {
+  if (!renamingDialogId.value || isDialogActionLoading.value) return
+  await saveDialogRename()
+}
+
+const handleTogglePinned = async (chat: any) => {
+  closeDialogMenu()
+  isDialogActionLoading.value = true
+  await appStore.setDialogPinned(chat.id, !Boolean(chat.is_pinned))
+  isDialogActionLoading.value = false
+}
+
+const handleDeleteChat = async (dialogId: string) => {
+  closeDialogMenu()
+  if (!confirm('确定要删除这个对话吗？')) return
+
+  isDialogActionLoading.value = true
+  const deleted = await appStore.deleteDialog(dialogId)
+  isDialogActionLoading.value = false
+
+  if (deleted && route.params.id === dialogId) {
+    router.push('/')
+  }
+}
+
+const loadProjectOptions = async () => {
+  isLoadingProjects.value = true
+  try {
+    const res = await projectApi.getList()
+    if (res.success && res.data) {
+      const payload = (res.data as any).data || res.data
+      projectOptions.value = Array.isArray(payload) ? payload : []
+    } else {
+      projectOptions.value = []
+    }
+  } catch {
+    projectOptions.value = []
+  } finally {
+    isLoadingProjects.value = false
+  }
+}
+
+const openAddToProjectModal = async (dialogId: string) => {
+  closeDialogMenu()
+  selectedDialogForProject.value = dialogId
+  showAddToProjectModal.value = true
+  await loadProjectOptions()
+}
+
+const closeAddToProjectModal = () => {
+  showAddToProjectModal.value = false
+  selectedDialogForProject.value = null
+}
+
+const handleAddToProject = async (projectId: string) => {
+  if (!selectedDialogForProject.value) return
+  isDialogActionLoading.value = true
+  try {
+    await projectApi.addDialog(projectId, selectedDialogForProject.value)
+    closeAddToProjectModal()
+  } finally {
+    isDialogActionLoading.value = false
+  }
+}
 
 /** 新建聊天 */
 const handleNewChat = () => {
@@ -648,6 +1005,16 @@ watch(showUserMenu, (val) => {
   }
 })
 
+watch(activeDialogMenuId, (val) => {
+  if (val) {
+    setTimeout(() => {
+      document.addEventListener('click', closeDialogMenuOnClickOutside)
+    }, 0)
+  } else {
+    document.removeEventListener('click', closeDialogMenuOnClickOutside)
+  }
+})
+
 const closeUserMenuOnClickOutside = (e: MouseEvent) => {
   const target = e.target as HTMLElement
   if (showUserMenu.value && !target.closest('.relative') && !target.closest('[class*="bottom"]')) {
@@ -656,11 +1023,22 @@ const closeUserMenuOnClickOutside = (e: MouseEvent) => {
   }
 }
 
+const closeDialogMenuOnClickOutside = (e: MouseEvent) => {
+  const target = e.target as HTMLElement
+  if (activeDialogMenuId.value && !target.closest('[data-dialog-menu]')) {
+    activeDialogMenuId.value = null
+  }
+}
+
 // 监听登录状态变化：用户登录后自动拉取对话列表
 watch(() => appStore.isAuthenticated, (isAuth) => {
   if (isAuth) {
     appStore.fetchDialogList()
   }
+})
+
+watch(() => route.fullPath, () => {
+  closeDialogMenu()
 })
 </script>
 
@@ -683,6 +1061,29 @@ watch(() => appStore.isAuthenticated, (isAuth) => {
 }
 .modal-input {
   @apply w-full px-3 py-2 border border-[#e0e0df] dark:border-white/10 rounded-lg text-[14px] text-[#1a1a1a] dark:text-white placeholder-[#9b9a97] dark:placeholder-gray-500 focus:outline-none focus:border-[#d97757];
+}
+.dialog-menu-item {
+  @apply grid min-h-8 w-full grid-cols-[minmax(0,_1fr)_auto] items-center gap-2 overflow-hidden rounded-lg px-2 py-1.5 text-left text-[13px] font-normal text-[#3f3f3c] outline-none transition-colors hover:bg-[#efede7] hover:text-[#1a1a1a] dark:text-gray-200 dark:hover:bg-white/5 dark:hover:text-white;
+}
+.dialog-menu-item-danger {
+  @apply !text-[#b9382f] hover:bg-[#fff1ef] dark:!text-[#f08a80] dark:hover:bg-red-900/20;
+}
+.dialog-menu-row {
+  @apply flex w-full items-center gap-2;
+}
+.dialog-menu-icon-wrap {
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.dialog-menu-icon {
+  @apply h-5 w-5 shrink-0;
+}
+.dialog-menu-label {
+  @apply flex-1 truncate;
 }
 .nav-scrollbar::-webkit-scrollbar { width: 4px; }
 .nav-scrollbar::-webkit-scrollbar-track { background: transparent; }
