@@ -56,28 +56,166 @@
           <!-- 消息列表 -->
           <template v-for="(msg, index) in messages" :key="msg.id">
             <!-- 用户消息 -->
-            <div v-if="msg.role === 'user'" class="flex justify-end">
-              <!-- 用户消息（官网风格：无边框无阴影，深色背景，圆角，无时间戳） -->
-              <div class="max-w-[80%] bg-[#121212] dark:bg-[#121212] rounded-xl px-4 py-2.5">
-                <!-- 附件列表 -->
-                <div v-if="msg.files && msg.files.length > 0" class="flex flex-wrap gap-1.5 mb-1.5">
-                  <div
-                    v-for="file in msg.files"
-                    :key="file.id"
-                    class="inline-flex items-center gap-1 px-2 py-0.5 bg-white/10 rounded-lg border border-white/10"
-                  >
-                    <svg v-if="file.file_type === 'image'" class="w-3.5 h-3.5 text-[#d97757] shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.75"><path stroke-linecap="round" stroke-linejoin="round" d="m2.25 15.75 5.159-5.159a2.25 2.25 0 0 1 3.182 0l5.159 5.159m-1.5-1.5 1.409-1.409a2.25 2.25 0 0 1 3.182 0l2.909 2.909M3.75 21h16.5A2.25 2.25 0 0 0 22.5 18.75V5.25A2.25 2.25 0 0 0 20.25 3H3.75A2.25 2.25 0 0 0 1.5 5.25v13.5A2.25 2.25 0 0 0 3.75 21Z"/></svg>
-                    <svg v-else class="w-3.5 h-3.5 text-[#9b9a97] shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.75"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z"/></svg>
-                    <span class="text-[12px] text-[#e5e5e5] truncate max-w-[120px]">{{ file.filename }}</span>
+            <div 
+              v-if="msg.role === 'user'" 
+              class="flex justify-end"
+              @mouseenter="userHoveredMessageId = msg.id"
+              @mouseleave="userHoveredMessageId = null"
+            >
+              <div class="flex flex-col items-end max-w-[80%]">
+                <!-- 用户消息（官网风格：无边框无阴影，深色背景，圆角，无时间戳） -->
+                <div class="bg-[#121212] dark:bg-[#121212] rounded-xl px-4 py-2.5">
+                  <!-- 附件列表 -->
+                  <div v-if="msg.files && msg.files.length > 0" class="flex flex-wrap gap-1.5 mb-1.5">
+                    <div
+                      v-for="file in msg.files"
+                      :key="file.id"
+                      class="inline-flex items-center gap-1 px-2 py-0.5 bg-white/10 rounded-lg border border-white/10"
+                    >
+                      <svg v-if="file.file_type === 'image'" class="w-3.5 h-3.5 text-[#d97757] shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.75"><path stroke-linecap="round" stroke-linejoin="round" d="m2.25 15.75 5.159-5.159a2.25 2.25 0 0 1 3.182 0l5.159 5.159m-1.5-1.5 1.409-1.409a2.25 2.25 0 0 1 3.182 0l2.909 2.909M3.75 21h16.5A2.25 2.25 0 0 0 22.5 18.75V5.25A2.25 2.25 0 0 0 20.25 3H3.75A2.25 2.25 0 0 0 1.5 5.25v13.5A2.25 2.25 0 0 0 3.75 21Z"/></svg>
+                      <svg v-else class="w-3.5 h-3.5 text-[#9b9a97] shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.75"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z"/></svg>
+                      <span class="text-[12px] text-[#e5e5e5] truncate max-w-[120px]">{{ file.filename }}</span>
+                    </div>
+                  </div>
+                  
+                  <!-- 编辑模式 -->
+                  <div v-if="editingMessageId === msg.id">
+                    <textarea
+                      v-model="editingMessageContent"
+                      class="w-full bg-transparent text-[15px] text-[#f8f8f6] leading-relaxed whitespace-pre-wrap border-none outline-none resize-none min-h-[60px]"
+                      @keydown.enter.exact.prevent="handleSaveEdit"
+                      @keydown.escape="handleCancelEdit"
+                      autofocus
+                    ></textarea>
+                  </div>
+                  <!-- 查看模式 -->
+                  <div v-else>
+                    <p v-if="stripAttachmentContent(msg.content)" class="text-[15px] text-[#f8f8f6] leading-relaxed whitespace-pre-wrap">{{ stripAttachmentContent(msg.content) }}</p>
                   </div>
                 </div>
-                <p v-if="stripAttachmentContent(msg.content)" class="text-[15px] text-[#f8f8f6] leading-relaxed whitespace-pre-wrap">{{ stripAttachmentContent(msg.content) }}</p>
+                
+                <!-- 用户消息操作栏（鼠标悬停显示或编辑模式时显示） -->
+                <div 
+                  v-show="userHoveredMessageId === msg.id || editingMessageId === msg.id"
+                  class="flex items-center gap-1 mt-1 transition-opacity duration-200"
+                >
+                  <!-- 编辑模式下的操作 -->
+                  <div v-if="editingMessageId === msg.id" class="flex items-center gap-2">
+                    <button 
+                      class="action-btn text-[11px] text-white bg-[#d97757] hover:bg-[#c46a4d] font-medium px-3 py-1 rounded-md"
+                      title="保存编辑"
+                      @click="handleSaveEdit"
+                    >
+                      保存
+                    </button>
+                    <button 
+                      class="action-btn text-[11px] text-[#787774] hover:text-[#5c5b58] font-medium px-3 py-1 rounded-md hover:bg-black/[0.04] dark:hover:bg-white/5"
+                      title="取消编辑"
+                      @click="handleCancelEdit"
+                    >
+                      取消
+                    </button>
+                  </div>
+                  
+                  <!-- 查看模式下的操作 -->
+                  <div v-else class="flex items-center gap-1">
+                    <!-- 编辑按钮 -->
+                    <button 
+                      class="action-btn text-[11px] text-[#787774] hover:text-[#5c5b58] font-medium px-2 py-1 rounded-md hover:bg-black/[0.04] dark:hover:bg-white/5"
+                      title="编辑"
+                      @click="handleEditUserMessage(msg.id)"
+                    >
+                      编辑
+                    </button>
+                    
+                    <!-- 重新生成/重试按钮 -->
+                    <button 
+                      class="action-btn text-[11px] text-[#787774] hover:text-[#5c5b58] font-medium px-2 py-1 rounded-md hover:bg-black/[0.04] dark:hover:bg-white/5"
+                      title="重新生成回答"
+                      @click="handleRegenerate(msg.id)"
+                    >
+                      重试
+                    </button>
+                  </div>
+                </div>
               </div>
             </div>
 
             <!-- AI 消息（无边框纯文字） -->
-            <div v-else>
+            <div 
+              v-else
+              @mouseenter="aiHoveredMessageId = msg.id"
+              @mouseleave="aiHoveredMessageId = null"
+            >
               <div class="text-[16px] text-[#f8f8f6] dark:text-[#f8f8f6] leading-relaxed prose-sm dark:prose-invert max-w-none" v-html="renderContent(msg.content)"></div>
+
+                <!-- HTML 预览组件 -->
+                <div v-if="getHtmlPreview(msg.content)" class="mt-4 w-full group relative">
+                  <div class="html-preview-card border-0 shadow-none bg-transparent">
+                    <!-- 顶部悬停菜单区域 -->
+                    <div class="absolute top-1 right-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-10">
+                      <div class="relative">
+                        <!-- 三个点菜单按钮 -->
+                        <button 
+                          class="w-6 h-6 flex items-center justify-center rounded text-[#9b9a97] hover:text-[#787774] hover:bg-black/5 dark:hover:bg-white/10 transition-colors"
+                          @click="toggleHtmlMenu(msg.id)"
+                        >
+                          <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"/>
+                          </svg>
+                        </button>
+                        
+                        <!-- 下拉菜单 -->
+                        <div 
+                          v-if="htmlMenuOpen === msg.id"
+                          class="absolute right-0 top-full mt-1 w-48 py-1 bg-white/95 dark:bg-[#2c2c2a]/95 backdrop-blur-sm rounded-lg z-20"
+                          v-click-outside="() => htmlMenuOpen = null"
+                        >
+                          <button 
+                            class="w-full px-4 py-2.5 text-[13px] text-[#1a1a1a] dark:text-white hover:bg-[#f5f4f0] dark:hover:bg-white/5 flex items-center gap-2"
+                            @click="copyHtmlContent(getHtmlPreview(msg.content)!)"
+                          >
+                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.75">
+                              <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 17.25v3.375c0 .621-.504 1.125-1.125 1.125h-9.75a1.125 1.125 0 0 1-1.125-1.125V7.875c0-.621.504-1.125 1.125-1.125H6.75a9.06 9.06 0 0 1 1.5.124m7.5 10.376h3.375c.621 0 1.125-.504 1.125-1.125V11.25c0-4.46-3.243-8.161-7.5-8.876a9.06 9.06 0 0 0-1.5-.124H9.375c-.621 0-1.125.504-1.125 1.125v3.5m7.5 10.375H9.375a1.125 1.125 0 0 1-1.125-1.125v-9.25m12 6.625v-1.875a3.375 3.375 0 0 0-3.375-3.375h-1.5a1.125 1.125 0 0 1-1.125-1.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H9.75"/>
+                            </svg>
+                            <span>Copy to clipboard</span>
+                          </button>
+                          <button 
+                            class="w-full px-4 py-2.5 text-[13px] text-[#1a1a1a] dark:text-white hover:bg-[#f5f4f0] dark:hover:bg-white/5 flex items-center gap-2"
+                            @click="downloadHtmlFile(getHtmlPreview(msg.content)!)"
+                          >
+                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.75">
+                              <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5M16.5 12 12 16.5m0 0L7.5 12m4.5 4.5V3"/>
+                            </svg>
+                            <span>Download file</span>
+                          </button>
+                          <div class="border-t border-[#f0ede7] dark:border-white/5 my-1"></div>
+                          <button 
+                            class="w-full px-4 py-2.5 text-[13px] text-[#1a1a1a] dark:text-white hover:bg-[#f5f4f0] dark:hover:bg-white/5 flex items-center gap-2"
+                            @click="openHtmlInNewTab(getHtmlPreview(msg.content)!)"
+                          >
+                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.75">
+                              <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 6H5.25A2.25 2.25 0 0 0 3 8.25v10.5A2.25 2.25 0 0 0 5.25 21h10.5A2.25 2.25 0 0 0 18 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25"/>
+                            </svg>
+                            <span>Open in new tab</span>
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <!-- 预览内容区域 -->
+                    <div class="html-preview-content">
+                      <iframe
+                        :srcdoc="wrapWithProgressiveRender(getHtmlPreview(msg.content)!)"
+                        class="w-full border-0"
+                        style="min-height: 300px; height: auto; max-height: 800px; width: 100%; display: block; overflow: hidden;"
+                        sandbox="allow-scripts allow-same-origin"
+                        title="HTML 预览"
+                        @load="onIframeLoad(msg.id)"
+                      ></iframe>
+                    </div>
+                  </div>
+                </div>
 
                 <!-- 选项卡片面板（原有标签模式） -->
                 <div v-if="getChoicePanel(msg.content) && !closedPanels[msg.id]" class="mt-4 max-w-[80%]">
@@ -157,7 +295,10 @@
                 </div>
 
                 <!-- AI消息底部操作栏（官网100%复刻：Copy/Thumbs Up/Thumbs Down/Retry，32×32px按钮 + 20×20px实心图标） -->
-                <div class="flex items-center max-w-none">
+                <div 
+                  v-show="aiHoveredMessageId === msg.id"
+                  class="flex items-center gap-1 mt-1 transition-opacity duration-200"
+                >
                   <button class="action-btn" title="复制" @click="handleCopy(msg.content)">
                     <svg class="w-5 h-5" viewBox="0 0 20 20" fill="currentColor"><path d="M12.5 3A1.5 1.5 0 0 1 14 4.5V6h1.5A1.5 1.5 0 0 1 17 7.5v8a1.5 1.5 0 0 1-1.5 1.5h-8A1.5 1.5 0 0 1 6 15.5V14H4.5A1.5 1.5 0 0 1 3 12.5v-8A1.5 1.5 0 0 1 4.5 3zm1.5 9.5a1.5 1.5 0 0 1-1.5 1.5H7v1.5a.5.5 0 0 0 .5.5h8a.5.5 0 0 0 .5-.5v-8a.5.5 0 0 0-.5-.5H14zM4.5 4a.5.5 0 0 0-.5.5v8a.5.5 0 0 0 .5.5h8a.5.5 0 0 0 .5-.5v-8a.5.5 0 0 0-.5-.5z"/></svg>
                   </button>
@@ -170,6 +311,15 @@
                   <button class="action-btn" title="重新生成" @click="handleRegenerate(msg.id)">
                     <svg class="w-5 h-5" viewBox="0 0 20 20" fill="currentColor"><path d="M10.386 2.51A7.5 7.5 0 1 1 5.499 4H3a.5.5 0 0 1 0-1h3.5a.5.5 0 0 1 .49.402L7 3.5V7a.5.5 0 0 1-1 0V4.879a6.5 6.5 0 1 0 4.335-1.37L10 3.5l-.1-.01a.5.5 0 0 1 .1-.99z"/></svg>
                   </button>
+                  <!-- 分支切换按钮（如果有多个分支） -->
+                  <button 
+                    v-if="hasMultipleBranches(msg.id)"
+                    class="action-btn text-[11px] text-[#787774] hover:text-[#5c5b58] font-medium px-2 py-1 rounded-md hover:bg-black/[0.04] dark:hover:bg-white/5"
+                    title="切换分支"
+                    @click="switchToNextBranch(msg.id)"
+                  >
+                    &lt; {{ getMessageVersionInfo(msg.id).current }} / {{ getMessageVersionInfo(msg.id).total }} &gt;
+                  </button>
                 </div>
 
                 <!-- Starburst AI Logo 图标 24×24px，橙色 -->
@@ -180,8 +330,9 @@
           </template>
 
         </div>
-        <div class="fixed bottom-6 left-0 right-0 z-40" :style="{ marginLeft: sidebarWidth + 'px', marginRight: showArtifactPanel ? artifactPanelWidth + 'px' : '0', transition: isSidebarResizing ? 'none' : 'margin-left 200ms ease-in-out, margin-right 200ms ease-in-out' }">
-          <div class="max-w-3xl mx-auto px-6">
+        <div class="fixed bottom-0 left-0 right-0 z-40" :style="{ marginLeft: sidebarWidth + 'px', marginRight: showArtifactPanel ? artifactPanelWidth + 'px' : '0', transition: isSidebarResizing ? 'none' : 'margin-left 200ms ease-in-out, margin-right 200ms ease-in-out' }">
+          <div class="chat-composer-mask pointer-events-none absolute inset-x-0 bottom-0 h-48"></div>
+          <div class="relative max-w-3xl mx-auto px-6 pb-6">
             <!-- "Want to be notified when Claude responds?" 提示条 -->
             <div v-if="showNotifyBar" class="mb-3 flex items-center justify-between px-4 py-2.5 bg-white dark:bg-[#2c2c2a] border border-[#e5e5e4] dark:border-white/10 rounded-lg shadow-sm">
               <span class="text-[13px] text-[#1a1a1a] dark:text-white">当 Claude 回复完成时需要通知吗？</span>
@@ -192,7 +343,7 @@
             </div>
 
             <div
-              class="bg-white rounded-[20px] dark:bg-[#2c2c2a] border border-[#e5e5e4] dark:border-[rgba(226,225,218,0.12)] hover:border-[#d0d0cd] hover:dark:border-[rgba(226,225,218,0.2)] shadow-none dark:shadow-none transition-colors duration-200 relative"
+              class="pointer-events-auto bg-white rounded-[20px] dark:bg-[#2c2c2a] border border-[#e5e5e4] dark:border-[rgba(226,225,218,0.12)] hover:border-[#d0d0cd] hover:dark:border-[rgba(226,225,218,0.2)] shadow-none dark:shadow-none transition-colors duration-200 relative"
               :class="{ 'ring-2 ring-[#d97757]/20': isDragging }"
               style="min-height: 122px;"
               @dragenter.prevent="isDragging = true"
@@ -307,7 +458,7 @@
               </div>
             </div>
 
-            <p class="text-center text-[12px] text-[#97958c] dark:text-[#97958c] mt-2">
+            <p class="pointer-events-auto text-center text-[12px] text-[#97958c] dark:text-[#97958c] mt-2">
               Claude 可能会出错。请核实重要信息。
             </p>
           </div>
@@ -357,7 +508,7 @@
         <div v-if="artifactViewMode === 'preview'" ref="artifactPreviewRef" class="flex-1 overflow-auto bg-white dark:bg-[#1f1f1e]">
           <iframe
             v-if="currentArtifact && isPreviewable(currentArtifact)"
-            :srcdoc="currentArtifact.content"
+            :srcdoc="getArtifactPreviewContent(currentArtifact)"
             class="w-full h-full border-0"
             sandbox="allow-scripts allow-same-origin"
           ></iframe>
@@ -391,7 +542,7 @@ import { dialogApi } from '@/api/dialog'
 import { fileApi } from '@/api/file'
 import { readFileContent } from '@/utils/fileReader'
 import { getDisplayFilename } from '@/utils/fileName'
-import type { UploadedFile } from '@/types/api'
+import type { UploadedFile, MessageBranch } from '@/types/api'
 
 const router = useRouter()
 const route = useRoute()
@@ -581,6 +732,37 @@ const loadDialog = async (id: string) => {
 // 制品模式：保存 artifact_type 到本地变量（避免 router.replace 后丢失）
 const savedArtifactType = ref<string | undefined>(undefined)
 
+// 分支管理状态
+const userHoveredMessageId = ref<string | null>(null) // 鼠标悬停的用户消息ID
+const aiHoveredMessageId = ref<string | null>(null) // 鼠标悬停的AI消息ID
+const editingMessageId = ref<string | null>(null) // 正在编辑的消息ID
+const editingMessageContent = ref('') // 编辑中的消息内容
+const branchHistory = ref<Record<string, MessageBranch[]>>({}) // 各消息的分支历史（以父用户消息ID为key）
+const currentBranchForMessage = ref<Record<string, string>>({}) // 当前显示的分支ID（以父用户消息ID为key）
+
+// HTML预览菜单状态
+const htmlMenuOpen = ref<string | null>(null) // 当前打开的HTML预览菜单ID
+
+/** 获取消息的分支键：对于AI消息返回其parent_id，对于用户消息返回自身ID */
+const getBranchKey = (messageId: string): string => {
+  const message = messages.value.find(m => m.id === messageId)
+  if (!message) {
+    console.log('[frontend] getBranchKey: message not found', messageId)
+    return messageId
+  }
+  const branchKey = message.role === 'ai' && message.parent_id ? message.parent_id : messageId
+  console.log('[frontend] getBranchKey:', messageId, 'role:', message.role, 'parent_id:', message.parent_id, 'branchKey:', branchKey)
+  return branchKey
+}
+
+// 当鼠标悬停在AI消息上时，预加载分支数据
+watch(aiHoveredMessageId, async (newMessageId) => {
+  if (newMessageId) {
+    // 预加载分支数据，以便分支切换按钮可以显示
+    await getMessageBranches(newMessageId)
+  }
+})
+
 // 如果URL有query参数 msg 或 artifact_type，自动发送
 watch(dialogId, async (newId) => {
   isEditingTitle.value = false
@@ -638,6 +820,12 @@ watch(dialogId, async (newId) => {
     } else if (artifactType.value) {
       // 制品模式：创建全新会话（不在旧会话上追加）
       savedArtifactType.value = artifactType.value
+      // 激活制品向导，等待用户完成所有选择后再生成制品
+      if (!choiceWizard.active) {
+        choiceWizard.active = true
+        resetWizardProgress()
+        console.log(`[WIZARD] Activating choice wizard for artifact type=${savedArtifactType.value}`)
+      }
       const typeLabel: Record<string, string> = {
         web: '应用与网站',
         doc: '文档和模板',
@@ -647,20 +835,21 @@ watch(dialogId, async (newId) => {
         survey: '问卷或调查',
         code: '从零开始'
       }
-      const artifactMsg = `我想创建一个「${typeLabel[savedArtifactType.value] || savedArtifactType.value}」类型的制品。请将所有 HTML、CSS、JavaScript 代码全部写在同一个文件中输出，不要拆分成多个文件，以便直接预览和运行最终效果。`
-      console.log(`[ARTIFACT] Creating NEW dialog for artifact type=${savedArtifactType.value}`)
+      // 引导消息：请求AI引导用户完成选择，而不是直接生成制品
+      const guideMsg = `我想创建一个「${typeLabel[savedArtifactType.value] || savedArtifactType.value}」类型的制品。请先引导我完成一些选择，在所有选择完成后，再生成完整的制品代码。请将所有 HTML、CSS、JavaScript 代码全部写在同一个文件中输出，不要拆分成多个文件，以便直接预览和运行最终效果。`
+      console.log(`[ARTIFACT] Creating NEW dialog for artifact type=${savedArtifactType.value}, activating wizard`)
       try {
         const res = await appStore.createDialog()
         if (res?.id && res.id !== newId) {
           // 新会话创建成功，跳转到新会话 URL（携带消息触发自动发送）
-          router.replace({ path: `/chat/${res.id}`, query: { msg: artifactMsg } })
+          router.replace({ path: `/chat/${res.id}`, query: { msg: guideMsg } })
           return
         }
       } catch (e) {
         console.error('[ARTIFACT] Failed to create new dialog, falling back to current', e)
       }
       // 创建失败时的降级方案：在当前会话中发送
-      messageInput.value = artifactMsg
+      messageInput.value = guideMsg
       setTimeout(() => handleSend(), 300)
       router.replace({ path: `/chat/${newId}` })
     }
@@ -818,7 +1007,24 @@ const buildWizardFinalPrompt = () => {
     .map((question, index) => (!wizardAnswers.value[index] ? `${index + 1}. ${question}` : null))
     .filter((item): item is string => Boolean(item))
 
-  const sections = ['请基于我刚才提出的制品需求，结合下面已经确认的信息生成最终结果。']
+  const sections = []
+  
+  // 添加制品类型信息
+  const artifactTypeValue = savedArtifactType.value || artifactType.value
+  if (artifactTypeValue) {
+    const typeLabel: Record<string, string> = {
+      web: '应用与网站',
+      doc: '文档和模板',
+      game: '游戏',
+      tool: '效率工具',
+      creative: '创意项目',
+      survey: '问卷或调查',
+      code: '从零开始'
+    }
+    sections.push(`我要创建的是「${typeLabel[artifactTypeValue] || artifactTypeValue}」类型的制品。`)
+  }
+  
+  sections.push('请基于我刚才提出的制品需求，结合下面已经确认的信息生成最终结果。')
 
   if (confirmedAnswers.length > 0) {
     sections.push(`已确认选项：\n${confirmedAnswers.join('\n')}`)
@@ -833,26 +1039,26 @@ const buildWizardFinalPrompt = () => {
   return sections.join('\n\n')
 }
 
-const detectAndActivateWizard = (userMsg: string, aiContent: string): void => {
+const detectAndActivateWizard = (aiContent: string): void => {
   // 检测用户的首次请求是否为制品类型请求
-  const artifactKeywords = /创建|生成|制作|构建|开发|build|create|make|制品|应用|网站|文档|模板|工具|游戏|问卷|survey|app|web|doc|game|tool|creative/i
-  const isArtifactRequest = artifactKeywords.test(userMsg)
+  // 只有当用户明确选择创建制品（通过artifact_type查询参数）时才激活向导
+  const isArtifactRequest = Boolean(artifactType.value) || Boolean(savedArtifactType.value)
 
-  // 如果用户请求包含制品关键词且 AI 回复内容较长（说明是有意义的回复）
+  // 如果用户请求是制品类型，激活向导（不要求AI回复内容长度，因为可能已经激活）
   // 注意：每次新的制品类请求都应重新激活向导（支持用户在完成一轮后发起新的制品请求）
-  if (isArtifactRequest && aiContent.length > 100) {
+  if (isArtifactRequest && !choiceWizard.active) {
     // 如果向导已完成但用户又发起了全新的制品请求，重置向导状态
     if (choiceWizard.completed) {
       console.log(`[WIZARD] Previous wizard was completed. Resetting for new artifact request.`)
     }
-    console.log(`[WIZARD] Activating choice wizard. User msg keywords detected.`)
+    console.log(`[WIZARD] Activating choice wizard. Artifact type detected from query.`)
     choiceWizard.active = true
     resetWizardProgress()
   }
 }
 
 /** 从 AI 回复内容中自动提取代码块/HTML，注入 [ARTIFACT] 标签以生成可预览卡片 */
-const autoInjectArtifact = (content: string): { content: string; injected: boolean } => {
+const autoInjectArtifact = (content: string, artifactTypeHint?: string): { content: string; injected: boolean } => {
   // 已经包含 [ARTIFACT] 标签的不再处理
   if (/\[ARTIFACT\]/.test(content)) {
     return { content, injected: false }
@@ -860,7 +1066,7 @@ const autoInjectArtifact = (content: string): { content: string; injected: boole
 
   let extractedTitle = '生成的制品'
   let extractedContent = ''
-  let extractedType = 'code'
+  let extractedType = artifactTypeHint || 'code'
   let description = ''
 
   // 策略1：优先提取最大的代码块（html/vue/react/css/js）
@@ -876,10 +1082,19 @@ const autoInjectArtifact = (content: string): { content: string; injected: boole
       }
     }
 
-    const langMatch = bestMatch.match(/```(\w+)\n([\s\S]*?)```/)
+    const langMatch = bestMatch.match(/```(\w+)\s*\n([\s\S]*?)```/)
     if (langMatch) {
-      extractedType = langMatch[1]
-      extractedContent = langMatch[2].trim()
+      const extractedLang = langMatch[1]
+      // 使用统一的清理函数
+      extractedContent = cleanHtmlContent(langMatch[2])
+      
+      // 如果制品类型提示是web，保持为web；否则使用提取的语言
+      // 但如果是vue、react等特定类型，使用提取的语言
+      if (artifactTypeHint === 'web' && (extractedLang === 'html' || extractedLang === 'css' || extractedLang === 'javascript')) {
+        // 保持web类型，不修改
+      } else {
+        extractedType = extractedLang
+      }
     }
 
     // 尝试从代码块中提取标题（第一个注释行或 title 标签）
@@ -892,12 +1107,35 @@ const autoInjectArtifact = (content: string): { content: string; injected: boole
   }
 
   // 策略2：如果没找到代码块，检查是否有裸 HTML 内容（没有 ``` 包裹）
-  if (!extractedContent && /<(html|!DOCTYPE)\b/i.test(content)) {
-    // 提取从 <!DOCTYPE 或 <html 开始到结尾的内容
-    const htmlMatch = content.match(/(<!DOCTYPE[\s\S]*?<\/html>|<html[\s\S]*?<\/html>)/i)
-    if (htmlMatch) {
-      extractedType = 'html'
-      extractedContent = htmlMatch[1].trim()
+  if (!extractedContent) {
+    // 检查完整HTML文档
+    if (/<(html|!DOCTYPE)\b/i.test(content)) {
+      // 提取从 <!DOCTYPE 或 <html 开始到结尾的内容
+      const htmlMatch = content.match(/(<!DOCTYPE[\s\S]*?<\/html>|<html[\s\S]*?<\/html>)/i)
+      if (htmlMatch) {
+        extractedType = 'html'
+        extractedContent = htmlMatch[1].trim()
+      }
+    }
+    // 检查HTML片段（包含HTML标签但没有完整文档结构）
+    else if (/<[^>]+>/.test(content)) {
+      // 尝试提取HTML片段（从第一个标签开始到最后一个标签结束）
+      const htmlTagMatch = content.match(/<[^>]+>/)
+      if (htmlTagMatch) {
+        const startIndex = content.indexOf(htmlTagMatch[0])
+        // 向后查找完整片段（到下一个代码块或结尾）
+        let endIndex = content.length
+        const codeBlockEnd = content.indexOf('```', startIndex)
+        if (codeBlockEnd !== -1 && codeBlockEnd < endIndex) {
+          endIndex = codeBlockEnd
+        }
+        const htmlFragment = content.substring(startIndex, endIndex)
+        const cleanedFragment = cleanHtmlContent(htmlFragment)
+        if (cleanedFragment.length >= 50) {
+          extractedType = 'html'
+          extractedContent = cleanedFragment
+        }
+      }
     }
   }
 
@@ -938,7 +1176,11 @@ const stripAttachmentContent = (content: string): string => {
 
 const renderContent = (content: string): string => {
   if (!content) return ''
-  let html = content
+  
+  // 从渲染内容中移除 HTML 预览标记
+  let html = content.replace(/\[HTML_PREVIEW\][\s\S]*?\[\/HTML_PREVIEW\]/g, '')
+  
+  html = html
     .replace(/\[QUESTION\][\s\S]*?\[\/QUESTION\]/g, '')
     .replace(/\[CHOICE\][\s\S]*?\[\/CHOICE\]/g, '')
     .trim()
@@ -959,6 +1201,9 @@ const renderContent = (content: string): string => {
     .replace(/&/g, '&amp;')
     .replace(/</g, '&lt;')
     .replace(/>/g, '&gt;')
+
+  // 渲染 Markdown 表格（必须在代码块处理之前，避免表格内容被错误处理）
+  html = renderMarkdownTable(html)
 
   html = html.replace(/```(\w*)\n([\s\S]*?)```/g, (_match, _lang, code) => {
     return `<pre class="bg-[#f5f4f0] dark:bg-[#1f1f1e] rounded-lg p-3 my-3 overflow-x-auto font-mono text-[13px] border border-[#eee] dark:border-white/5"><code class="text-[#1a1a1a] dark:text-gray-200">${code}</code></pre>`
@@ -994,6 +1239,90 @@ const renderContent = (content: string): string => {
   return html
 }
 
+/** 渲染 Markdown 表格为美观的 HTML 表格 */
+const renderMarkdownTable = (html: string): string => {
+  // 按行分割，先找到所有可能的表格区域
+  const lines = html.split('\n')
+  const result: string[] = []
+  let i = 0
+
+  while (i < lines.length) {
+    const line = lines[i].trim()
+
+    // 检查是否是表格行（以 | 开头和结尾，或包含多个 |）
+    const isTableRow = (l: string) => l.startsWith('|') || (l.includes('|') && l.split('|').length >= 2)
+
+    // 检查是否是分隔行（如 |---|---|）
+    const isSeparatorRow = (l: string) => /^[\|\s\-:]+$/.test(l.replace(/\|/g, '-').replace(/\s/g, ''))
+
+    if (isTableRow(line) && !isSeparatorRow(line)) {
+      // 收集整个表格
+      const tableLines: string[] = []
+      while (i < lines.length && (isTableRow(lines[i].trim()) || isSeparatorRow(lines[i].trim()))) {
+        const trimmedLine = lines[i].trim()
+        // 跳过分隔行（|---|格式）
+        if (!isSeparatorRow(trimmedLine)) {
+          tableLines.push(trimmedLine)
+        }
+        i++
+      }
+
+      // 解析表格
+      const tableHtml = buildTableHtml(tableLines)
+      result.push(tableHtml)
+    } else {
+      result.push(lines[i])
+      i++
+    }
+  }
+
+  return result.join('\n')
+}
+
+/** 从表格行构建 HTML 表格 */
+const buildTableHtml = (tableLines: string[]): string => {
+  if (tableLines.length === 0) return ''
+
+  // 解析所有行
+  const allRows = tableLines.map(line => {
+    return line.split('|').map(cell => cell.trim()).filter((_, idx) => idx > 0 && idx < line.split('|').length - 1)
+  })
+
+  // 第一行是表头，其余是数据
+  const headers = allRows[0] || []
+  const dataRows = allRows.slice(1)
+
+  let tableHtml = '<div class="table-wrapper my-4 overflow-x-auto rounded-lg border border-[#e5e5e4] dark:border-white/10">'
+  tableHtml += '<table class="w-full border-collapse text-[14px]">'
+
+  // 表头
+  tableHtml += '<thead><tr class="bg-[#f9f8f5] dark:bg-[#2a2a2a]">'
+  headers.forEach((header: string, idx: number) => {
+    const isFirst = idx === 0
+    const isLast = idx === headers.length - 1
+    tableHtml += `<th class="px-4 py-3 text-left font-semibold text-[#1a1a1a] dark:text-white border-b border-r border-[#e5e5e4] dark:border-white/10 ${isFirst ? 'rounded-tl-lg' : ''} ${isLast ? 'rounded-tr-lg border-r-0' : ''}">${header}</th>`
+  })
+  tableHtml += '</tr></thead>'
+
+  // 表体
+  tableHtml += '<tbody>'
+  dataRows.forEach((row: string[], rowIndex: number) => {
+    const isEven = rowIndex % 2 === 0
+    tableHtml += `<tr class="${isEven ? 'bg-white dark:bg-[#1f1f1e]' : 'bg-[#fafaf8] dark:bg-[#252524]'} hover:bg-[#fef8f5] dark:hover:bg-[#2c2c2a] transition-colors">`
+    row.forEach((cell: string, cellIndex: number) => {
+      const isLast = cellIndex === row.length - 1
+      tableHtml += `<td class="px-4 py-2.5 text-[#3d3d3c] dark:text-gray-300 border-b border-r border-[#f0ede7] dark:border-white/5 ${isLast ? 'border-r-0' : ''}">${cell}</td>`
+    })
+    tableHtml += '</tr>'
+  })
+  tableHtml += '</tbody>'
+
+  tableHtml += '</table>'
+  tableHtml += '</div>'
+
+  return tableHtml
+}
+
 /** 用户点击选项卡片 */
 const handleSelectChoice = async (msgId: string, choiceIndex: number, choiceText: string) => {
   selectedChoices[msgId] = choiceIndex
@@ -1010,7 +1339,6 @@ const handleSelectChoice = async (msgId: string, choiceIndex: number, choiceText
       choiceWizard.completed = true
       closedPanels[msgId] = true
       console.log(`[WIZARD] All ${choiceWizard.totalRounds} rounds completed! Sending one combined request.`)
-      messageInput.value = '基于以上所有选择，请生成完整的制品代码和详细说明。【重要】请将所有 HTML、CSS、JavaScript 全部写在一个文件中输出，不要拆分成多个文件，以便直接预览和运行最终效果。'
       messageInput.value = buildWizardFinalPrompt()
       if (!id || isSending.value) return
       await handleSend()
@@ -1041,8 +1369,6 @@ const handleSkipChoice = async (msgId: string) => {
     console.log(`[WIZARD] User skipped at round ${choiceWizard.round + 1}. Completing wizard.`)
     choiceWizard.completed = true
     closedPanels[msgId] = true
-    messageInput.value = buildWizardFinalPrompt()
-    messageInput.value = '好的，请根据已有信息直接生成制品。【重要】请将所有 HTML、CSS、JavaScript 全部写在一个文件中输出，不要拆分成多个文件，以便直接预览和运行最终效果。'
     messageInput.value = buildWizardFinalPrompt()
     if (!id || isSending.value) return
     await handleSend()
@@ -1101,6 +1427,18 @@ const getArtifact = (content: string): ArtifactData | null => {
   return null
 }
 
+/** 从消息内容中提取 HTML 预览内容 [HTML_PREVIEW]...[/HTML_PREVIEW] */
+const getHtmlPreview = (content: string): string | null => {
+  // 匹配 [HTML_PREVIEW] 标签
+  const match = content.match(/\[HTML_PREVIEW\]([\s\S]*?)\[\/HTML_PREVIEW\]/)
+  if (match) {
+    const htmlContent = match[1].trim()
+    console.log('[FRONTEND] getHtmlPreview: found HTML content, length:', htmlContent.length)
+    return htmlContent
+  }
+  return null
+}
+
 const ARTIFACT_TYPE_LABELS: Record<string, string> = {
   web: '应用与网站',
   doc: '文档和模板',
@@ -1153,16 +1491,330 @@ const isPreviewable = (artifact: ArtifactData | null): boolean => {
   if (!artifact) return false
   const type = artifact.type.toLowerCase()
   const previewableTypes = ['web', 'html', 'css', 'vue', 'react']
+  
+  // 对于web和html类型的制品，总是允许预览（即使内容没有HTML标签，wrapWithProgressiveRender会包装它）
+  if (type === 'web' || type === 'html') return true
+  
   // 包含 html 标签的内容也可以预览
-  const hasHtmlTag = /<(html|head|body|div|p|h[1-6]|section|nav|footer|header)\b/i.test(artifact.content)
-  return previewableTypes.includes(type) || hasHtmlTag
+  const hasHtmlTag = /<(html|head|body|div|p|h[1-6]|section|nav|footer|header|span|a|button|img|ul|ol|li|table|tr|td|th|form|input|textarea|select|label|script|style|link|meta)\b/i.test(artifact.content)
+  
+  // 检查是否包含HTML/XML结构（包含尖括号）
+  const hasHtmlStructure = /<[^>]+>/.test(artifact.content)
+  
+  return previewableTypes.includes(type) || hasHtmlTag || hasHtmlStructure
+}
+
+/** 清理HTML内容，移除多余空白和格式问题 */
+const cleanHtmlContent = (content: string): string => {
+  if (!content) {
+    console.log('[FRONTEND] cleanHtmlContent: input is empty')
+    return ''
+  }
+  
+  console.log('[FRONTEND] cleanHtmlContent === START ===')
+  console.log('[FRONTEND] Input content length:', content.length)
+  console.log('[FRONTEND] Input first 300 chars:', content.substring(0, 300))
+  
+  let cleaned = content
+  
+  // 1. 移除代码块标记 ```html ... ``` 或 ```css ... ``` 等
+  // 支持多行代码块，处理各种变体
+  const codeBlockRegex = /```\s*(\w+)?\s*\n([\s\S]*?)```/gi
+  let codeBlockMatch
+  let extractedContent = ''
+  let maxLength = 0
+  let codeBlockCount = 0
+  
+  // 查找所有代码块，取最大的一个
+  // 重置正则表达式 lastIndex
+  codeBlockRegex.lastIndex = 0
+  while ((codeBlockMatch = codeBlockRegex.exec(cleaned)) !== null) {
+    codeBlockCount++
+    const language = codeBlockMatch[1] || 'unknown'
+    const blockContent = codeBlockMatch[2]
+    console.log(`[FRONTEND] Found code block #${codeBlockCount}, language: "${language}", content length: ${blockContent.length}`)
+    console.log(`[FRONTEND] Code block content first 100 chars:`, blockContent.substring(0, 100))
+    if (blockContent.length > maxLength) {
+      maxLength = blockContent.length
+      extractedContent = blockContent
+    }
+  }
+  
+  console.log(`[FRONTEND] Total code blocks found: ${codeBlockCount}, max length: ${maxLength}`)
+  
+  if (extractedContent) {
+    cleaned = extractedContent
+    console.log('[FRONTEND] Extracted HTML from code block, cleaned length:', cleaned.length)
+    console.log('[FRONTEND] Extracted content first 200 chars:', cleaned.substring(0, 200))
+  } else {
+    console.log('[FRONTEND] No code blocks found, using original content')
+  }
+  
+  // 2. 移除多余的空行（连续两个以上换行符减少为一个）
+  cleaned = cleaned.replace(/\n\s*\n\s*\n+/g, '\n\n')
+  
+  // 3. 移除每行开头和结尾的空白，但保留内容内部的缩进
+  // 对于HTML内容，我们不想移除所有缩进，只移除行首和行尾的空白
+  cleaned = cleaned.split('\n').map(line => {
+    // 保留HTML标签内的缩进，但移除行首和行尾的空白
+    return line.trim()
+  }).join('\n')
+  
+  // 4. 移除开头的空行
+  cleaned = cleaned.replace(/^\s*\n+/, '')
+  
+  // 5. 移除结尾的空行
+  cleaned = cleaned.replace(/\n+\s*$/, '')
+  
+  // 6. 整体去除首尾空白
+  cleaned = cleaned.trim()
+  
+  // 7. 检查是否还包含代码块标记
+  const stillHasCodeBlockMarkers = /```/.test(cleaned)
+  if (stillHasCodeBlockMarkers) {
+    console.warn('[FRONTEND] WARNING: Cleaned content still contains code block markers (```)')
+    // 尝试更激进的清理：移除所有 ``` 标记
+    cleaned = cleaned.replace(/```/g, '')
+    console.log('[FRONTEND] Removed remaining code block markers')
+  }
+  
+  console.log('[FRONTEND] Final cleaned content length:', cleaned.length)
+  console.log('[FRONTEND] Final cleaned content first 300 chars:', cleaned.substring(0, 300))
+  console.log('[FRONTEND] Has HTML tags:', /<[^>]+>/.test(cleaned))
+  console.log('[FRONTEND] Has DOCTYPE:', /<!DOCTYPE/i.test(cleaned))
+  console.log('[FRONTEND] cleanHtmlContent === END ===')
+  
+  return cleaned
+}
+
+/** 渐进式渲染包装器：将 HTML 内容包装成带有渐进式渲染效果的页面 */
+const wrapWithProgressiveRender = (content: string): string => {
+  // 先清理内容
+  const cleanedContent = cleanHtmlContent(content)
+  
+  // 检查是否已经包含完整的 HTML 文档结构
+  const hasDoctype = /<!DOCTYPE\s+html>/i.test(cleanedContent)
+  const hasHtmlTag = /<html[^>]*>/i.test(cleanedContent)
+  const hasHead = /<head[^>]*>/i.test(cleanedContent)
+  const hasBody = /<body[^>]*>/i.test(cleanedContent)
+
+  // 渐进式渲染脚本
+  const progressiveScript = `
+<script>
+(function() {
+  // 配置 - 官网风格的流式渲染效果
+  const STAGGER_DELAY = 500; // 每个元素之间的延迟(ms) - 更慢更明显
+  const FADE_DURATION = 800; // 淡入持续时间(ms) - 官网风格
+  
+  // 获取所有需要渐进式渲染的元素（包括嵌套元素）
+  const allElements = Array.from(document.querySelectorAll('body *:not(script):not(style):not(link):not(meta):not(title)'));
+  // 按深度排序：外层元素先显示
+  const elementsWithDepth = allElements.map(el => {
+    let depth = 0;
+    let parent = el.parentElement;
+    while (parent && parent !== document.body) {
+      depth++;
+      parent = parent.parentElement;
+    }
+    return { el, depth };
+  });
+  elementsWithDepth.sort((a, b) => a.depth - b.depth);
+  const ELEMENTS = elementsWithDepth.map(item => item.el);
+  
+  // 初始状态：所有元素透明且略微上移并缩小
+  ELEMENTS.forEach((el, index) => {
+    el.style.opacity = '0';
+    el.style.transform = 'translateY(30px) scale(0.95)'; // 添加轻微缩放效果
+    el.style.transition = \`opacity \${FADE_DURATION}ms cubic-bezier(0.4, 0, 0.2, 1), transform \${FADE_DURATION}ms cubic-bezier(0.4, 0, 0.2, 1)\`;
+    el.style.transitionDelay = \`\${index * STAGGER_DELAY}ms\`;
+  });
+
+  // 滚动条回顶部
+  window.scrollTo(0, 0);
+
+  // 使用 setTimeout 确保元素样式已应用
+  setTimeout(() => {
+    // 逐步显示元素，模仿官网的流式效果
+    ELEMENTS.forEach((el, index) => {
+      setTimeout(() => {
+        // 强制重排以确保 transition 生效
+        el.offsetHeight;
+        // 设置最终状态
+        el.style.opacity = '1';
+        el.style.transform = 'translateY(0) scale(1)';
+      }, 50 + index * STAGGER_DELAY); // 额外50ms延迟确保样式已应用
+    });
+  }, 100);
+
+  // 额外的延迟加载支持（懒加载图片）
+  const lazyImages = document.querySelectorAll('img[data-src]');
+  if (lazyImages.length > 0) {
+    const imageObserver = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          const img = entry.target;
+          img.src = img.dataset.src;
+          img.removeAttribute('data-src');
+          imageObserver.unobserve(img);
+        }
+      });
+    });
+    lazyImages.forEach(img => imageObserver.observe(img));
+  }
+
+  // 元素进入视口时的动画
+  const animateOnScroll = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('animate-in-view');
+      }
+    });
+  }, { threshold: 0.1 });
+
+  document.querySelectorAll('[data-animate]').forEach(el => {
+    animateOnScroll.observe(el);
+  });
+})();
+<\\/script>
+<style>
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+.animate-in-view {
+  animation: fadeInUp 0.7s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+<\\/style>`
+
+  // 如果已经是完整 HTML 文档
+  if (hasDoctype && hasHtmlTag) {
+    // 注入到 </body> 之前
+    if (hasBody) {
+      return cleanedContent.replace(/<\/body>/i, `${progressiveScript}</body>`)
+    }
+    // 注入到 </html> 之前
+    return cleanedContent.replace(/<\/html>/i, `${progressiveScript}</html>`)
+  }
+
+  // 如果只有 HTML 标签
+  if (hasHtmlTag) {
+    if (hasBody) {
+      return cleanedContent.replace(/<\/body>/i, `${progressiveScript}</body>`)
+    }
+    // 没有 body，创建 body 并添加内容
+    const bodyMatch = cleanedContent.match(/<html[^>]*>([\s\S]*)<\/html>/i)
+    if (bodyMatch) {
+      const innerContent = bodyMatch[1]
+      const wrappedBody = `<body>${innerContent}${progressiveScript}</body>`
+      return cleanedContent.replace(/<html[^>]*>[\s\S]*<\/html>/i, wrappedBody)
+    }
+  }
+
+  // 纯内容片段，包装成完整页面
+  // 检测内容类型：CSS、HTML 或纯文本
+  const hasCssRules = /\{[^{}]*\}/.test(cleanedContent) && !/<[^>]+>/.test(cleanedContent)
+  const hasHtmlTags = /<[^>]+>/.test(cleanedContent)
+  
+  let bodyContent = cleanedContent
+  let extraCss = ''
+  
+  if (hasCssRules && !hasHtmlTags) {
+    // 内容主要是 CSS 规则，将其放入 <style> 标签
+    extraCss = cleanedContent
+    bodyContent = '<div class="preview-content">CSS 样式已应用</div>'
+    console.log('[FRONTEND] wrapWithProgressiveRender: CSS content detected, moving to style tag')
+  }
+  
+  return `<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Preview</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+      line-height: 1.6;
+      color: #333;
+      background: #f9f8f5; /* 官网风格背景色 */
+      padding: 0;
+      margin: 0;
+    }
+    ${extraCss}
+    .preview-content {
+      padding: 0;
+      background: white;
+    }
+    
+    /* 消除 iframe 滚动条 */
+    iframe {
+      display: block;
+      width: 100%;
+      min-height: 300px;
+      height: auto;
+      border: none;
+      overflow: hidden !important;
+    }
+    
+    /* 确保 iframe 内部也没有滚动条 */
+    html, body {
+      overflow: hidden !important;
+      width: 100% !important;
+      min-width: 100% !important;
+      max-width: 100% !important;
+      margin: 0 !important;
+      padding: 0 !important;
+    }
+    
+    /* 确保 iframe 内部元素不会导致溢出 */
+    html, body, body * {
+      box-sizing: border-box !important;
+      max-width: 100% !important;
+    }
+    
+    /* 隐藏所有滚动条 */
+    ::-webkit-scrollbar {
+      display: none !important;
+      width: 0 !important;
+      height: 0 !important;
+    }
+    * {
+      scrollbar-width: none !important;
+    }
+  </style>
+</head>
+<body>
+${bodyContent}
+${progressiveScript}
+</body>
+</html>`
+}
+
+/** 获取制品预览内容（带渐进式渲染） */
+const getArtifactPreviewContent = (artifact: ArtifactData | null): string => {
+  if (!artifact) return ''
+  return wrapWithProgressiveRender(artifact.content)
 }
 
 /** 打开右侧制品面板 */
 const openArtifactPanel = (artifact: ArtifactData) => {
   currentArtifact.value = artifact
   showArtifactPanel.value = true
-  artifactViewMode.value = isPreviewable(artifact) ? 'preview' : 'code'
+  
+  // 强制可预览的制品显示预览模式，确保用户看到渲染效果而不是代码
+  if (isPreviewable(artifact)) {
+    artifactViewMode.value = 'preview'
+  } else {
+    artifactViewMode.value = 'code'
+  }
+  
   scrollToBottom()
 }
 
@@ -1172,13 +1824,102 @@ const closeArtifactPanel = () => {
   currentArtifact.value = null
 }
 
+/** 在新标签页中打开 HTML 内容 */
+const openHtmlInNewTab = (htmlContent: string) => {
+  const blob = new Blob([wrapWithProgressiveRender(htmlContent)], { type: 'text/html' })
+  const url = URL.createObjectURL(blob)
+  window.open(url, '_blank')
+  URL.revokeObjectURL(url)
+}
+
+/** 复制 HTML 内容到剪贴板 */
+const copyHtmlContent = async (htmlContent: string) => {
+  try {
+    // 关闭菜单（如果存在）
+    htmlMenuOpen.value = null
+    
+    const cleanedContent = cleanHtmlContent(htmlContent)
+    if (navigator.clipboard && typeof navigator.clipboard.writeText === 'function') {
+      await navigator.clipboard.writeText(cleanedContent)
+      console.log('[FRONTEND] HTML content copied to clipboard, length:', cleanedContent.length)
+    } else {
+      const textArea = document.createElement('textarea')
+      textArea.value = cleanedContent
+      textArea.style.position = 'fixed'
+      textArea.style.top = '-9999px'
+      textArea.style.left = '-9999px'
+      document.body.appendChild(textArea)
+      textArea.select()
+      document.execCommand('copy')
+      document.body.removeChild(textArea)
+      console.log('[FRONTEND] HTML content copied via execCommand, length:', cleanedContent.length)
+    }
+  } catch (err) {
+    console.error('[FRONTEND] Failed to copy HTML content:', err)
+  }
+}
+
+/** 清理制品内容，移除多余的空白和代码块标记 */
+const cleanArtifactContent = (content: string): string => {
+  return cleanHtmlContent(content)
+}
+
 /** 复制制品代码 */
 const handleCopyArtifactCode = async () => {
-  if (!currentArtifact.value?.content) return
+  if (!currentArtifact.value?.content) {
+    console.log('[FRONTEND] Copy failed: no current artifact content')
+    return
+  }
   try {
-    await navigator.clipboard.writeText(currentArtifact.value.content)
+    console.log('[FRONTEND] === Copy Artifact Debug Start ===')
+    console.log('[FRONTEND] Original artifact content length:', currentArtifact.value.content.length)
+    console.log('[FRONTEND] Original artifact content type:', currentArtifact.value.type)
+    console.log('[FRONTEND] Original artifact content (first 300 chars):', currentArtifact.value.content.substring(0, 300))
+    
+    const cleanedContent = cleanArtifactContent(currentArtifact.value.content)
+    console.log('[FRONTEND] Cleaned content length:', cleanedContent.length)
+    console.log('[FRONTEND] Cleaned content (first 300 chars):', cleanedContent.substring(0, 300))
+    
+    if (!cleanedContent) {
+      console.log('[FRONTEND] Cleaned content is empty, skipping copy')
+      return
+    }
+    
+    // 验证内容是否包含HTML标签
+    const hasHtmlTags = /<[^>]+>/.test(cleanedContent)
+    const hasCodeBlockMarkers = /```/.test(cleanedContent)
+    console.log('[FRONTEND] Cleaned content analysis - hasHtmlTags:', hasHtmlTags, 'hasCodeBlockMarkers:', hasCodeBlockMarkers)
+    
+    // 现代剪贴板 API (需要安全上下文)
+    if (navigator.clipboard && typeof navigator.clipboard.writeText === 'function') {
+      console.log('[FRONTEND] Using modern clipboard API')
+      await navigator.clipboard.writeText(cleanedContent)
+      console.log('[FRONTEND] Clipboard write successful')
+    } else {
+      // 回退到传统 document.execCommand 方法
+      console.log('[FRONTEND] Using fallback execCommand')
+      const textArea = document.createElement('textarea')
+      textArea.value = cleanedContent
+      textArea.style.position = 'fixed'  // 避免滚动到元素
+      textArea.style.top = '-9999px'
+      textArea.style.left = '-9999px'
+      document.body.appendChild(textArea)
+      textArea.select()
+      
+      const success = document.execCommand('copy')
+      document.body.removeChild(textArea)
+      
+      if (!success) {
+        throw new Error('复制失败：无法访问剪贴板')
+      }
+      console.log('[FRONTEND] execCommand copy successful')
+    }
+    console.log('[FRONTEND] === Copy Artifact Debug End ===')
     // TODO: toast "已复制"
-  } catch {}
+  } catch (err) {
+    console.error('[FRONTEND] 复制失败:', err)
+    // TODO: toast "复制失败"
+  }
 }
 
 /** 停止生成 */
@@ -1277,16 +2018,17 @@ const handleSend = async () => {
 
   try {
     const effectiveArtifactType = savedArtifactType.value || (route.query.artifact_type as string) || undefined
+    // 在向导完成前不传递 artifact_type 给 API，避免AI提前生成制品
+    const artifactTypeForApi = (choiceWizard.active && !choiceWizard.completed) ? undefined : effectiveArtifactType
     const shouldBufferArtifactStream = Boolean(
       effectiveArtifactType ||
       savedArtifactType.value ||
       artifactType.value ||
-      choiceWizard.completed ||
-      /创建|生成|制作|构建|制品|网站|应用|模板|demo|landing|app|web|html/i.test(content)
+      choiceWizard.completed
     )
 
-    console.log(`[FRONTEND] calling dialogApi.sendMessageStream(${id}, ...), files:`, fileIds)
-    const stream = dialogApi.sendMessageStream(id, apiContent, fileIds, effectiveArtifactType, abortController.signal)
+    console.log(`[FRONTEND] calling dialogApi.sendMessageStream(${id}, ...), files:`, fileIds, 'artifact_type:', artifactTypeForApi)
+    const stream = dialogApi.sendMessageStream(id, apiContent, fileIds, artifactTypeForApi, abortController.signal)
 
     console.log(`[FRONTEND] stream object created, type: ${typeof stream}`)
 
@@ -1318,9 +2060,79 @@ const handleSend = async () => {
         }
       } else if (event.type === 'done') {
         console.log(`[FRONTEND] received DONE event, total events: ${eventCount}, content len: ${tempMsg?.content?.length}`)
+        // 如果有累积的 HTML 块，组合成完整 HTML 并更新预览
+        if (tempMsg && (tempMsg as any)._htmlChunks && (tempMsg as any)._htmlChunks.length > 0) {
+          const chunks = (tempMsg as any)._htmlChunks
+          const combinedHtml = chunks.join('\n')
+          // 移除之前的 HTML_PREVIEW 标记
+          const htmlPreviewRegex = /(\n\n\[HTML_PREVIEW\][\s\S]*?\[\/HTML_PREVIEW\])/g
+          tempMsg.content = tempMsg.content.replace(htmlPreviewRegex, '')
+          // 添加新的预览
+          const htmlPreview = `\n\n[HTML_PREVIEW]\n${combinedHtml}\n[/HTML_PREVIEW]`
+          tempMsg.content += htmlPreview
+          console.log(`[FRONTEND] Finalized HTML preview with ${chunks.length} chunks after DONE event`)
+          // 清空累积块
+          (tempMsg as any)._htmlChunks = []
+        }
         // 流式完成，刷新对话列表（不调用 openDialog 避免清空消息）
         await appStore.fetchDialogList()
         break
+      } else if (event.type === 'render') {
+        console.log(`[FRONTEND] received RENDER event, html content length: ${event.html?.length}, chunk: ${event.chunk}`)
+        console.log(`[FRONTEND] RENDER event html sample:`, event.html?.substring(0, 200))
+        // 直接在内嵌消息中显示 HTML 预览（仅当不在制品模式下）
+        if (event.html && !artifactType.value && !savedArtifactType.value && tempMsg) {
+          console.log(`[FRONTEND] Processing render event for inline preview, artifactType: ${artifactType.value}, savedArtifactType: ${savedArtifactType.value}`)
+          // 清理 HTML 内容
+          const cleanedHtml = cleanHtmlContent(event.html as string)
+          console.log(`[FRONTEND] cleanHtmlContent result length: ${cleanedHtml?.length}, sample:`, cleanedHtml?.substring(0, 200))
+          if (!cleanedHtml) {
+            console.log(`[FRONTEND] cleanHtmlContent returned empty, skipping`)
+            return
+          }
+          
+          // 初始化 HTML 块累积器
+          if (!(tempMsg as any)._htmlChunks) {
+            (tempMsg as any)._htmlChunks = []
+          }
+          
+          if (event.chunk) {
+            // 分块模式：累积 HTML 片段
+            (tempMsg as any)._htmlChunks.push(cleanedHtml)
+            console.log(`[FRONTEND] Added HTML chunk, total chunks: ${(tempMsg as any)._htmlChunks.length}`)
+            
+            // 如果累积了多个块，可以逐步更新预览（这里我们先累积，等完整后再显示）
+            // 为了更好的用户体验，我们可以每累积几个块就更新一次预览
+            const chunks = (tempMsg as any)._htmlChunks
+            if (chunks.length % 5 === 0 || cleanedHtml.includes('</html>')) {
+              // 每5个块更新一次预览，或者遇到结束标签时更新
+              const combinedHtml = chunks.join('\n')
+              // 移除之前的 HTML_PREVIEW 标记
+              const htmlPreviewRegex = /(\n\n\[HTML_PREVIEW\][\s\S]*?\[\/HTML_PREVIEW\])/g
+              tempMsg.content = tempMsg.content.replace(htmlPreviewRegex, '')
+              // 添加新的预览
+              const htmlPreview = `\n\n[HTML_PREVIEW]\n${combinedHtml}\n[/HTML_PREVIEW]`
+              tempMsg.content += htmlPreview
+              console.log(`[FRONTEND] Updated HTML preview with ${chunks.length} chunks, total content length: ${tempMsg.content.length}`)
+            }
+          } else {
+            // 完整 HTML 模式：替换现有预览（如果存在）
+            // 清除累积的块，因为完整 HTML 会替换它们
+            (tempMsg as any)._htmlChunks = []
+            // 移除之前的 HTML_PREVIEW 标记
+            const htmlPreviewRegex = /(\n\n\[HTML_PREVIEW\][\s\S]*?\[\/HTML_PREVIEW\])/g
+            tempMsg.content = tempMsg.content.replace(htmlPreviewRegex, '')
+            // 添加新的预览
+            const htmlPreview = `\n\n[HTML_PREVIEW]\n${cleanedHtml}\n[/HTML_PREVIEW]`
+            tempMsg.content += htmlPreview
+            console.log(`[FRONTEND] Replaced HTML preview with full HTML, total content length: ${tempMsg.content.length}`)
+          }
+          
+          // 滚动到底部
+          scrollToBottom()
+        } else {
+          console.log(`[FRONTEND] Render event skipped: html=${!!event.html}, artifactType=${artifactType.value}, savedArtifactType=${savedArtifactType.value}, tempMsg=${!!tempMsg}`)
+        }
       } else if (event.type === 'error') {
         console.error(`[FRONTEND] received ERROR event:`, event.message)
         if (tempMsg) tempMsg.content = event.message || '抱歉，处理请求时出错。'
@@ -1337,12 +2149,11 @@ const handleSend = async () => {
       savedArtifactType.value ||
       artifactType.value ||
       choiceWizard.active ||
-      choiceWizard.completed ||
-      /创建|生成|制作|构建|制品|网站|应用|模板|demo|landing|app|web|html/i.test(content)
+      choiceWizard.completed
     )
 
     if (tempMsg && shouldAttemptArtifactInjection && !/\[ARTIFACT\]/.test(finalContent)) {
-      const injectedArtifact = autoInjectArtifact(finalContent)
+      const injectedArtifact = autoInjectArtifact(finalContent, effectiveArtifactType)
       if (injectedArtifact.injected) {
         tempMsg.content = injectedArtifact.content
         console.log('[ARTIFACT] Injected artifact into final AI message for card/preview rendering.')
@@ -1358,7 +2169,7 @@ const handleSend = async () => {
     if (!choiceWizard.completed) {
       // 首次请求时检测是否需要激活向导
       if (!choiceWizard.active) {
-        detectAndActivateWizard(content, finalContent)
+        detectAndActivateWizard(finalContent)
         if (choiceWizard.active) {
           choiceWizard.currentMsgId = tempAiMsgId
           console.log(`[WIZARD] Wizard activated! Round 1/${choiceWizard.totalRounds}. Waiting for user selection on msg ${tempAiMsgId}`)
@@ -1391,27 +2202,238 @@ const handleSend = async () => {
 const handleRegenerate = async (messageId: string) => {
   const id = dialogId.value
   if (!id) return
+  
+  const message = messages.value.find(m => m.id === messageId)
+  if (!message) return
+  
+  // 确定父用户消息ID（用于分支管理）
+  const parentMessageId = message.role === 'user' ? message.id : (message.parent_id || messageId)
+  const branchKey = getBranchKey(messageId) // 父用户消息ID
+  
   isSending.value = true
+  isAiWaiting.value = true
+  
   try {
-    // 先删除最后一条AI消息
-    const idx = messages.value.findIndex(m => m.id === messageId)
-    if (idx !== -1) messages.value.splice(idx, 1)
-
-    // 重新发送上一条用户消息
-    const lastUserMsg = [...messages.value].reverse().find(m => m.role === 'user')
-    if (lastUserMsg) {
-      const res = await dialogApi.sendMessage(id, lastUserMsg.content)
-      if (res.success && res.data) {
-        await appStore.openDialog(id)
+    // 先获取当前分支列表（如果有缓存）
+    const currentBranches = branchHistory.value[branchKey] || []
+    
+    // 调用后端重新生成API
+    const result = await appStore.regenerateMessage(id, messageId)
+    if (result) {
+      // appStore.regenerateMessage 已经更新了 messages 数组
+      
+      // 先设置当前分支为新消息ID
+      currentBranchForMessage.value[branchKey] = result.id
+      
+      // 更新分支缓存：添加新分支到现有分支列表
+      // 如果当前分支列表为空，创建一个包含新分支的列表
+      // 如果已有分支列表，添加新分支（假设新分支版本号最大）
+      const newBranch: MessageBranch = {
+        id: result.id,
+        message_id: parentMessageId,
+        content: result.content,
+        version: result.version || (currentBranches.length > 0 ? currentBranches[currentBranches.length - 1].version + 1 : 1),
+        created_at: new Date().toISOString(),
       }
-    } else {
-      await appStore.regenerateMessage(id, messageId)
+      
+      // 创建新的分支列表：现有分支 + 新分支
+      const updatedBranches = [...currentBranches, newBranch]
+      branchHistory.value[branchKey] = updatedBranches
+      
+      // 异步加载完整的分支数据（确保数据正确）
+      getMessageBranches(parentMessageId).then((branches) => {
+        // 用API返回的完整数据替换缓存
+        branchHistory.value[branchKey] = branches
+      }).catch(e => {
+        console.error('Failed to load branches after regenerate:', e)
+      })
     }
   } catch (e) {
     console.error('Regenerate failed:', e)
   } finally {
     isSending.value = false
+    isAiWaiting.value = false
   }
+}
+
+/** 编辑用户消息 */
+const handleEditUserMessage = async (messageId: string) => {
+  const message = messages.value.find(m => m.id === messageId)
+  if (!message || message.role !== 'user') return
+  
+  editingMessageId.value = messageId
+  editingMessageContent.value = stripAttachmentContent(message.content) || ''
+  
+  // 聚焦到输入框并设置内容
+  nextTick(() => {
+    if (inputRef.value) {
+      inputRef.value.value = editingMessageContent.value
+      inputRef.value.focus()
+      inputRef.value.setSelectionRange(
+        editingMessageContent.value.length,
+        editingMessageContent.value.length
+      )
+    }
+  })
+}
+
+/** 保存编辑后的用户消息 */
+const handleSaveEdit = async () => {
+  if (!editingMessageId.value || !editingMessageContent.value.trim() || !dialogId.value) return
+  
+  try {
+    isSending.value = true
+    // 找到原始消息
+    const originalIndex = messages.value.findIndex(m => m.id === editingMessageId.value)
+    if (originalIndex === -1) return
+    
+    // 发送编辑后的消息（会产生新分支）
+    const res = await dialogApi.sendMessage(dialogId.value, editingMessageContent.value)
+    if (res.success && res.data) {
+      // 加载新的对话状态
+      await appStore.openDialog(dialogId.value)
+    }
+  } catch (e) {
+    console.error('Edit message failed:', e)
+  } finally {
+    editingMessageId.value = null
+    editingMessageContent.value = ''
+    isSending.value = false
+  }
+}
+
+/** 取消编辑 */
+const handleCancelEdit = () => {
+  editingMessageId.value = null
+  editingMessageContent.value = ''
+}
+
+/** 切换消息分支 */
+const handleSwitchBranch = async (messageId: string, branchId: string) => {
+  if (!dialogId.value) return
+
+  try {
+    const branchKey = getBranchKey(messageId)
+    // 更新当前分支选择
+    currentBranchForMessage.value[branchKey] = branchId
+    
+    // 获取该消息的所有分支
+    const branches = await getMessageBranches(messageId)
+    const branch = branches.find(b => b.id === branchId)
+    if (!branch) {
+      console.error('Branch not found:', branchId)
+      return
+    }
+    
+    // 更新消息列表中的消息（替换整个消息对象）
+    const index = messages.value.findIndex(m => m.id === messageId)
+    if (index !== -1) {
+      // 创建新的消息对象，保留除了id和content之外的其他属性
+      const originalMessage = messages.value[index]
+      messages.value[index] = {
+        ...originalMessage,
+        id: branch.id, // 使用分支消息的ID
+        content: branch.content,
+        // 注意：我们还需要更新 version 和 parent_id
+        version: branch.version,
+        parent_id: branch.message_id, // branch.message_id 是父用户消息ID
+      }
+    }
+  } catch (e) {
+    console.error('Switch branch failed:', e)
+  }
+}
+
+/** 切换到下一个分支（循环切换） */
+const switchToNextBranch = async (messageId: string) => {
+  if (!dialogId.value) return
+
+  try {
+    const branchKey = getBranchKey(messageId)
+    const branches = await getMessageBranches(messageId)
+    if (branches.length <= 1) return
+    
+    const currentBranchId = currentBranchForMessage.value[branchKey]
+    let currentIndex = -1
+    if (currentBranchId) {
+      currentIndex = branches.findIndex(b => b.id === currentBranchId)
+    }
+    // 如果当前分支不在列表中，从第一个分支开始
+    if (currentIndex === -1) {
+      currentIndex = 0
+    }
+    const nextIndex = (currentIndex + 1) % branches.length
+    const nextBranch = branches[nextIndex]
+    
+    await handleSwitchBranch(messageId, nextBranch.id)
+  } catch (e) {
+    console.error('Switch to next branch failed:', e)
+  }
+}
+
+/** 获取消息的所有分支 */
+const getMessageBranches = async (messageId: string) => {
+  if (!dialogId.value) return []
+
+  try {
+    const branchKey = getBranchKey(messageId)
+    console.log('[frontend] getMessageBranches:', messageId, 'branchKey:', branchKey)
+    if (!branchHistory.value[branchKey]) {
+      // 获取消息详情以确定 parent_id
+      const message = messages.value.find(m => m.id === messageId)
+      let targetId = messageId
+      
+      if (message && message.role === 'ai' && message.parent_id) {
+        // AI消息的分支是其 parent_id（用户消息）的所有AI回复
+        targetId = message.parent_id
+      }
+      
+      const res = await dialogApi.getMessageBranches(dialogId.value, targetId)
+      console.log('[frontend] getMessageBranches API response:', res.success, 'data:', res.data)
+      if (res.success && res.data) {
+        const payload = (res.data as any).data || res.data
+        // 映射后端字段到 MessageBranch 接口
+        const branches: MessageBranch[] = payload.map((item: any) => ({
+          id: item.id,
+          message_id: targetId, // 原始消息ID（用户消息ID）
+          content: item.content,
+          version: item.version,
+          created_at: item.timestamp || item.created_at,
+        }))
+        console.log('[frontend] branches loaded:', branches.length)
+        branchHistory.value[branchKey] = branches
+      }
+    }
+    return branchHistory.value[branchKey] || []
+  } catch (e) {
+    console.error('Get message branches failed:', e)
+    return []
+  }
+}
+
+/** 判断消息是否有多个分支 */
+const hasMultipleBranches = (messageId: string) => {
+  const branchKey = getBranchKey(messageId)
+  const branches = branchHistory.value[branchKey]
+  const result = branches && branches.length > 1
+  console.log('[frontend] hasMultipleBranches:', messageId, 'branchKey:', branchKey, 'branches:', branches?.length, 'result:', result)
+  return result
+}
+
+/** 获取消息的当前版本和总版本数 */
+const getMessageVersionInfo = (messageId: string) => {
+  const branchKey = getBranchKey(messageId)
+  const branches = branchHistory.value[branchKey]
+  if (!branches || branches.length === 0) return { current: 1, total: 1 }
+  
+  const currentBranchId = currentBranchForMessage.value[branchKey]
+  let currentIndex = 0
+  if (currentBranchId) {
+    const index = branches.findIndex(b => b.id === currentBranchId)
+    if (index !== -1) currentIndex = index
+  }
+  
+  return { current: currentIndex + 1, total: branches.length }
 }
 
 /** 删除对话 */
@@ -1424,23 +2446,164 @@ const handleDeleteDialog = async () => {
 
 /** 复制消息 */
 const handleCopy = async (content: string) => {
+  // 准备要复制的文本
+  let textToCopy = content
+    .replace(/\[QUESTION\][\s\S]*?\[\/QUESTION\]/g, '')
+    .replace(/\[CHOICE\][\s\S]*?\[\/CHOICE\]/g, '')
+    .trim()
+
+  // 处理 [ARTIFACT] 标签：替换为提示文本
+  textToCopy = textToCopy.replace(/\[ARTIFACT\][\s\S]*?\[\/ARTIFACT\]/g, '【制品内容已生成，请在右侧面板查看】')
+
+  // HTML 反转义
+  const decodeHtmlEntities = (text: string) => {
+    const entities: Record<string, string> = {
+      '&lt;': '<',
+      '&gt;': '>',
+      '&amp;': '&',
+      '&quot;': '"',
+      '&#39;': "'",
+      '&nbsp;': ' '
+    }
+    return text.replace(/&(lt|gt|amp|quot|#39|nbsp);/g, match => entities[match] || match)
+  }
+
+  textToCopy = decodeHtmlEntities(textToCopy)
+  
+  // 移除 HTML 标签
+  textToCopy = textToCopy.replace(/<[^>]*>/g, '')
+
+  // 显示复制成功提示的函数
+  const showCopySuccess = () => {
+    const btn = document.activeElement
+    if (btn && btn.tagName === 'BUTTON') {
+      const originalHtml = btn.innerHTML
+      btn.innerHTML = '<span class="text-green-600 text-sm">已复制!</span>'
+      setTimeout(() => { btn.innerHTML = originalHtml }, 1500)
+    }
+  }
+
+  // 检查现代剪贴板 API 是否可用
+  if (navigator.clipboard && typeof navigator.clipboard.writeText === 'function') {
+    try {
+      // 使用现代剪贴板 API
+      await navigator.clipboard.writeText(textToCopy)
+      showCopySuccess()
+      return
+    } catch (err) {
+      console.error('现代剪贴板 API 失败:', err)
+    }
+  }
+  
+  // 降级方案：使用传统的 document.execCommand
   try {
-    // 复制时去除 [QUESTION] 和 [CHOICE] 标签
-    const cleanContent = content
-      .replace(/\[QUESTION\][\s\S]*?\[\/QUESTION\]/g, '')
-      .replace(/\[CHOICE\][\s\S]*?\[\/CHOICE\]/g, '')
-      .trim()
-    await navigator.clipboard.writeText(cleanContent)
-    // TODO: show toast "Copied!"
-  } catch {}
+    const textArea = document.createElement('textarea')
+    textArea.value = textToCopy
+    textArea.style.position = 'fixed'
+    textArea.style.opacity = '0'
+    document.body.appendChild(textArea)
+    textArea.select()
+    const success = document.execCommand('copy')
+    document.body.removeChild(textArea)
+    
+    if (success) {
+      showCopySuccess()
+    } else {
+      throw new Error('document.execCommand 失败')
+    }
+  } catch (fallbackErr) {
+    console.error('备用复制方法也失败:', fallbackErr)
+    // 最后尝试：提示用户手动复制
+    prompt('复制失败，请手动复制以下文本：', textToCopy)
+  }
+}
+
+/** 切换HTML预览菜单 */
+const toggleHtmlMenu = (messageId: string) => {
+  if (htmlMenuOpen.value === messageId) {
+    htmlMenuOpen.value = null
+  } else {
+    htmlMenuOpen.value = messageId
+  }
+}
+
+/** 下载HTML文件 */
+const downloadHtmlFile = (htmlContent: string) => {
+  try {
+    // 关闭菜单
+    htmlMenuOpen.value = null
+    
+    // 创建一个Blob对象
+    const blob = new Blob([wrapWithProgressiveRender(htmlContent)], { type: 'text/html' })
+    const url = URL.createObjectURL(blob)
+    
+    // 创建一个临时下载链接
+    const link = document.createElement('a')
+    link.href = url
+    link.download = `ai-generated-${Date.now()}.html`
+    document.body.appendChild(link)
+    link.click()
+    
+    // 清理
+    document.body.removeChild(link)
+    setTimeout(() => URL.revokeObjectURL(url), 1000)
+    
+    console.log('[FRONTEND] HTML file download initiated')
+  } catch (error) {
+    console.error('[FRONTEND] Failed to download HTML file:', error)
+    // 可以提供用户反馈
+  }
+}
+
+
+
+/** iframe加载完成时触发渐进式渲染 */
+const onIframeLoad = (messageId: string) => {
+  console.log(`[FRONTEND] iframe loaded for message ${messageId}`)
+  // 注意：渐进式渲染已经在wrapWithProgressiveRender函数中实现
+  // iframe加载后会自动执行渐进式渲染脚本
 }
 
 /** 分享 */
 const handleShare = () => {
   const url = window.location.href
-  navigator.clipboard.writeText(url).then(() => {
-    // toast copied
-  })
+  
+  // 检查现代剪贴板 API 是否可用
+  if (navigator.clipboard && typeof navigator.clipboard.writeText === 'function') {
+    navigator.clipboard.writeText(url).then(() => {
+      // toast copied
+    }).catch(err => {
+      console.error('分享复制失败:', err)
+      // 降级方案：使用传统的 document.execCommand
+      fallbackCopy(url)
+    })
+  } else {
+    // 直接使用降级方案
+    fallbackCopy(url)
+  }
+}
+
+/** 降级复制方法 */
+const fallbackCopy = (text: string) => {
+  try {
+    const textArea = document.createElement('textarea')
+    textArea.value = text
+    textArea.style.position = 'fixed'
+    textArea.style.opacity = '0'
+    document.body.appendChild(textArea)
+    textArea.select()
+    const success = document.execCommand('copy')
+    document.body.removeChild(textArea)
+    
+    if (success) {
+      // toast copied
+    } else {
+      console.error('降级复制方法失败')
+    }
+  } catch (err) {
+    console.error('降级复制方法异常:', err)
+    prompt('复制失败，请手动复制以下文本：', text)
+  }
 }
 
 /** 切换模型 */
@@ -2138,6 +3301,14 @@ watch(isAiWaiting, (val) => {
 </script>
 
 <style scoped>
+.chat-composer-mask {
+  background: linear-gradient(to top, #f9f8f5 0%, rgba(249, 248, 245, 0.96) 58%, rgba(249, 248, 245, 0) 100%);
+}
+
+.dark .chat-composer-mask {
+  background: linear-gradient(to top, #1f1f1e 0%, rgba(31, 31, 30, 0.96) 58%, rgba(31, 31, 30, 0) 100%);
+}
+
 /* 官网100%复刻：32×32px按钮，无padding，圆角6px，颜色#97958c */
 .action-btn {
   @apply w-8 h-8 inline-flex items-center justify-center shrink-0 rounded-md border-transparent
@@ -2218,6 +3389,23 @@ watch(isAiWaiting, (val) => {
 }
 .artifact-card-type span {
   @apply inline-block px-2 py-0.5 text-[11px] font-mono bg-[#f5f4f0] dark:bg-white/5 text-[#787774] rounded;
+}
+
+/* HTML 预览卡片样式 */
+.html-preview-card {
+  @apply bg-transparent border-0 shadow-none;
+}
+.html-preview-header {
+  @apply flex items-center justify-between px-4 py-3 border-b border-[#f0ede7] dark:border-white/5;
+}
+.html-preview-title {
+  @apply text-[14px] font-medium text-[#1a1a1a] dark:text-white;
+}
+.html-preview-content {
+  @apply bg-transparent border-0 rounded-none overflow-hidden;
+}
+.html-preview-footer {
+  @apply flex items-center justify-between px-4 py-2 border-t border-[#f0ede7] dark:border-white/5 bg-[#fafaf8] dark:bg-[#252524];
 }
 
 /* 右侧面板动画 */

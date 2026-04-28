@@ -251,17 +251,50 @@ export const useAppStore = defineStore('app', () => {
   const regenerateMessage = async (dialogId: string, messageId: string) => {
     isSendingMessage.value = true
     try {
+      console.log('[store] regenerateMessage called', { dialogId, messageId })
       const res = await dialogApi.regenerateMessage(dialogId, messageId)
       if (res.success && res.data) {
         const payload = (res.data as any).data || res.data
-        const idx = messages.value.findIndex(m => m.id === messageId)
-        if (idx !== -1) {
-          messages.value[idx] = payload as Message
+        const newAiMessage = payload as Message
+        console.log('[store] new AI message:', newAiMessage.id, 'parent_id:', newAiMessage.parent_id)
+        
+        // 找到父用户消息（当前轮次的用户消息）
+        const parentUserId = newAiMessage.parent_id
+        if (!parentUserId) {
+          console.log('[store] no parent_id, appending to end')
+          // 如果没有 parent_id，则无法确定位置，直接添加到末尾
+          messages.value.push(newAiMessage)
+          return newAiMessage
         }
-        return payload as Message
+        
+        // 查找父用户消息在列表中的位置
+        const parentIndex = messages.value.findIndex(m => m.id === parentUserId)
+        console.log('[store] parentIndex:', parentIndex, 'messages count:', messages.value.length)
+        if (parentIndex === -1) {
+          console.log('[store] parent message not found, appending to end')
+          // 父用户消息不在当前列表中，直接添加到末尾
+          messages.value.push(newAiMessage)
+          return newAiMessage
+        }
+        
+        // 删除父用户消息之后的所有消息（后续消息归档到历史记录）
+        // 从 parentIndex + 1 开始删除到末尾
+        const deleteCount = messages.value.length - (parentIndex + 1)
+        console.log('[store] deleteCount:', deleteCount, 'from index:', parentIndex + 1)
+        if (deleteCount > 0) {
+          const deleted = messages.value.splice(parentIndex + 1, deleteCount)
+          console.log('[store] deleted messages:', deleted.length)
+        }
+        
+        // 插入新的AI消息到父用户消息之后
+        messages.value.splice(parentIndex + 1, 0, newAiMessage)
+        console.log('[store] inserted new message at index:', parentIndex + 1)
+        
+        return newAiMessage
       }
       return null
-    } catch {
+    } catch (e) {
+      console.error('[store] regenerateMessage error:', e)
       return null
     } finally {
       isSendingMessage.value = false
