@@ -393,24 +393,34 @@
                 @paste="handlePaste"
               ></textarea>
 
-              <!-- 附件预览条 -->
-              <div v-if="pendingAttachments.length > 0" class="absolute bottom-12 left-3 right-3 flex flex-wrap gap-1.5">
-                <div
+              <!-- 附件预览条（文件卡片形式） -->
+              <div v-if="pendingAttachments.length > 0" class="absolute bottom-12 left-3 right-3 flex flex-wrap gap-3">
+                <FileCard
                   v-for="att in pendingAttachments"
                   :key="att.id"
-                  class="inline-flex items-center gap-1 px-2 py-1 bg-[#2f3030] dark:bg-[#2f3030] rounded-lg border border-[#3e3e3e] group/att"
+                  :file="{
+                    id: att.id,
+                    filename: att.filename,
+                    file_path: att.previewUrl || '',
+                    file_type: att.fileType === 'image' ? 'image' as const : 'document' as const,
+                    size: att.size,
+                    uploaded_at: new Date().toISOString(),
+                    preview_url: att.previewUrl || null
+                  }"
+                  @click="handlePendingFilePreview(att)"
+                />
+                <!-- 移除按钮（单独的按钮，不在卡片内部） -->
+                <button 
+                  type="button" 
+                  @click="clearPendingAttachments"
+                  class="px-3 py-1.5 text-[11px] text-[#9b9a97] hover:text-[#787774] hover:bg-black/[0.04] dark:hover:bg-white/5 rounded-md transition-colors border border-transparent hover:border-black/[0.08] dark:hover:border-white/10 flex items-center gap-1.5 self-center"
+                  title="清空所有附件"
                 >
-                  <span class="text-[12px] text-[#e5e5e5] truncate max-w-[120px]" :title="`${att.filename} (${formatFileSize(att.size)})`">{{ att.filename }}</span>
-                  <!-- 移除按钮 -->
-                  <button
-                    type="button"
-                    @click.stop="removePendingAttachment(att.id)"
-                    class="p-0.5 rounded hover:bg-white/10 opacity-0 group-hover/att:opacity-100 transition-opacity cursor-pointer"
-                    title="移除附件"
-                  >
-                    <svg class="w-3 h-3 text-[#9b9a97]" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
-                  </button>
-                </div>
+                  <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+                  </svg>
+                  清空
+                </button>
               </div>
 
               <div class="absolute bottom-3 left-3 right-3 flex items-center justify-between">
@@ -650,6 +660,27 @@ const handlePreviewClose = () => {
   previewModalVisible.value = false
   previewFile.value = null
   previewTextContent.value = ''
+}
+
+/** 处理待发送附件的预览 - 将 PendingAttachment 转换为 MessageFile 格式 */
+const handlePendingFilePreview = (att: PendingAttachment) => {
+  const messageFile: MessageFile = {
+    id: att.id,
+    filename: att.filename,
+    file_path: att.previewUrl || '',
+    file_type: att.fileType === 'image' ? 'image' : 'document',
+    size: att.size,
+    uploaded_at: new Date().toISOString(),
+    preview_url: att.previewUrl || null
+  }
+  
+  previewFile.value = messageFile
+  previewModalVisible.value = true
+  
+  // 如果有文本内容，设置到预览中
+  if (att.textContent) {
+    previewTextContent.value = att.textContent
+  }
 }
 
 const artifactPanelRef = ref<HTMLElement | null>(null)

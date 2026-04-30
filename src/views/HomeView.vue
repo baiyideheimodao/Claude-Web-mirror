@@ -202,8 +202,7 @@ import { useAppStore } from '@/stores/useAppStore'
 import { fileApi } from '@/api/file'
 import { readFileContent } from '@/utils/fileReader'
 import { getDisplayFilename } from '@/utils/fileName'
-import type { UploadedFile } from '@/types/api'
-import type { MessageFile } from '@/types/message'
+import type { UploadedFile, MessageFile } from '@/types/api'
 
 const router = useRouter()
 const appStore = useAppStore()
@@ -565,7 +564,7 @@ const handleFilePreview = (att: PendingAttachment) => {
     file_type: att.fileType === 'image' ? 'image' : 'document',
     size: att.size,
     uploaded_at: new Date().toISOString(),
-    preview_url: att.previewUrl || ''
+    preview_url: att.previewUrl || null
   }
   
   previewFile.value = messageFile

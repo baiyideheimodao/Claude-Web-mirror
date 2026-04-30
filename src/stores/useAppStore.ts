@@ -183,9 +183,13 @@ export const useAppStore = defineStore('app', () => {
       const res = await dialogApi.sendMessage(dialogId, content, files)
       if (res.success && res.data) {
         const payload = (res.data as any).data || res.data
-        const newMsg = payload as Message
-        messages.value.push(newMsg)
-        return newMsg
+        // 后端返回的是 { user_message: {...}, ai_message: {...} }
+        const userMessage = payload.user_message as Message
+        if (userMessage) {
+          messages.value.push(userMessage)
+          return userMessage
+        }
+        return null
       }
       return null
     } catch {
