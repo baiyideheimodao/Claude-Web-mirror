@@ -64,7 +64,11 @@
             >
               <div class="flex flex-col items-end max-w-[80%]">
                 <!-- 用户消息（官网风格：无边框无阴影，深色背景，圆角，无时间戳） -->
-                <div class="bg-bg-000 dark:bg-bg-000 rounded-xl px-4 py-2.5">
+                <div 
+  :ref="el => setUserMsgBoxRef(msg.id, el)"
+  class="bg-bg-000 dark:bg-bg-000 rounded-xl px-4 py-2.5"
+  :class="{ 'user-message-empty flex items-center': !msg.files || msg.files.length === 0 }"
+>
                   <!-- 附件列表（文件卡片形式） -->
                   <div v-if="msg.files && msg.files.length > 0" class="flex flex-wrap gap-3 mb-2">
                     <FileCard
@@ -86,9 +90,7 @@
                     ></textarea>
                   </div>
                   <!-- 查看模式 -->
-                  <div v-else>
-                    <p v-if="stripAttachmentContent(msg.content)" class="text-[15px] text-text-100 dark:text-text-100 leading-relaxed whitespace-pre-wrap">{{ stripAttachmentContent(msg.content) }}</p>
-                  </div>
+                  <p v-else-if="stripAttachmentContent(msg.content)" class="text-[15px] text-text-100 dark:text-text-100 leading-relaxed whitespace-pre-wrap">{{ stripAttachmentContent(msg.content) }}</p>
                 </div>
                 
                 <!-- 用户消息操作栏（始终保持高度稳定，悬停时显示内容） -->
@@ -363,7 +365,6 @@
             <div
               class="pointer-events-auto bg-white rounded-[20px] dark:bg-[#2c2c2a] border border-[#e5e5e4] dark:border-[rgba(226,225,218,0.12)] hover:border-[#d0d0cd] hover:dark:border-[rgba(226,225,218,0.2)] shadow-none dark:shadow-none transition-colors duration-200 relative"
               :class="{ 'ring-2 ring-[#d97757]/20': isDragging }"
-              style="min-height: 122px;"
               @dragenter.prevent="isDragging = true"
               @dragover.prevent="isDragging = true"
               @dragleave.prevent="(e: DragEvent) => { if (!(e.currentTarget as Element)?.contains(e.relatedTarget as Node)) isDragging = false }"
@@ -379,13 +380,44 @@
                 </div>
               </div>
 
+              <!-- 附件预览区（位于输入框上方，根据附件数量自动撑开高度） -->
+              <div v-if="pendingAttachments.length > 0" class="px-3 pt-3 pb-2">
+                <div class="flex flex-wrap gap-3">
+                  <FileCard
+                    v-for="att in pendingAttachments"
+                    :key="att.id"
+                    :file="{
+                      id: att.id,
+                      filename: att.filename,
+                      file_path: att.previewUrl || '',
+                      file_type: att.fileType === 'image' ? 'image' as const : 'document' as const,
+                      size: att.size,
+                      uploaded_at: new Date().toISOString(),
+                      preview_url: att.previewUrl || null
+                    }"
+                    @click="handlePendingFilePreview(att)"
+                  />
+                  <!-- 移除按钮 -->
+                  <button 
+                    type="button" 
+                    @click="clearPendingAttachments"
+                    class="px-3 py-1.5 text-[11px] text-[#9b9a97] hover:text-[#787774] hover:bg-black/[0.04] dark:hover:bg-white/5 rounded-md transition-colors border border-transparent hover:border-black/[0.08] dark:hover:border-white/10 flex items-center gap-1.5 self-center h-fit"
+                    title="清空所有附件"
+                  >
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+                    </svg>
+                    清空
+                  </button>
+                </div>
+              </div>
+
               <textarea
                 ref="inputRef"
                 v-model="messageInput"
                 rows="1"
                 :class="[
-                  'w-full bg-transparent border-0 rounded-[20px] pt-4 pb-14 px-4 text-[16px] text-[#1a1a1a] dark:text-[#f8f8f6] placeholder-[#9b9a97] focus:outline-none focus:ring-0 resize-none min-h-[56px] max-h-[200px] leading-relaxed',
-                  pendingAttachments.length > 0 ? 'pb-24' : 'pb-14'
+                  'w-full bg-transparent border-0 rounded-[20px] pt-2 px-4 pb-4 text-[16px] text-[#1a1a1a] dark:text-[#f8f8f6] placeholder-[#9b9a97] focus:outline-none focus:ring-0 resize-none min-h-[56px] max-h-[200px] leading-relaxed'
                 ]"
                 placeholder="Reply..."
                 @input="autoResize"
@@ -393,37 +425,8 @@
                 @paste="handlePaste"
               ></textarea>
 
-              <!-- 附件预览条（文件卡片形式） -->
-              <div v-if="pendingAttachments.length > 0" class="absolute bottom-12 left-3 right-3 flex flex-wrap gap-3">
-                <FileCard
-                  v-for="att in pendingAttachments"
-                  :key="att.id"
-                  :file="{
-                    id: att.id,
-                    filename: att.filename,
-                    file_path: att.previewUrl || '',
-                    file_type: att.fileType === 'image' ? 'image' as const : 'document' as const,
-                    size: att.size,
-                    uploaded_at: new Date().toISOString(),
-                    preview_url: att.previewUrl || null
-                  }"
-                  @click="handlePendingFilePreview(att)"
-                />
-                <!-- 移除按钮（单独的按钮，不在卡片内部） -->
-                <button 
-                  type="button" 
-                  @click="clearPendingAttachments"
-                  class="px-3 py-1.5 text-[11px] text-[#9b9a97] hover:text-[#787774] hover:bg-black/[0.04] dark:hover:bg-white/5 rounded-md transition-colors border border-transparent hover:border-black/[0.08] dark:hover:border-white/10 flex items-center gap-1.5 self-center"
-                  title="清空所有附件"
-                >
-                  <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
-                  </svg>
-                  清空
-                </button>
-              </div>
-
-              <div class="absolute bottom-3 left-3 right-3 flex items-center justify-between">
+              <!-- 底部工具栏 -->
+              <div class="absolute bottom-2 left-3 right-3 flex items-center justify-between">
                 <!-- 左侧：附件按钮 -->
                 <button type="button" class="p-1.5 hover:bg-black/[0.04] dark:hover:bg-white/5 rounded-md transition-colors group cursor-pointer" title="附件" @click.stop="handleAttachClick">
                   <svg class="w-[17px] h-[17px] text-[#9b9a97] group-hover:text-[#787774]" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.75">
@@ -431,58 +434,71 @@
                   </svg>
                   <input ref="fileInputRef" type="file" class="absolute -left-full opacity-0" accept="image/*,.pdf,.txt,.md,.doc,.docx,.csv,.json,.html,.css,.js,.ts,.py,.java,.go,.rs,.xml,.yaml,.yml,.log,.c,.cpp,.h,.hpp,.rb,.php,.sql,.vue" multiple @change="handleFileUpload" />
                 </button>
+                <!-- 右侧：发送按钮 -->
+                <button 
+                  :disabled="(!messageInput.trim() && pendingAttachments.length === 0) || isSending"
+                  class="px-4 py-1.5 text-[13px] font-medium rounded-md transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                  :class="messageInput.trim() || pendingAttachments.length > 0 ? 'bg-[#d97757] hover:bg-[#c4684a] text-white' : 'bg-[#e5e5e4] dark:bg-[#3a3a38] text-[#787774] dark:text-gray-500'"
+                  @click="handleSend"
+                >
+                  <svg v-if="isSending" class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                  <span v-else>发送</span>
+                </button>
+              </div>
 
-                <!-- 右侧：空状态=模型名+语音，有内容=发送/停止 -->
-                <div class="flex items-center gap-1">
-                  <!-- 空状态：模型选择器 -->
-                  <div v-if="!messageInput.trim() && !isSending"
-                    v-click-outside="() => showModelMenu = false"
-                    class="flex items-center gap-1 px-2 py-1 hover:bg-black/[0.04] dark:hover:bg-white/5 rounded cursor-pointer relative"
-                    @click="showModelMenu = !showModelMenu"
-                  >
-                    <span class="text-[12px] text-[#787774]">{{ appStore.currentModel?.name || 'Sonnet 4.6' }}</span>
-                    <svg class="w-3 h-3 text-[#9b9a97]" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg>
-                    <Transition name="dropdown">
-                      <div v-if="showModelMenu" class="absolute bottom-full right-0 mb-1 w-48 bg-white dark:bg-[#2c2c2a] border border-[#e0e0df] dark:border-white/10 rounded-lg shadow-claude-md py-1 z-50">
-                        <button v-for="model in appStore.models" :key="model.id" class="w-full px-3 py-1.5 text-left text-[12px] flex justify-between hover:bg-black/[0.04] dark:hover:bg-white/5" :class="model.id === appStore.currentModel?.id ? 'text-[#d97757]' : ''" @click.stop="handleSwitchModel(model)">{{ model.name }}</button>
-                      </div>
-                    </Transition>
-                  </div>
-
-                  <!-- 空状态：语音按钮（波形图标，同HomeView） -->
-                  <button
-                    v-if="!messageInput.trim() && !isSending"
-                    v-tooltip="'语音输入'"
-                    class="w-8 h-8 flex items-center justify-center hover:bg-black/[0.04] dark:hover:bg-white/5 rounded-lg transition-colors duration-150 group cursor-pointer"
-                    style="padding-left: 6px; padding-right: 6px;"
-                    aria-label="Use voice mode"
-                  >
-                    <svg width="20" height="20" viewBox="0 0 21 21" fill="none" xmlns="http://www.w3.org/2000/svg" class="inline-block overflow-visible">
-                      <rect x="0" y="7.5" height="6px" fill="currentColor" width="1px" rx="0.5" ry="0.5"/>
-                      <rect x="4" y="5.5" height="10px" fill="currentColor" width="1px" rx="0.5" ry="0.5"/>
-                      <rect x="8" y="2.5" height="16px" fill="currentColor" width="1px" rx="0.5" ry="0.5"/>
-                      <rect x="12" y="5.5" height="10px" fill="currentColor" width="1px" rx="0.5" ry="0.5"/>
-                      <rect x="16" y="2.5" height="16px" fill="currentColor" width="1px" rx="0.5" ry="0.5"/>
-                      <rect x="20" y="7.5" height="6px" fill="currentColor" width="1px" rx="0.5" ry="0.5"/>
-                    </svg>
-                  </button>
-
-                  <!-- 有内容时：发送 / 终止按钮 -->
-                  <button
-                    v-if="isSending || messageInput.trim()"
-                    :disabled="!isSending && !messageInput.trim()"
-                    class="w-8 h-8 flex items-center justify-center bg-[#d97757] hover:bg-[#c96a4a] disabled:bg-[#cfcfce] disabled:cursor-not-allowed text-white rounded-lg transition-colors duration-150"
-                    :title="isSending ? '停止生成' : '发送消息'"
-                    @click="isSending ? handleStopGeneration() : handleSend()"
-                  >
-                    <template v-if="isSending">
-                      <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24"><rect x="5" y="5" width="14" height="14" rx="2"/></svg>
-                    </template>
-                    <template v-else>
-                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 256 256"><path d="M208.49,120.49a12,12,0,0,1-17,0L140,69V216a12,12,0,0,1-24,0V69L64.49,120.49a12,12,0,0,1-17-17l72-72a12,12,0,0,1,17,0l72,72A12,12,0,0,1,208.49,120.49Z"/></svg>
-                    </template>
-                  </button>
+              <!-- 右侧：空状态=模型名+语音，有内容=发送/停止 -->
+              <div class="absolute bottom-2 right-3 flex items-center gap-1">
+                <!-- 空状态：模型选择器 -->
+                <div v-if="!messageInput.trim() && !isSending && !pendingAttachments.length"
+                  v-click-outside="() => showModelMenu = false"
+                  class="flex items-center gap-1 px-2 py-1 hover:bg-black/[0.04] dark:hover:bg-white/5 rounded cursor-pointer relative"
+                  @click="showModelMenu = !showModelMenu"
+                >
+                  <span class="text-[12px] text-[#787774]">{{ appStore.currentModel?.name || 'Sonnet 4.6' }}</span>
+                  <svg class="w-3 h-3 text-[#9b9a97]" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg>
+                  <Transition name="dropdown">
+                    <div v-if="showModelMenu" class="absolute bottom-full right-0 mb-1 w-48 bg-white dark:bg-[#2c2c2a] border border-[#e0e0df] dark:border-white/10 rounded-lg shadow-claude-md py-1 z-50">
+                      <button v-for="model in appStore.models" :key="model.id" class="w-full px-3 py-1.5 text-left text-[12px] flex justify-between hover:bg-black/[0.04] dark:hover:bg-white/5" :class="model.id === appStore.currentModel?.id ? 'text-[#d97757]' : ''" @click.stop="handleSwitchModel(model)">{{ model.name }}</button>
+                    </div>
+                  </Transition>
                 </div>
+
+                <!-- 空状态：语音按钮（波形图标，同HomeView） -->
+                <button
+                  v-if="!messageInput.trim() && !isSending && !pendingAttachments.length"
+                  v-tooltip="'语音输入'"
+                  class="w-8 h-8 flex items-center justify-center hover:bg-black/[0.04] dark:hover:bg-white/5 rounded-lg transition-colors duration-150 group cursor-pointer"
+                  style="padding-left: 6px; padding-right: 6px;"
+                  aria-label="Use voice mode"
+                >
+                  <svg width="20" height="20" viewBox="0 0 21 21" fill="none" xmlns="http://www.w3.org/2000/svg" class="inline-block overflow-visible">
+                    <rect x="0" y="7.5" height="6px" fill="currentColor" width="1px" rx="0.5" ry="0.5"/>
+                    <rect x="4" y="5.5" height="10px" fill="currentColor" width="1px" rx="0.5" ry="0.5"/>
+                    <rect x="8" y="2.5" height="16px" fill="currentColor" width="1px" rx="0.5" ry="0.5"/>
+                    <rect x="12" y="5.5" height="10px" fill="currentColor" width="1px" rx="0.5" ry="0.5"/>
+                    <rect x="16" y="2.5" height="16px" fill="currentColor" width="1px" rx="0.5" ry="0.5"/>
+                    <rect x="20" y="7.5" height="6px" fill="currentColor" width="1px" rx="0.5" ry="0.5"/>
+                  </svg>
+                </button>
+
+                <!-- 有内容时：发送 / 终止按钮 -->
+                <button
+                  v-if="isSending || messageInput.trim() || pendingAttachments.length > 0"
+                  :disabled="!isSending && !messageInput.trim() && pendingAttachments.length === 0"
+                  class="w-8 h-8 flex items-center justify-center bg-[#d97757] hover:bg-[#c96a4a] disabled:bg-[#cfcfce] disabled:cursor-not-allowed text-white rounded-lg transition-colors duration-150"
+                  :title="isSending ? '停止生成' : '发送消息'"
+                  @click="isSending ? handleStopGeneration() : handleSend()"
+                >
+                  <template v-if="isSending">
+                    <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24"><rect x="5" y="5" width="14" height="14" rx="2"/></svg>
+                  </template>
+                  <template v-else>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 256 256"><path d="M208.49,120.49a12,12,0,0,1-17,0L140,69V216a12,12,0,0,1-24,0V69L64.49,120.49a12,12,0,0,1-17-17l72-72a12,12,0,0,1,17,0l72,72A12,12,0,0,1,208.49,120.49Z"/></svg>
+                  </template>
+                </button>
               </div>
             </div>
 
@@ -635,6 +651,24 @@ const hasPersistedAttachmentId = (attachment?: Partial<PendingAttachment> | null
   return typeof attachment?.id === 'string' && attachment.id.length > 0 && !attachment.id.startsWith('temp_')
 }
 const msgContainerRef = ref<HTMLElement | null>(null)
+const userMsgBoxRefs = new Map<string, HTMLElement>()
+
+// 设置用户消息框引用并确保最小高度
+const setUserMsgBoxRef = (msgId: string, el: HTMLElement | null) => {
+  if (el) {
+    userMsgBoxRefs.set(msgId, el)
+    // 动态设置最小高度122px
+    const msg = displayMessages.value.find(m => m.id === msgId)
+    if (!msg || !msg.files || msg.files.length === 0) {
+      el.style.minHeight = '122px'
+      el.style.height = '122px'
+      el.style.display = 'flex'
+      el.style.alignItems = 'center'
+    }
+  } else {
+    userMsgBoxRefs.delete(msgId)
+  }
+}
 const aiLogoRef = ref<SVGSVGElement | null>(null)
 const setAiLogoRef: VNodeRef = (el) => {
   aiLogoRef.value = el instanceof SVGSVGElement ? el : null
@@ -802,6 +836,10 @@ const dialogDetail = computed(() => appStore.currentDialogDetail)
 const canRenameCurrentDialog = computed(() => Boolean(dialogId.value && dialogDetail.value))
 const currentDialogTitle = computed(() => dialogDetail.value?.title || '今天有什么可以帮我的')
 
+
+// 当前显示的分支ID（以父用户消息ID为key）
+const currentBranchForMessage = ref<Record<string, string>>({})
+
 // 过滤后的消息：根据分支选择显示消息
 const displayMessages = computed(() => {
   const result: typeof messages.value = []
@@ -889,6 +927,25 @@ const displayMessages = computed(() => {
   return result
 })
 
+// 监听displayMessages变化，动态设置用户消息框高度
+watch(displayMessages, async () => {
+  await nextTick()
+  userMsgBoxRefs.forEach((el, msgId) => {
+    const msg = displayMessages.value.find(m => m.id === msgId)
+    if (!msg || !msg.files || msg.files.length === 0) {
+      el.style.minHeight = '122px'
+      el.style.height = '122px'
+      el.style.display = 'flex'
+      el.style.alignItems = 'center'
+    } else {
+      el.style.minHeight = ''
+      el.style.height = ''
+      el.style.display = ''
+      el.style.alignItems = ''
+    }
+  })
+}, { deep: true })
+
 // 制品模式：从 query 中读取 artifact_type
 const artifactType = computed(() => route.query.artifact_type as string | undefined)
 
@@ -907,7 +964,6 @@ const aiHoveredMessageId = ref<string | null>(null) // 鼠标悬停的AI消息ID
 const editingMessageId = ref<string | null>(null) // 正在编辑的消息ID
 const editingMessageContent = ref('') // 编辑中的消息内容
 const branchHistory = ref<Record<string, MessageBranch[]>>({}) // 各消息的分支历史（以父用户消息ID为key）
-const currentBranchForMessage = ref<Record<string, string>>({}) // 当前显示的分支ID（以父用户消息ID为key）
 
 // HTML预览菜单状态
 const htmlMenuOpen = ref<string | null>(null) // 当前打开的HTML预览菜单ID
@@ -966,6 +1022,7 @@ watch(dialogId, async (newId) => {
               filename: f.filename,
               fileType: f.file_type,
               size: f.size,
+              previewUrl: f.preview_url || null,
             })
           }
         } catch (e) {
@@ -3984,6 +4041,11 @@ watch(isAiWaiting, (val) => {
 </script>
 
 <style scoped>
+/* 用户消息没有附件时的最小高度 */
+.user-message-empty {
+  min-height: 122px !important;
+  height: 122px !important;
+}
 .chat-composer-mask {
   background: linear-gradient(to top, #f9f8f5 0%, rgba(249, 248, 245, 0.96) 58%, rgba(249, 248, 245, 0) 100%);
 }

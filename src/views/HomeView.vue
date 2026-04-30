@@ -23,7 +23,6 @@
           <div
             class="relative bg-white rounded-[20px] dark:bg-[#2c2c2a] dark:border-[rgba(226,225,218,0.12)] dark:shadow-none transition-colors duration-200 border border-[#e5e5e4] hover:border-[#d0d0cd] hover:dark:border-[rgba(226,225,218,0.2)] w-full max-w-[674px]"
             :class="{ 'ring-2 ring-[#d97757]/20': isDragging }"
-            style="min-height: 122px;"
             @dragenter.prevent="isDragging = true"
             @dragover.prevent="isDragging = true"
             @dragleave.prevent="(e: DragEvent) => { if (!(e.currentTarget as Element)?.contains(e.relatedTarget as Node)) isDragging = false }"
@@ -39,42 +38,28 @@
               </div>
             </div>
 
-            <textarea
-              ref="inputRef"
-              v-model="userInput"
-              rows="1"
-              :class="[
-                'w-full bg-transparent border-0 rounded-[20px] pt-4 px-4 text-[16px] text-[#1a1a1a] dark:text-[#f8f8f6] placeholder-[#9b9a97] focus:outline-none focus:ring-0 resize-none min-h-[68px] max-h-[240px] leading-relaxed',
-                pendingAttachments.length > 0 ? 'pb-24' : 'pb-14'
-              ]"
-              placeholder="今天有什么可以帮您的？"
-              @input="autoResize"
-              @keydown.enter.exact.prevent="handleSend"
-              @paste="handlePaste"
-            ></textarea>
-
-            <!-- 附件预览条（文件卡片形式） -->
-            <div v-if="pendingAttachments.length > 0" class="absolute bottom-12 left-3 right-3 flex flex-wrap gap-3">
-              <FileCard
-                v-for="att in pendingAttachments"
-                :key="att.id"
-                :file="{
-                  id: att.id,
-                  filename: att.filename,
-                  file_path: att.previewUrl || '',
-                  file_type: att.fileType === 'image' ? 'image' : 'document',
-                  size: att.size,
-                  uploaded_at: new Date().toISOString(),
-                  preview_url: att.previewUrl || ''
-                }"
-                @click="handleFilePreview(att)"
-              />
-              <!-- 移除附件按钮（单独的按钮，不在卡片内部） -->
-              <div class="flex items-center gap-2">
+            <!-- 附件预览区（位于输入框上方，根据附件数量自动撑开高度） -->
+            <div v-if="pendingAttachments.length > 0" class="px-3 pt-3 pb-2">
+              <div class="flex flex-wrap gap-3">
+                <FileCard
+                  v-for="att in pendingAttachments"
+                  :key="att.id"
+                  :file="{
+                    id: att.id,
+                    filename: att.filename,
+                    file_path: att.previewUrl || '',
+                    file_type: att.fileType === 'image' ? 'image' : 'document',
+                    size: att.size,
+                    uploaded_at: new Date().toISOString(),
+                    preview_url: att.previewUrl || null
+                  }"
+                  @click="handleFilePreview(att)"
+                />
+                <!-- 移除附件按钮 -->
                 <button 
                   type="button" 
                   @click="clearPendingAttachments"
-                  class="px-3 py-1.5 text-[11px] text-[#9b9a97] hover:text-[#787774] hover:bg-black/[0.04] dark:hover:bg-white/5 rounded-md transition-colors border border-transparent hover:border-black/[0.08] dark:hover:border-white/10 flex items-center gap-1.5"
+                  class="px-3 py-1.5 text-[11px] text-[#9b9a97] hover:text-[#787774] hover:bg-black/[0.04] dark:hover:bg-white/5 rounded-md transition-colors border border-transparent hover:border-black/[0.08] dark:hover:border-white/10 flex items-center gap-1.5 self-center h-fit"
                   title="清空所有附件"
                 >
                   <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5">
@@ -85,8 +70,19 @@
               </div>
             </div>
 
+            <textarea
+              ref="inputRef"
+              v-model="userInput"
+              rows="1"
+              class="w-full bg-transparent border-0 rounded-[20px] pt-2 px-4 pb-4 text-[16px] text-[#1a1a1a] dark:text-[#f8f8f6] placeholder-[#9b9a97] focus:outline-none focus:ring-0 resize-none min-h-[68px] max-h-[240px] leading-relaxed"
+              placeholder="今天有什么可以帮您的？"
+              @input="autoResize"
+              @keydown.enter.exact.prevent="handleSend"
+              @paste="handlePaste"
+            ></textarea>
+
             <!-- 底部工具栏 -->
-            <div class="absolute bottom-3 left-3 right-3 flex items-center justify-between">
+            <div class="absolute bottom-2 left-3 right-3 flex items-center justify-between">
               <!-- 左侧：附件按钮（始终显示） -->
               <button
                 type="button"
@@ -318,6 +314,7 @@ const handleSend = async () => {
         filename: a.filename,
         file_type: a.fileType === 'image' ? 'image' : 'document',
         size: a.size,
+        preview_url: a.previewUrl || null,
       })))
     }
     // 同时传递完整消息供 API 使用

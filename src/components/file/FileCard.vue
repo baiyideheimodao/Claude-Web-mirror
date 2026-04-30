@@ -5,7 +5,7 @@
   >
     <!-- 图片文件缩略图 -->
     <div
-      v-if="file.file_type === 'image'"
+      v-if="isImageFile"
       class="image-card"
       :title="`图片: ${file.filename} (${formatSize(file.size)})`"
     >
@@ -71,7 +71,7 @@
 </template>
 
 <script setup lang="ts">
-import { defineProps, defineEmits } from 'vue'
+import { defineProps, defineEmits, computed } from 'vue'
 import type { MessageFile } from '@/types/api'
 
 const props = defineProps<{
@@ -81,6 +81,16 @@ const props = defineProps<{
 const emit = defineEmits<{
   click: []
 }>()
+
+// 判断是否为图片文件（优先使用 file_type 字段，也用扩展名作为后备）
+const isImageFile = computed(() => {
+  // 优先使用 file_type 字段
+  if (props.file.file_type === 'image') return true
+  // 使用扩展名作为后备判断
+  const ext = props.file.filename.split('.').pop()?.toLowerCase() || ''
+  const imageExtensions = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg', 'bmp', 'ico', 'tiff']
+  return imageExtensions.includes(ext)
+})
 
 // 判断是否为文本文件
 const isTextFile = (filename: string): boolean => {
@@ -157,62 +167,69 @@ const handleImageError = (event: Event) => {
   transform: translateY(-2px);
 }
 
-/* 图片卡片样式 */
+/* 图片卡片样式 - 优化显示效果 */
 .image-card {
-  width: 120px;
-  height: 140px;
+  width: 140px;
+  min-height: 160px;
   border: 1px solid rgba(0, 0, 0, 0.1);
-  border-radius: 8px;
+  border-radius: 10px;
   overflow: hidden;
   background: white;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
   transition: all 0.3s ease;
+  display: flex;
+  flex-direction: column;
 }
 
 .image-card:hover {
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
   border-color: rgba(0, 0, 0, 0.2);
+  transform: translateY(-3px);
 }
 
 .image-thumbnail-container {
-  height: 90px;
+  flex: 1;
+  min-height: 100px;
+  max-height: 200px;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: #f9f9f9;
+  background: #f5f5f5;
   overflow: hidden;
 }
 
 .image-thumbnail {
   width: 100%;
   height: 100%;
-  object-fit: cover;
+  object-fit: contain;
   transition: transform 0.3s ease;
 }
 
 .image-card:hover .image-thumbnail {
-  transform: scale(1.05);
+  transform: scale(1.02);
 }
 
 .image-placeholder {
-  width: 100%;
-  height: 100%;
+  flex: 1;
+  min-height: 100px;
+  max-height: 200px;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: #f5f5f5;
+  background: linear-gradient(135deg, #f8f8f8 0%, #f0f0f0 100%);
 }
 
 .image-info {
-  padding: 8px;
+  padding: 10px 8px;
   display: flex;
   flex-direction: column;
   gap: 2px;
   background: white;
+  border-top: 1px solid rgba(0, 0, 0, 0.05);
 }
 
 .image-info .filename {
-  font-size: 11px;
+  font-size: 12px;
   color: #333;
   font-weight: 500;
   text-align: center;
@@ -220,7 +237,7 @@ const handleImageError = (event: Event) => {
 }
 
 .image-info .filesize {
-  font-size: 10px;
+  font-size: 11px;
   color: #666;
   text-align: center;
 }
