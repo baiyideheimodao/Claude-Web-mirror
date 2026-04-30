@@ -94,10 +94,10 @@
                   </div>
                 </div>
                 
-                <!-- 用户消息操作栏（鼠标悬停显示或编辑模式时显示） -->
+                <!-- 用户消息操作栏（始终保持高度稳定，悬停时显示内容） -->
                 <div 
-                  v-show="userHoveredMessageId === msg.id || editingMessageId === msg.id"
-                  class="flex items-center gap-1 mt-1 transition-opacity duration-200"
+                  class="h-8 flex items-center transition-opacity duration-200"
+                  :class="userHoveredMessageId === msg.id || editingMessageId === msg.id ? 'opacity-100' : 'opacity-0 pointer-events-none'"
                 >
                   <!-- 编辑模式下的操作 -->
                   <div v-if="editingMessageId === msg.id" class="flex items-center gap-2">
@@ -119,6 +119,15 @@
                   
                   <!-- 查看模式下的操作 -->
                   <div v-else class="flex items-center gap-1">
+                    <!-- 复制按钮 -->
+                    <button 
+                      class="action-btn text-[11px] text-[#787774] hover:text-[#5c5b58] font-medium px-2 py-1 rounded-md hover:bg-black/[0.04] dark:hover:bg-white/5"
+                      title="复制"
+                      @click="handleCopy(msg.content)"
+                    >
+                      复制
+                    </button>
+                    
                     <!-- 编辑按钮 -->
                     <button 
                       class="action-btn text-[11px] text-[#787774] hover:text-[#5c5b58] font-medium px-2 py-1 rounded-md hover:bg-black/[0.04] dark:hover:bg-white/5"
