@@ -26,6 +26,11 @@ export default defineConfig({
             }
           })
         }
+      },
+      // 代理静态文件上传目录，使图片预览能正常工作
+      '/uploads': {
+        target: 'http://localhost:3001',
+        changeOrigin: true
       }
     }
   }
