@@ -252,6 +252,32 @@ export const useAppStore = defineStore('app', () => {
     isSendingMessage.value = true
     try {
       console.log('[store] regenerateMessage called', { dialogId, messageId })
+      
+      // 🔧 修复：在调用API前先更新消息状态，给用户即时反馈
+      // 找到要重试的消息
+      const messageIndex = messages.value.findIndex(m => m.id === messageId)
+      if (messageIndex !== -1) {
+        // 情况1：直接点击AI消息重试
+        if (messages.value[messageIndex].role === 'ai') {
+          messages.value[messageIndex].content = "正在重新生成..."
+          messages.value[messageIndex].status = "sending"
+          console.log('[store] Updated AI message at index', messageIndex, 'to show "正在重新生成..."')
+        } 
+        // 情况2：点击用户消息重试，需要找到对应的AI消息
+        else if (messages.value[messageIndex].role === 'user') {
+          // 查找该用户消息对应的AI消息
+          for (let i = messageIndex + 1; i < messages.value.length; i++) {
+            if (messages.value[i].role === 'ai' && 
+                messages.value[i].parent_id === messageId) {
+              messages.value[i].content = "正在重新生成..."
+              messages.value[i].status = "sending"
+              console.log('[store] Updated AI message at index', i, 'to show "正在重新生成..."')
+              break
+            }
+          }
+        }
+      }
+      
       const res = await dialogApi.regenerateMessage(dialogId, messageId)
       if (res.success && res.data) {
         const payload = (res.data as any).data || res.data

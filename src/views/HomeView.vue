@@ -53,18 +53,34 @@
               @paste="handlePaste"
             ></textarea>
 
-            <!-- 附件预览条 -->
-            <div v-if="pendingAttachments.length > 0" class="absolute bottom-12 left-3 right-3 flex flex-wrap gap-1.5">
-              <div
+            <!-- 附件预览条（文件卡片形式） -->
+            <div v-if="pendingAttachments.length > 0" class="absolute bottom-12 left-3 right-3 flex flex-wrap gap-3">
+              <FileCard
                 v-for="att in pendingAttachments"
                 :key="att.id"
-                class="inline-flex items-center gap-1.5 px-2.5 py-1 bg-black/[0.04] dark:bg-white/[0.06] rounded-lg border border-black/[0.06] dark:border-white/10 group/att"
-              >
-                <svg v-if="att.fileType === 'image'" class="w-4 h-4 text-[#d97757] shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.75"><path stroke-linecap="round" stroke-linejoin="round" d="m2.25 15.75 5.159-5.159a2.25 2.25 0 0 1 3.182 0l5.159 5.159m-1.5-1.5 1.409-1.409a2.25 2.25 0 0 1 3.182 0l2.909 2.909M3.75 21h16.5A2.25 2.25 0 0 0 22.5 18.75V5.25A2.25 2.25 0 0 0 20.25 3H3.75A2.25 2.25 0 0 0 1.5 5.25v13.5A2.25 2.25 0 0 0 3.75 21Z"/></svg>
-                <svg v-else class="w-4 h-4 text-[#787774] shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.75"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z"/></svg>
-                <span class="text-[12px] text-[#5c5b58] dark:text-[#b4b3b0] truncate max-w-[120px]" :title="`${att.filename} (${formatFileSize(att.size)})`">{{ att.filename }}</span>
-                <button type="button" @click.stop="removePendingAttachment(att.id)" class="p-0.5 rounded hover:bg-black/[0.08] dark:hover:bg-white/10 opacity-0 group-hover/att:opacity-100 transition-opacity cursor-pointer" title="移除附件">
-                  <svg class="w-3.5 h-3.5 text-[#9b9a97]" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+                :file="{
+                  id: att.id,
+                  filename: att.filename,
+                  file_path: att.previewUrl || '',
+                  file_type: att.fileType === 'image' ? 'image' : 'document',
+                  size: att.size,
+                  uploaded_at: new Date().toISOString(),
+                  preview_url: att.previewUrl || ''
+                }"
+                @click="handleFilePreview(att)"
+              />
+              <!-- 移除附件按钮（单独的按钮，不在卡片内部） -->
+              <div class="flex items-center gap-2">
+                <button 
+                  type="button" 
+                  @click="clearPendingAttachments"
+                  class="px-3 py-1.5 text-[11px] text-[#9b9a97] hover:text-[#787774] hover:bg-black/[0.04] dark:hover:bg-white/5 rounded-md transition-colors border border-transparent hover:border-black/[0.08] dark:hover:border-white/10 flex items-center gap-1.5"
+                  title="清空所有附件"
+                >
+                  <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+                  </svg>
+                  清空
                 </button>
               </div>
             </div>
@@ -165,6 +181,15 @@
         </div>
       </div>
     </main>
+
+    <!-- 文件预览模态框 -->
+    <FilePreviewModal
+      v-if="previewFile"
+      v-model:visible="previewModalVisible"
+      :file="previewFile"
+      :text-content="previewTextContent"
+      @close="handlePreviewClose"
+    />
   </div>
 </template>
 
@@ -172,11 +197,13 @@
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
 import AppNavigation from '@/components/layout/AppNavigation.vue'
+import { FileCard, FilePreviewModal } from '@/components/file'
 import { useAppStore } from '@/stores/useAppStore'
 import { fileApi } from '@/api/file'
 import { readFileContent } from '@/utils/fileReader'
 import { getDisplayFilename } from '@/utils/fileName'
 import type { UploadedFile } from '@/types/api'
+import type { MessageFile } from '@/types/message'
 
 const router = useRouter()
 const appStore = useAppStore()
@@ -189,6 +216,11 @@ const showModelMenu = ref(false)
 const inputRef = ref<HTMLTextAreaElement | null>(null)
 const fileInputRef = ref<HTMLInputElement | null>(null)
 const isDragging = ref(false)
+
+// 文件预览相关状态
+const previewModalVisible = ref(false)
+const previewFile = ref<MessageFile | null>(null)
+const previewTextContent = ref<string>('')
 
 /** 待发送的附件列表（上传成功后暂存，随消息一起提交到新对话） */
 interface PendingAttachment {
@@ -521,6 +553,35 @@ const handleClickOutside = (e: MouseEvent) => {
       showModelMenu.value = false
     }
   }
+}
+
+/** 处理文件预览 - 将 PendingAttachment 转换为 MessageFile 格式 */
+const handleFilePreview = (att: PendingAttachment) => {
+  // 将 PendingAttachment 转换为 MessageFile 格式
+  const messageFile: MessageFile = {
+    id: att.id,
+    filename: att.filename,
+    file_path: att.previewUrl || '',
+    file_type: att.fileType === 'image' ? 'image' : 'document',
+    size: att.size,
+    uploaded_at: new Date().toISOString(),
+    preview_url: att.previewUrl || ''
+  }
+  
+  previewFile.value = messageFile
+  previewModalVisible.value = true
+  
+  // 如果有文本内容，设置到预览中
+  if (att.textContent) {
+    previewTextContent.value = att.textContent
+  }
+}
+
+/** 处理预览关闭 */
+const handlePreviewClose = () => {
+  previewModalVisible.value = false
+  previewFile.value = null
+  previewTextContent.value = ''
 }
 
 onMounted(() => {

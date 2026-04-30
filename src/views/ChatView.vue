@@ -65,17 +65,14 @@
               <div class="flex flex-col items-end max-w-[80%]">
                 <!-- 用户消息（官网风格：无边框无阴影，深色背景，圆角，无时间戳） -->
                 <div class="bg-bg-000 dark:bg-bg-000 rounded-xl px-4 py-2.5">
-                  <!-- 附件列表 -->
-                  <div v-if="msg.files && msg.files.length > 0" class="flex flex-wrap gap-1.5 mb-1.5">
-                    <div
+                  <!-- 附件列表（文件卡片形式） -->
+                  <div v-if="msg.files && msg.files.length > 0" class="flex flex-wrap gap-3 mb-2">
+                    <FileCard
                       v-for="file in msg.files"
                       :key="file.id"
-                      class="inline-flex items-center gap-1 px-2 py-0.5 bg-white/10 rounded-lg border border-white/10"
-                    >
-                      <svg v-if="file.file_type === 'image'" class="w-3.5 h-3.5 text-brand-100 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.75"><path stroke-linecap="round" stroke-linejoin="round" d="m2.25 15.75 5.159-5.159a2.25 2.25 0 0 1 3.182 0l5.159 5.159m-1.5-1.5 1.409-1.409a2.25 2.25 0 0 1 3.182 0l2.909 2.909M3.75 21h16.5A2.25 2.25 0 0 0 22.5 18.75V5.25A2.25 2.25 0 0 0 20.25 3H3.75A2.25 2.25 0 0 0 1.5 5.25v13.5A2.25 2.25 0 0 0 3.75 21Z"/></svg>
-                      <svg v-else class="w-3.5 h-3.5 text-text-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.75"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z"/></svg>
-                      <span class="text-[12px] text-text-100 dark:text-text-100 truncate max-w-[120px]">{{ file.filename }}</span>
-                    </div>
+                      :file="file"
+                      @click="handleFilePreview(file)"
+                    />
                   </div>
                   
                   <!-- 编辑模式 -->
@@ -551,6 +548,15 @@
       </div>
     </Transition>
   </div>
+
+  <!-- 文件预览模态框 -->
+  <FilePreviewModal
+    v-if="previewFile"
+    v-model:visible="previewModalVisible"
+    :file="previewFile"
+    :text-content="previewTextContent"
+    @close="handlePreviewClose"
+  />
 </template>
 
 <script setup lang="ts">
@@ -558,12 +564,13 @@ import { ref, computed, onMounted, onBeforeUnmount, watch, reactive, nextTick } 
 import type { VNodeRef } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import AppNavigation from '@/components/layout/AppNavigation.vue'
+import { FileCard, FilePreviewModal } from '@/components/file'
 import { useAppStore } from '@/stores/useAppStore'
 import { dialogApi } from '@/api/dialog'
 import { fileApi } from '@/api/file'
 import { readFileContent } from '@/utils/fileReader'
 import { getDisplayFilename } from '@/utils/fileName'
-import type { UploadedFile, MessageBranch, Message } from '@/types/api'
+import type { UploadedFile, MessageBranch, Message, MessageFile } from '@/types/api'
 
 const router = useRouter()
 const route = useRoute()
@@ -622,6 +629,29 @@ const aiLogoRef = ref<SVGSVGElement | null>(null)
 const setAiLogoRef: VNodeRef = (el) => {
   aiLogoRef.value = el instanceof SVGSVGElement ? el : null
 }
+
+// 文件预览相关状态
+const previewModalVisible = ref(false)
+const previewFile = ref<MessageFile | null>(null)
+const previewTextContent = ref<string>('')
+
+/** 处理文件预览 */
+const handleFilePreview = (file: MessageFile) => {
+  previewFile.value = file
+  previewModalVisible.value = true
+  previewTextContent.value = ''
+  
+  // 这里可以添加获取文件内容的逻辑
+  // 对于文本文件，可以从服务器获取内容
+}
+
+/** 处理预览关闭 */
+const handlePreviewClose = () => {
+  previewModalVisible.value = false
+  previewFile.value = null
+  previewTextContent.value = ''
+}
+
 const artifactPanelRef = ref<HTMLElement | null>(null)
 const showModelMenu = ref(false)
 const showNotifyBar = ref(false)
@@ -2449,7 +2479,31 @@ const handleSend = async () => {
           console.log(`[FRONTEND] streamingContent length now: ${tempMsg?.content?.length} (at +${Math.round(performance.now() - startTime)}ms)`)
         }
       } else if (event.type === 'done') {
-        console.log(`[FRONTEND] received DONE event, total events: ${eventCount}, content len: ${tempMsg?.content?.length}`)
+        console.log(`[FRONTEND] received DONE event, total events: ${eventCount}, content len: ${tempMsg?.content?.length}, realMessageId: ${event.id}`)
+        
+        // 关键修复：用后端的真实消息ID替换前端的临时消息ID
+        if (event.id && tempMsg && tempMsg.id.startsWith('ai_stream_')) {
+          console.log(`[FRONTEND] Replacing temp message ID ${tempMsg.id} with real ID ${event.id}`)
+          
+          // 创建新的消息对象
+          const realMessage = {
+            ...tempMsg,
+            id: event.id  // 使用后端返回的真实ID
+          }
+          
+          // 从store中找到并更新临时消息
+          const messageIndex = appStore.messages.findIndex(m => m.id === tempAiMsgId)
+          if (messageIndex !== -1) {
+            appStore.messages[messageIndex] = realMessage
+            console.log(`[FRONTEND] Updated message at index ${messageIndex} with real ID`)
+          } else {
+            console.log(`[FRONTEND] Warning: Could not find temp message ${tempAiMsgId} in store`)
+          }
+          
+          // 更新临时消息引用
+          tempMsg = realMessage
+        }
+        
         // 如果有累积的 HTML 块，组合成完整 HTML 并更新预览
         if (tempMsg && (tempMsg as any)._htmlChunks && (tempMsg as any)._htmlChunks.length > 0) {
           const chunks = (tempMsg as any)._htmlChunks
@@ -2637,31 +2691,61 @@ const handleRegenerate = async (messageId: string) => {
   isSending.value = true
   isAiWaiting.value = true
   
+  // ⚠️ 立即清除当前分支选择，使第一轮回答从页面消失
+  // 这样displayMessages在下次更新时会隐藏当前显示的AI消息
+  console.log(`[REGENERATE] Clearing branch selection for ${branchKey}, old value:`, currentBranchForMessage.value[branchKey])
+  delete currentBranchForMessage.value[branchKey]
+  
+  // 🔧 修复：立即更新消息内容为"正在重新生成..."，给用户即时反馈
+  // 找到要重试的消息在store中的位置
+  const messageIndex = appStore.messages.findIndex(m => m.id === messageId)
+  if (messageIndex !== -1) {
+    // 情况1：如果点击的是AI消息，直接更新该消息
+    if (appStore.messages[messageIndex].role === 'ai') {
+      appStore.messages[messageIndex].content = "正在重新生成..."
+      appStore.messages[messageIndex].status = "sending"
+      console.log(`[REGENERATE] Updated AI message at index ${messageIndex} to show "正在重新生成..."`)
+    } 
+    // 情况2：如果点击的是用户消息，找到对应的AI消息并更新
+    else if (appStore.messages[messageIndex].role === 'user') {
+      // 查找该用户消息对应的AI消息
+      for (let i = messageIndex + 1; i < appStore.messages.length; i++) {
+        if (appStore.messages[i].role === 'ai' && 
+            appStore.messages[i].parent_id === messageId) {
+          appStore.messages[i].content = "正在重新生成..."
+          appStore.messages[i].status = "sending"
+          console.log(`[REGENERATE] Updated AI message at index ${i} to show "正在重新生成..."`)
+          break
+        }
+      }
+    }
+  }
+  
   try {
-    // 先获取当前分支列表（如果有缓存）
-    const currentBranches = branchHistory.value[branchKey] || []
     
     // 调用后端重新生成API
     const result = await appStore.regenerateMessage(id, messageId)
     if (result) {
       // appStore.regenerateMessage 已经更新了 messages 数组
       
-      // 先设置当前分支为新消息ID
+      // 设置当前分支为新消息ID（立即显示新回答）
       currentBranchForMessage.value[branchKey] = result.id
+      console.log(`[REGENERATE] Set new branch for ${branchKey}:`, result.id)
       
       // 更新分支缓存：添加新分支到现有分支列表
       // 如果当前分支列表为空，创建一个包含新分支的列表
       // 如果已有分支列表，添加新分支（假设新分支版本号最大）
+      const savedBranches = branchHistory.value[branchKey] || []
       const newBranch: MessageBranch = {
         id: result.id,
         message_id: parentMessageId,
         content: result.content,
-        version: result.version || (currentBranches.length > 0 ? currentBranches[currentBranches.length - 1].version + 1 : 1),
+        version: result.version || (savedBranches.length > 0 ? savedBranches[savedBranches.length - 1].version + 1 : 1),
         created_at: new Date().toISOString(),
       }
       
       // 创建新的分支列表：现有分支 + 新分支
-      const updatedBranches = [...currentBranches, newBranch]
+      const updatedBranches = [...savedBranches, newBranch]
       branchHistory.value[branchKey] = updatedBranches
       
       // 异步加载完整的分支数据（确保数据正确）
@@ -2674,6 +2758,12 @@ const handleRegenerate = async (messageId: string) => {
     }
   } catch (e) {
     console.error('Regenerate failed:', e)
+    // 如果错误，恢复之前的分支选择
+    // 尝试从branchHistory中获取分支列表
+    const savedBranches = branchHistory.value[branchKey]
+    if (savedBranches && savedBranches.length > 0) {
+      currentBranchForMessage.value[branchKey] = savedBranches[savedBranches.length - 1].id
+    }
   } finally {
     isSending.value = false
     isAiWaiting.value = false
