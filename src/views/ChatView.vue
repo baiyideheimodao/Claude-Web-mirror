@@ -49,12 +49,12 @@
         <!-- 消息列表区域 -->
         <div ref="msgContainerRef" class="space-y-6 mb-32">
           <!-- 空状态：无对话时提示 -->
-          <div v-if="!dialogId || (!messages.length && !isSending)" class="text-center py-20">
+          <div v-if="!dialogId || (!displayMessages.length && !isSending)" class="text-center py-20">
             <p class="text-[15px] text-text-500">开始新对话</p>
           </div>
 
           <!-- 消息列表 -->
-          <template v-for="(msg, index) in messages" :key="msg.id">
+          <template v-for="(msg, index) in displayMessages" :key="msg.id">
             <!-- 用户消息 -->
             <div 
               v-if="msg.role === 'user'" 
@@ -119,31 +119,26 @@
                   
                   <!-- 查看模式下的操作 -->
                   <div v-else class="flex items-center gap-1">
+                    <!-- 日期显示 -->
+                    <span class="text-[11px] text-text-300 dark:text-text-300 ml-1 mr-1">
+                      {{ formatMessageTime(msg) }}
+                    </span>
+                    
                     <!-- 复制按钮 -->
-                    <button 
-                      class="action-btn text-[11px] text-[#787774] hover:text-[#5c5b58] font-medium px-2 py-1 rounded-md hover:bg-black/[0.04] dark:hover:bg-white/5"
-                      title="复制"
-                      @click="handleCopy(msg.content)"
-                    >
-                      复制
+                    <button class="action-btn" title="复制" @click="handleCopy(msg.content)">
+                      <svg class="w-5 h-5" viewBox="0 0 20 20" fill="currentColor"><path d="M12.5 3A1.5 1.5 0 0 1 14 4.5V6h1.5A1.5 1.5 0 0 1 17 7.5v8a1.5 1.5 0 0 1-1.5 1.5h-8A1.5 1.5 0 0 1 6 15.5V14H4.5A1.5 1.5 0 0 1 3 12.5v-8A1.5 1.5 0 0 1 4.5 3zm1.5 9.5a1.5 1.5 0 0 1-1.5 1.5H7v1.5a.5.5 0 0 0 .5.5h8a.5.5 0 0 0 .5-.5v-8a.5.5 0 0 0-.5-.5H14zM4.5 4a.5.5 0 0 0-.5.5v8a.5.5 0 0 0 .5.5h8a.5.5 0 0 0 .5-.5v-8a.5.5 0 0 0-.5-.5z"/></svg>
                     </button>
                     
                     <!-- 编辑按钮 -->
-                    <button 
-                      class="action-btn text-[11px] text-[#787774] hover:text-[#5c5b58] font-medium px-2 py-1 rounded-md hover:bg-black/[0.04] dark:hover:bg-white/5"
-                      title="编辑"
-                      @click="handleEditUserMessage(msg.id)"
-                    >
-                      编辑
+                    <button class="action-btn group/btn" title="编辑" @click="handleEditUserMessage(msg.id)">
+                      <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor" xmlns="http://www.w3.org/2000/svg" class="text-text-500 group-hover/btn:text-text-100" aria-hidden="true" style="flex-shrink: 0;">
+                        <path d="M9.728 2.88a1.5 1.5 0 0 1 1.946-.847l2.792 1.1a1.5 1.5 0 0 1 .845 1.945l-3.92 9.953a1.5 1.5 0 0 1-.452.615l-.088.066-3.143 2.186a.75.75 0 0 1-1.135-.362l-.026-.095-.81-3.742a1.5 1.5 0 0 1 .071-.867zm-2.99 10.319a.5.5 0 0 0-.023.288l.73 3.376 2.835-1.971.058-.047a.5.5 0 0 0 .122-.18l2.637-6.698-3.721-1.466zm4.57-10.236a.5.5 0 0 0-.65.283L9.743 5.57l3.722 1.467.917-2.327a.5.5 0 0 0-.283-.648z"></path>
+                      </svg>
                     </button>
                     
                     <!-- 重新生成/重试按钮 -->
-                    <button 
-                      class="action-btn text-[11px] text-[#787774] hover:text-[#5c5b58] font-medium px-2 py-1 rounded-md hover:bg-black/[0.04] dark:hover:bg-white/5"
-                      title="重新生成回答"
-                      @click="handleRegenerate(msg.id)"
-                    >
-                      重试
+                    <button class="action-btn" title="重新生成回答" @click="handleRegenerate(msg.id)">
+                      <svg class="w-5 h-5" viewBox="0 0 20 20" fill="currentColor"><path d="M10.386 2.51A7.5 7.5 0 1 1 5.499 4H3a.5.5 0 0 1 0-1h3.5a.5.5 0 0 1 .49.402L7 3.5V7a.5.5 0 0 1-1 0V4.879a6.5 6.5 0 1 0 4.335-1.37L10 3.5l-.1-.01a.5.5 0 0 1 .1-.99z"/></svg>
                     </button>
                   </div>
                 </div>
@@ -307,8 +302,8 @@
 
                 <!-- AI消息底部操作栏（官网100%复刻：Copy/Thumbs Up/Thumbs Down/Retry，32×32px按钮 + 20×20px实心图标） -->
                 <div 
-                  v-show="aiHoveredMessageId === msg.id"
                   class="flex items-center gap-1 mt-1 transition-opacity duration-200"
+                  :class="aiHoveredMessageId === msg.id ? 'opacity-100' : 'opacity-0 pointer-events-none'"
                 >
                   <button class="action-btn" title="复制" @click="handleCopy(msg.content)">
                     <svg class="w-5 h-5" viewBox="0 0 20 20" fill="currentColor"><path d="M12.5 3A1.5 1.5 0 0 1 14 4.5V6h1.5A1.5 1.5 0 0 1 17 7.5v8a1.5 1.5 0 0 1-1.5 1.5h-8A1.5 1.5 0 0 1 6 15.5V14H4.5A1.5 1.5 0 0 1 3 12.5v-8A1.5 1.5 0 0 1 4.5 3zm1.5 9.5a1.5 1.5 0 0 1-1.5 1.5H7v1.5a.5.5 0 0 0 .5.5h8a.5.5 0 0 0 .5-.5v-8a.5.5 0 0 0-.5-.5H14zM4.5 4a.5.5 0 0 0-.5.5v8a.5.5 0 0 0 .5.5h8a.5.5 0 0 0 .5-.5v-8a.5.5 0 0 0-.5-.5z"/></svg>
@@ -322,15 +317,30 @@
                   <button class="action-btn" title="重新生成" @click="handleRegenerate(msg.id)">
                     <svg class="w-5 h-5" viewBox="0 0 20 20" fill="currentColor"><path d="M10.386 2.51A7.5 7.5 0 1 1 5.499 4H3a.5.5 0 0 1 0-1h3.5a.5.5 0 0 1 .49.402L7 3.5V7a.5.5 0 0 1-1 0V4.879a6.5 6.5 0 1 0 4.335-1.37L10 3.5l-.1-.01a.5.5 0 0 1 .1-.99z"/></svg>
                   </button>
-                  <!-- 分支切换按钮（如果有多个分支） -->
+<!-- 分支切换按钮区域（如果有多个分支） -->
+                <div v-if="hasMultipleBranches(msg.id)" class="flex items-center gap-1 px-1">
                   <button 
-                    v-if="hasMultipleBranches(msg.id)"
-                    class="action-btn text-[11px] text-[#787774] hover:text-[#5c5b58] font-medium px-2 py-1 rounded-md hover:bg-black/[0.04] dark:hover:bg-white/5"
-                    title="切换分支"
+                    class="p-1 hover:bg-black/[0.04] dark:hover:bg-white/5 rounded disabled:opacity-30 disabled:cursor-not-allowed group/btn"
+                    :disabled="getMessageVersionInfo(msg.id).current <= 1"
+                    @click="switchToPrevBranch(msg.id)"
+                  >
+                    <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor" xmlns="http://www.w3.org/2000/svg" class="text-text-500 group-hover/btn:text-text-100" aria-hidden="true" style="flex-shrink: 0;">
+                      <path d="M13.24 3.072a.5.5 0 0 1 .667.718l-.067.076L7.233 10l6.607 6.134a.5.5 0 1 1-.68.732l-7-6.5-.068-.077a.5.5 0 0 1 .068-.655l7-6.5z"></path>
+                    </svg>
+                  </button>
+                  <span class="text-[11px] text-[#787774] font-medium px-1">
+                    {{ getMessageVersionInfo(msg.id).current }} / {{ getMessageVersionInfo(msg.id).total }}
+                  </span>
+                  <button 
+                    class="p-1 hover:bg-black/[0.04] dark:hover:bg-white/5 rounded disabled:opacity-30 disabled:cursor-not-allowed group/btn"
+                    :disabled="getMessageVersionInfo(msg.id).current >= getMessageVersionInfo(msg.id).total"
                     @click="switchToNextBranch(msg.id)"
                   >
-                    &lt; {{ getMessageVersionInfo(msg.id).current }} / {{ getMessageVersionInfo(msg.id).total }} &gt;
+                    <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor" xmlns="http://www.w3.org/2000/svg" class="text-text-500 group-hover/btn:text-text-100" aria-hidden="true" style="flex-shrink: 0;">
+                      <path d="M6.134 3.16a.5.5 0 0 1 .626-.088l.08.062 7 6.5a.5.5 0 0 1 .068.655l-.068.077-7 6.5a.5.5 0 1 1-.68-.732L12.767 10 6.16 3.866l-.067-.076a.5.5 0 0 1 .04-.63"></path>
+                    </svg>
                   </button>
+                </div>
                 </div>
 
                 <!-- Starburst AI Logo 图标 24×24px，橙色 -->
@@ -553,7 +563,7 @@ import { dialogApi } from '@/api/dialog'
 import { fileApi } from '@/api/file'
 import { readFileContent } from '@/utils/fileReader'
 import { getDisplayFilename } from '@/utils/fileName'
-import type { UploadedFile, MessageBranch } from '@/types/api'
+import type { UploadedFile, MessageBranch, Message } from '@/types/api'
 
 const router = useRouter()
 const route = useRoute()
@@ -731,6 +741,93 @@ const dialogDetail = computed(() => appStore.currentDialogDetail)
 const canRenameCurrentDialog = computed(() => Boolean(dialogId.value && dialogDetail.value))
 const currentDialogTitle = computed(() => dialogDetail.value?.title || '今天有什么可以帮我的')
 
+// 过滤后的消息：根据分支选择显示消息
+const displayMessages = computed(() => {
+  const result: typeof messages.value = []
+  const userMessages: Record<string, any> = {} // 用户消息ID -> 用户消息对象
+  const aiMessageGroups: Record<string, any[]> = {} // 父用户消息ID -> AI消息数组
+  const selectedBranchIds: Record<string, string> = {} // 分支键 -> 选中的分支ID
+
+  console.log('[FRONTEND] ===== displayMessages START =====')
+  console.log('[FRONTEND] All messages:', messages.value.map(m => ({id: m.id, role: m.role, parent_id: m.parent_id, content: m.content.substring(0, 50)})))
+
+  // 首先，收集所有消息并按用户消息分组
+  for (const msg of messages.value) {
+    if (msg.role === 'user') {
+      userMessages[msg.id] = msg
+      result.push(msg) // 用户消息总是显示
+    } else if (msg.role === 'ai') {
+      const parentId = msg.parent_id || msg.id // AI消息的父ID
+      if (!aiMessageGroups[parentId]) {
+        aiMessageGroups[parentId] = []
+      }
+      aiMessageGroups[parentId].push(msg)
+    }
+  }
+
+  // 日志记录：分组情况
+  console.log('[FRONTEND] Group summary:')
+  console.log('[FRONTEND] Total messages:', messages.value.length)
+  console.log('[FRONTEND] User messages:', Object.keys(userMessages).length)
+  console.log('[FRONTEND] AI message groups:', Object.keys(aiMessageGroups).length)
+  for (const [parentId, msgs] of Object.entries(aiMessageGroups)) {
+    console.log(`[FRONTEND] Group ${parentId}: ${msgs.length} AI messages`, msgs.map(m => ({id: m.id, parent_id: m.parent_id, role: m.role})))
+  }
+
+  console.log('[FRONTEND] Branch selection state:', JSON.stringify(currentBranchForMessage.value))
+  
+  let shownCount = 0;
+  // 然后，为每个用户消息选择要显示的AI消息
+  for (const [parentId, aiMessages] of Object.entries(aiMessageGroups)) {
+    const branchKey = parentId // 分支键是父用户消息ID
+    const selectedBranchId = currentBranchForMessage.value[branchKey]
+    
+    console.log(`[FRONTEND] Processing group ${parentId}:`)
+    console.log(`[FRONTEND] - Branch key: ${branchKey}`)
+    console.log(`[FRONTEND] - Selected branch ID: ${selectedBranchId}`)
+    console.log(`[FRONTEND] - Available AI messages: ${aiMessages.length}`, aiMessages.map(m => m.id))
+    
+    let aiMessageToShow = null
+    
+    if (selectedBranchId) {
+      // 如果有选中的分支，显示该分支的AI消息
+      aiMessageToShow = aiMessages.find(m => m.id === selectedBranchId)
+      console.log(`[FRONTEND] - Selected branch found: ${aiMessageToShow ? `YES (${aiMessageToShow.id})` : 'NO'}`)
+    } else {
+      console.log(`[FRONTEND] - No selected branch for this group`)
+    }
+    
+    if (!aiMessageToShow && aiMessages.length > 0) {
+      // 如果没有选中的分支或者未找到，显示最新的AI消息
+      aiMessageToShow = aiMessages[aiMessages.length - 1]
+      console.log(`[FRONTEND] - Showing latest AI message: ${aiMessageToShow.id}`)
+      // 记住这是当前显示的分支
+      currentBranchForMessage.value[branchKey] = aiMessageToShow.id
+    }
+    
+    if (aiMessageToShow) {
+      // 找到AI消息要插入的位置（在对应的用户消息之后）
+      const userMsgIndex = result.findIndex(m => m.id === parentId)
+      console.log(`[FRONTEND] - User message index: ${userMsgIndex}`)
+      console.log(`[FRONTEND] - Showing AI message: ${aiMessageToShow.id} (parent_id: ${aiMessageToShow.parent_id})`)
+      
+      if (userMsgIndex !== -1) {
+        result.splice(userMsgIndex + 1, 0, aiMessageToShow)
+        shownCount++;
+      } else {
+        // 如果没有找到对应的用户消息，添加到末尾
+        console.warn(`[FRONTEND] WARNING: No user message found for parentId ${parentId}, adding to end`)
+        result.push(aiMessageToShow)
+        shownCount++;
+      }
+    }
+  }
+
+  console.log(`[FRONTEND] ===== displayMessages END ===== Total shown: ${shownCount} AI messages`)
+  console.log('[FRONTEND] Final display messages:', result.map(m => ({id: m.id, role: m.role, parent_id: m.parent_id})))
+  return result
+})
+
 // 制品模式：从 query 中读取 artifact_type
 const artifactType = computed(() => route.query.artifact_type as string | undefined)
 
@@ -756,7 +853,7 @@ const htmlMenuOpen = ref<string | null>(null) // 当前打开的HTML预览菜单
 
 /** 获取消息的分支键：对于AI消息返回其parent_id，对于用户消息返回自身ID */
 const getBranchKey = (messageId: string): string => {
-  const message = messages.value.find(m => m.id === messageId)
+  const message = appStore.messages.find(m => m.id === messageId)
   if (!message) {
     console.log('[frontend] getBranchKey: message not found', messageId)
     return messageId
@@ -967,7 +1064,7 @@ const getChoicePanel = (content: string): { question: string; choices: string[] 
 const getWizardPanel = (): { question: string; choices: string[] } | null => {
   if (!choiceWizard.active || choiceWizard.completed) return null
 
-  const lastAiMsg = [...messages.value].reverse().find(m => m.role === 'ai')
+  const lastAiMsg = [...displayMessages.value].reverse().find(m => m.role === 'ai')
   if (!lastAiMsg || lastAiMsg.id !== choiceWizard.currentMsgId) return null
 
   const questions = [
@@ -1394,7 +1491,7 @@ const handleSkipChoice = async (msgId: string) => {
 /** 判断是否为最后一条 AI 消息（用于显示 logo） */
 const isLastAiMessage = (msg: any) => {
   if (msg.role !== 'ai') return false
-  const aiMessages = messages.value.filter(m => m.role === 'ai')
+  const aiMessages = displayMessages.value.filter(m => m.role === 'ai')
   return aiMessages.length > 0 && aiMessages[aiMessages.length - 1].id === msg.id
 }
 
@@ -2530,7 +2627,7 @@ const handleRegenerate = async (messageId: string) => {
   const id = dialogId.value
   if (!id) return
   
-  const message = messages.value.find(m => m.id === messageId)
+  const message = appStore.messages.find(m => m.id === messageId)
   if (!message) return
   
   // 确定父用户消息ID（用于分支管理）
@@ -2585,7 +2682,7 @@ const handleRegenerate = async (messageId: string) => {
 
 /** 编辑用户消息 */
 const handleEditUserMessage = async (messageId: string) => {
-  const message = messages.value.find(m => m.id === messageId)
+  const message = appStore.messages.find(m => m.id === messageId)
   if (!message || message.role !== 'user') return
   
   editingMessageId.value = messageId
@@ -2611,7 +2708,7 @@ const handleSaveEdit = async () => {
   try {
     isSending.value = true
     // 找到原始消息
-    const originalIndex = messages.value.findIndex(m => m.id === editingMessageId.value)
+    const originalIndex = appStore.messages.findIndex(m => m.id === editingMessageId.value)
     if (originalIndex === -1) return
     
     // 发送编辑后的消息（会产生新分支）
@@ -2653,11 +2750,12 @@ const handleSwitchBranch = async (messageId: string, branchId: string) => {
     }
     
     // 更新消息列表中的消息（替换整个消息对象）
-    const index = messages.value.findIndex(m => m.id === messageId)
+    // 注意：由于现在使用displayMessages过滤，我们需要在原始消息列表中更新
+    const index = appStore.messages.findIndex(m => m.id === messageId)
     if (index !== -1) {
       // 创建新的消息对象，保留除了id和content之外的其他属性
-      const originalMessage = messages.value[index]
-      messages.value[index] = {
+      const originalMessage = appStore.messages[index]
+      appStore.messages[index] = {
         ...originalMessage,
         id: branch.id, // 使用分支消息的ID
         content: branch.content,
@@ -2671,7 +2769,34 @@ const handleSwitchBranch = async (messageId: string, branchId: string) => {
   }
 }
 
-/** 切换到下一个分支（循环切换） */
+/** 切换到上一个分支 */
+const switchToPrevBranch = async (messageId: string) => {
+  if (!dialogId.value) return
+
+  try {
+    const branchKey = getBranchKey(messageId)
+    const branches = await getMessageBranches(messageId)
+    if (branches.length <= 1) return
+    
+    const currentBranchId = currentBranchForMessage.value[branchKey]
+    let currentIndex = -1
+    if (currentBranchId) {
+      currentIndex = branches.findIndex(b => b.id === currentBranchId)
+    }
+    // 如果当前分支不在列表中，从第一个分支开始
+    if (currentIndex === -1) {
+      currentIndex = 0
+    }
+    const prevIndex = currentIndex > 0 ? currentIndex - 1 : branches.length - 1
+    const prevBranch = branches[prevIndex]
+    
+    await handleSwitchBranch(messageId, prevBranch.id)
+  } catch (e) {
+    console.error('Switch to prev branch failed:', e)
+  }
+}
+
+/** 切换到下一个分支 */
 const switchToNextBranch = async (messageId: string) => {
   if (!dialogId.value) return
 
@@ -2707,7 +2832,7 @@ const getMessageBranches = async (messageId: string) => {
     console.log('[frontend] getMessageBranches:', messageId, 'branchKey:', branchKey)
     if (!branchHistory.value[branchKey]) {
       // 获取消息详情以确定 parent_id
-      const message = messages.value.find(m => m.id === messageId)
+      const message = appStore.messages.find(m => m.id === messageId)
       let targetId = messageId
       
       if (message && message.role === 'ai' && message.parent_id) {
@@ -2741,6 +2866,16 @@ const getMessageBranches = async (messageId: string) => {
 /** 判断消息是否有多个分支 */
 const hasMultipleBranches = (messageId: string) => {
   const branchKey = getBranchKey(messageId)
+  
+  // 如果分支历史为空，异步获取但不等待（模板不能使用async）
+  if (!branchHistory.value[branchKey]) {
+    console.log('[frontend] hasMultipleBranches: branchHistory empty, loading in background...', messageId, branchKey)
+    // 异步加载但不等待
+    getMessageBranches(messageId).catch(e => {
+      console.warn('[frontend] hasMultipleBranches: failed to load branches', e)
+    })
+  }
+  
   const branches = branchHistory.value[branchKey]
   const result = branches && branches.length > 1
   console.log('[frontend] hasMultipleBranches:', messageId, 'branchKey:', branchKey, 'branches:', branches?.length, 'result:', result)
@@ -2750,6 +2885,17 @@ const hasMultipleBranches = (messageId: string) => {
 /** 获取消息的当前版本和总版本数 */
 const getMessageVersionInfo = (messageId: string) => {
   const branchKey = getBranchKey(messageId)
+  
+  // 异步加载分支数据（如果还没有）
+  if (!branchHistory.value[branchKey]) {
+    console.log('[frontend] getMessageVersionInfo: branchHistory empty, loading in background...', messageId, branchKey)
+    getMessageBranches(messageId).catch(e => {
+      console.warn('[frontend] getMessageVersionInfo: failed to load branches', e)
+    })
+    // 返回默认值直到数据加载完成
+    return { current: 1, total: 1 }
+  }
+  
   const branches = branchHistory.value[branchKey]
   if (!branches || branches.length === 0) return { current: 1, total: 1 }
   
@@ -3169,6 +3315,40 @@ const handlePaste = async (e: ClipboardEvent): Promise<void> => {
         await uploadAndAddFile(file)
       }
     }
+  }
+}
+
+/** 格式化消息显示时间（官网样式：显示具体时间） */
+const formatMessageTime = (message: Message) => {
+  if (!message.timestamp) return ''
+  const timestamp = message.timestamp
+  const date = new Date(timestamp)
+  const now = new Date()
+  const diffMs = now.getTime() - date.getTime()
+  const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24))
+  
+  // 当天消息：显示 HH:mm
+  // 昨天消息：显示 "昨天 HH:mm"  
+  // 一周内：显示星期几 HH:mm
+  // 更早：显示 YYYY-MM-DD HH:mm
+  if (diffDays === 0) {
+    // 今天
+    return date.toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' })
+  } else if (diffDays === 1) {
+    // 昨天
+    return `昨天 ${date.toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' })}`
+  } else if (diffDays < 7) {
+    // 一周内
+    const weekdays = ['星期日', '星期一', '星期二', '星期三', '星期四', '星期五', '星期六']
+    const weekday = weekdays[date.getDay()]
+    return `${weekday} ${date.toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' })}`
+  } else {
+    // 更早
+    const year = date.getFullYear()
+    const month = String(date.getMonth() + 1).padStart(2, '0')
+    const day = String(date.getDate()).padStart(2, '0')
+    const time = date.toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' })
+    return `${year}-${month}-${day} ${time}`
   }
 }
 
