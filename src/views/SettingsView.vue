@@ -1,10 +1,10 @@
 <template>
-  <div class="min-h-screen bg-[#f9f8f5] dark:bg-[#1f1f1e] text-text-100" :class="{ 'dark': appStore.isDarkMode }">
+  <div class="min-h-screen bg-bg-100 dark:bg-bg-100 text-text-100" :class="{ 'dark': appStore.isDarkMode }">
     <AppNavigation :sidebar-width="sidebarWidth" @sidebar-change="onSidebarChange" />
 
     <main class="min-h-screen transition-all duration-200 ease-in-out" :style="{ marginLeft: sidebarWidth + 'px' }">
       <div class="max-w-3xl mx-auto px-6 pt-6 pb-8">
-        <h1 class="text-xl font-semibold text-[#1a1a1a] dark:text-white mb-6">设置</h1>
+        <h1 class="text-xl font-semibold text-text-100 dark:text-text-000 mb-6">设置</h1>
 
         <div class="flex gap-8">
           <!-- 左侧菜单 -->
@@ -12,7 +12,7 @@
             <ul class="space-y-0.5">
               <li v-for="item in menuItems" :key="item.key">
                 <button
-                  :class="['w-full text-left px-3 py-2 rounded-lg text-[13px] font-medium transition-colors', activeSection === item.key ? 'bg-[#1a1a1a] text-white' : 'text-[#5c5b58] hover:bg-black/[0.04] dark:hover:bg-white/5']"
+                  :class="['w-full text-left px-3 py-2 rounded-lg text-[13px] font-medium transition-colors', activeSection === item.key ? 'bg-text-100 text-text-000 dark:bg-text-100 dark:text-text-000' : 'text-text-300 dark:text-text-300 hover:bg-text-100/[0.04] dark:hover:bg-text-000/5']"
                   @click="activeSection = item.key"
                 >{{ item.label }}</button>
               </li>

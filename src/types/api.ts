@@ -124,6 +124,7 @@ export interface Message {
   id: string
   role: 'user' | 'ai'
   content: string
+  html_preview?: string | null  // HTML预览内容
   timestamp: string
   status: 'sending' | 'sent' | 'failed'
   parent_id: string | null

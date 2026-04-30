@@ -1,5 +1,5 @@
 ﻿<template>
-  <div class="h-screen bg-[#f9f8f5] dark:bg-[#1f1f1e] text-[#1a1a1a] dark:text-gray-200 flex overflow-hidden">
+  <div class="h-screen bg-bg-100 dark:bg-bg-100 text-text-100 dark:text-text-100 flex overflow-hidden">
     <!-- 左侧导航栏（可拖拽调整宽度） -->
     <AppNavigation
       :sidebar-width="sidebarWidth"
@@ -17,7 +17,7 @@
           <div class="min-w-0 max-w-[min(60vw,32rem)]">
             <button
               v-if="!isEditingTitle"
-              class="flex items-center gap-1 text-[13px] text-[#787774] dark:text-[#9b9a97] hover:text-[#5c5b58] dark:hover:text-[#e8e7e0] transition-colors cursor-pointer min-w-0"
+              class="flex items-center gap-1 text-[13px] text-text-400 dark:text-text-500 hover:text-text-300 dark:hover:text-text-200 transition-colors cursor-pointer min-w-0"
               @click="handleTitleClick"
             >
               <svg v-if="!canRenameCurrentDialog" class="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.75"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
@@ -31,13 +31,13 @@
               v-model="editableTitle"
               type="text"
               maxlength="200"
-              class="h-7 min-w-[160px] max-w-full rounded-[4px] border border-[#3b82f6] bg-white px-1.5 text-[13px] leading-none text-[#1a1a1a] shadow-none outline-none dark:bg-[#2c2c2a] dark:text-[#f8f8f6]"
+              class="h-7 min-w-[160px] max-w-full rounded-[4px] border border-accent-100 bg-bg-000 px-1.5 text-[13px] leading-none text-text-100 shadow-none outline-none dark:bg-bg-200 dark:text-text-000"
               @blur="handleTitleInputBlur"
             >
           </div>
 
           <!-- 官网风格：Share 文字按钮（带边框） -->
-          <button class="px-3 py-1 text-[12px] font-medium text-[#787774] dark:text-[#b8b7b4] border border-[#e5e5e4] dark:border-white/10 rounded-lg hover:bg-black/[0.03] dark:hover:bg-white/5 transition-colors" @click="handleShare">
+          <button class="px-3 py-1 text-[12px] font-medium text-text-400 dark:text-text-300 border border-border-200 dark:border-border-100 rounded-lg hover:bg-text-100/[0.03] dark:hover:bg-text-000/5 transition-colors" @click="handleShare">
             Share
           </button>
         </div>
@@ -50,7 +50,7 @@
         <div ref="msgContainerRef" class="space-y-6 mb-32">
           <!-- 空状态：无对话时提示 -->
           <div v-if="!dialogId || (!messages.length && !isSending)" class="text-center py-20">
-            <p class="text-[15px] text-[#9b9a97]">开始新对话</p>
+            <p class="text-[15px] text-text-500">开始新对话</p>
           </div>
 
           <!-- 消息列表 -->
@@ -64,7 +64,7 @@
             >
               <div class="flex flex-col items-end max-w-[80%]">
                 <!-- 用户消息（官网风格：无边框无阴影，深色背景，圆角，无时间戳） -->
-                <div class="bg-[#121212] dark:bg-[#121212] rounded-xl px-4 py-2.5">
+                <div class="bg-bg-000 dark:bg-bg-000 rounded-xl px-4 py-2.5">
                   <!-- 附件列表 -->
                   <div v-if="msg.files && msg.files.length > 0" class="flex flex-wrap gap-1.5 mb-1.5">
                     <div
@@ -72,9 +72,9 @@
                       :key="file.id"
                       class="inline-flex items-center gap-1 px-2 py-0.5 bg-white/10 rounded-lg border border-white/10"
                     >
-                      <svg v-if="file.file_type === 'image'" class="w-3.5 h-3.5 text-[#d97757] shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.75"><path stroke-linecap="round" stroke-linejoin="round" d="m2.25 15.75 5.159-5.159a2.25 2.25 0 0 1 3.182 0l5.159 5.159m-1.5-1.5 1.409-1.409a2.25 2.25 0 0 1 3.182 0l2.909 2.909M3.75 21h16.5A2.25 2.25 0 0 0 22.5 18.75V5.25A2.25 2.25 0 0 0 20.25 3H3.75A2.25 2.25 0 0 0 1.5 5.25v13.5A2.25 2.25 0 0 0 3.75 21Z"/></svg>
-                      <svg v-else class="w-3.5 h-3.5 text-[#9b9a97] shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.75"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z"/></svg>
-                      <span class="text-[12px] text-[#e5e5e5] truncate max-w-[120px]">{{ file.filename }}</span>
+                      <svg v-if="file.file_type === 'image'" class="w-3.5 h-3.5 text-brand-100 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.75"><path stroke-linecap="round" stroke-linejoin="round" d="m2.25 15.75 5.159-5.159a2.25 2.25 0 0 1 3.182 0l5.159 5.159m-1.5-1.5 1.409-1.409a2.25 2.25 0 0 1 3.182 0l2.909 2.909M3.75 21h16.5A2.25 2.25 0 0 0 22.5 18.75V5.25A2.25 2.25 0 0 0 20.25 3H3.75A2.25 2.25 0 0 0 1.5 5.25v13.5A2.25 2.25 0 0 0 3.75 21Z"/></svg>
+                      <svg v-else class="w-3.5 h-3.5 text-text-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.75"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z"/></svg>
+                      <span class="text-[12px] text-text-100 dark:text-text-100 truncate max-w-[120px]">{{ file.filename }}</span>
                     </div>
                   </div>
                   
@@ -82,7 +82,7 @@
                   <div v-if="editingMessageId === msg.id">
                     <textarea
                       v-model="editingMessageContent"
-                      class="w-full bg-transparent text-[15px] text-[#f8f8f6] leading-relaxed whitespace-pre-wrap border-none outline-none resize-none min-h-[60px]"
+                      class="w-full bg-transparent text-[15px] text-text-100 dark:text-text-100 leading-relaxed whitespace-pre-wrap border-none outline-none resize-none min-h-[60px]"
                       @keydown.enter.exact.prevent="handleSaveEdit"
                       @keydown.escape="handleCancelEdit"
                       autofocus
@@ -90,7 +90,7 @@
                   </div>
                   <!-- 查看模式 -->
                   <div v-else>
-                    <p v-if="stripAttachmentContent(msg.content)" class="text-[15px] text-[#f8f8f6] leading-relaxed whitespace-pre-wrap">{{ stripAttachmentContent(msg.content) }}</p>
+                    <p v-if="stripAttachmentContent(msg.content)" class="text-[15px] text-text-100 dark:text-text-100 leading-relaxed whitespace-pre-wrap">{{ stripAttachmentContent(msg.content) }}</p>
                   </div>
                 </div>
                 
@@ -102,7 +102,7 @@
                   <!-- 编辑模式下的操作 -->
                   <div v-if="editingMessageId === msg.id" class="flex items-center gap-2">
                     <button 
-                      class="action-btn text-[11px] text-white bg-[#d97757] hover:bg-[#c46a4d] font-medium px-3 py-1 rounded-md"
+                      class="action-btn text-[11px] text-text-000 bg-brand-100 hover:bg-brand-200 font-medium px-3 py-1 rounded-md"
                       title="保存编辑"
                       @click="handleSaveEdit"
                     >
@@ -147,10 +147,10 @@
               @mouseenter="aiHoveredMessageId = msg.id"
               @mouseleave="aiHoveredMessageId = null"
             >
-              <div class="text-[16px] text-[#f8f8f6] dark:text-[#f8f8f6] leading-relaxed prose-sm dark:prose-invert max-w-none" v-html="renderContent(msg.content)"></div>
+              <div class="text-[16px] text-text-100 dark:text-text-100 leading-relaxed prose-sm dark:prose-invert max-w-none" v-html="renderContent(msg.content)"></div>
 
                 <!-- HTML 预览组件 -->
-                <div v-if="getHtmlPreview(msg.content)" class="mt-4 w-full group relative">
+                <div v-if="getMessageHtmlPreview(msg)" class="mt-4 w-full group relative">
                   <div class="html-preview-card border-0 shadow-none bg-transparent">
                     <!-- 顶部悬停菜单区域 -->
                     <div class="absolute top-1 right-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-10">
@@ -173,7 +173,7 @@
                         >
                           <button 
                             class="w-full px-4 py-2.5 text-[13px] text-[#1a1a1a] dark:text-white hover:bg-[#f5f4f0] dark:hover:bg-white/5 flex items-center gap-2"
-                            @click="copyHtmlContent(getHtmlPreview(msg.content)!)"
+                            @click="copyHtmlContent(getMessageHtmlPreview(msg)!)"
                           >
                             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.75">
                               <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 17.25v3.375c0 .621-.504 1.125-1.125 1.125h-9.75a1.125 1.125 0 0 1-1.125-1.125V7.875c0-.621.504-1.125 1.125-1.125H6.75a9.06 9.06 0 0 1 1.5.124m7.5 10.376h3.375c.621 0 1.125-.504 1.125-1.125V11.25c0-4.46-3.243-8.161-7.5-8.876a9.06 9.06 0 0 0-1.5-.124H9.375c-.621 0-1.125.504-1.125 1.125v3.5m7.5 10.375H9.375a1.125 1.125 0 0 1-1.125-1.125v-9.25m12 6.625v-1.875a3.375 3.375 0 0 0-3.375-3.375h-1.5a1.125 1.125 0 0 1-1.125-1.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H9.75"/>
@@ -182,7 +182,7 @@
                           </button>
                           <button 
                             class="w-full px-4 py-2.5 text-[13px] text-[#1a1a1a] dark:text-white hover:bg-[#f5f4f0] dark:hover:bg-white/5 flex items-center gap-2"
-                            @click="downloadHtmlFile(getHtmlPreview(msg.content)!)"
+                            @click="downloadHtmlFile(getMessageHtmlPreview(msg)!)"
                           >
                             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.75">
                               <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5M16.5 12 12 16.5m0 0L7.5 12m4.5 4.5V3"/>
@@ -192,7 +192,7 @@
                           <div class="border-t border-[#f0ede7] dark:border-white/5 my-1"></div>
                           <button 
                             class="w-full px-4 py-2.5 text-[13px] text-[#1a1a1a] dark:text-white hover:bg-[#f5f4f0] dark:hover:bg-white/5 flex items-center gap-2"
-                            @click="openHtmlInNewTab(getHtmlPreview(msg.content)!)"
+                            @click="openHtmlInNewTab(getMessageHtmlPreview(msg)!)"
                           >
                             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.75">
                               <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 6H5.25A2.25 2.25 0 0 0 3 8.25v10.5A2.25 2.25 0 0 0 5.25 21h10.5A2.25 2.25 0 0 0 18 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25"/>
@@ -206,12 +206,14 @@
                     <!-- 预览内容区域 -->
                     <div class="html-preview-content">
                       <iframe
-                        :srcdoc="wrapWithProgressiveRender(getHtmlPreview(msg.content)!)"
-                        class="w-full border-0"
-                        style="min-height: 300px; height: auto; max-height: 800px; width: 100%; display: block; overflow: hidden;"
-                        sandbox="allow-scripts allow-same-origin"
+                        :srcdoc="wrapWithProgressiveRender(getMessageHtmlPreview(msg)!)"
+                        style="width: 100%; height: auto; border: none; display: block;"
+                        sandbox="allow-scripts allow-same-origin allow-forms"
+                        allow="clipboard-write *"
                         title="HTML 预览"
                         @load="onIframeLoad(msg.id)"
+                        :data-message-id="msg.id"
+                        ref="iframeRefs"
                       ></iframe>
                     </div>
                   </div>
@@ -1434,9 +1436,27 @@ const getHtmlPreview = (content: string): string | null => {
   if (match) {
     const htmlContent = match[1].trim()
     console.log('[FRONTEND] getHtmlPreview: found HTML content, length:', htmlContent.length)
+    // 检查是否是有效的HTML内容
+    if (htmlContent.length < 10 || !/<[^>]+>/.test(htmlContent)) {
+      console.log('[FRONTEND] getHtmlPreview: invalid HTML content, too short or no HTML tags')
+      // 返回一个占位符内容，而不是无效的HTML
+      return '<div style="height: 100px; background: #f9f8f5; display: flex; align-items: center; justify-content: center; color: #666; font-family: sans-serif;">HTML内容正在生成中...</div>'
+    }
     return htmlContent
   }
   return null
+}
+
+/** 获取消息的 HTML 预览内容，优先使用数据库中的 html_preview 字段 */
+const getMessageHtmlPreview = (msg: any): string | null => {
+  // 优先使用数据库中的 html_preview 字段
+  if (msg.html_preview && msg.html_preview.trim().length > 0) {
+    console.log('[FRONTEND] getMessageHtmlPreview: using html_preview field, length:', msg.html_preview.length)
+    return msg.html_preview.trim()
+  }
+  
+  // 回退到从 content 字段中提取
+  return getHtmlPreview(msg.content)
 }
 
 const ARTIFACT_TYPE_LABELS: Record<string, string> = {
@@ -1555,10 +1575,14 @@ const cleanHtmlContent = (content: string): string => {
   
   // 3. 移除每行开头和结尾的空白，但保留内容内部的缩进
   // 对于HTML内容，我们不想移除所有缩进，只移除行首和行尾的空白
-  cleaned = cleaned.split('\n').map(line => {
-    // 保留HTML标签内的缩进，但移除行首和行尾的空白
-    return line.trim()
-  }).join('\n')
+  // 但要注意：某些HTML元素（如<pre>、<code>）需要保留内部格式
+  if (!cleaned.includes('<pre') && !cleaned.includes('<code') && !cleaned.includes('<textarea')) {
+    // 只有不包含特定标签时才进行行级清理
+    cleaned = cleaned.split('\n').map(line => {
+      // 保留HTML标签内的缩进，但移除行首和行尾的空白
+      return line.trim()
+    }).join('\n')
+  }
   
   // 4. 移除开头的空行
   cleaned = cleaned.replace(/^\s*\n+/, '')
@@ -1589,8 +1613,22 @@ const cleanHtmlContent = (content: string): string => {
 
 /** 渐进式渲染包装器：将 HTML 内容包装成带有渐进式渲染效果的页面 */
 const wrapWithProgressiveRender = (content: string): string => {
+  console.log('[FRONTEND] wrapWithProgressiveRender: Starting, content length:', content.length)
+  
+  // 检查是否为分块内容（可能是不完整的HTML）
+  const isChunkedContent = content.length < 500 || !/(<html|<body|<head|<div>)/i.test(content)
+  if (isChunkedContent) {
+    console.log('[FRONTEND] wrapWithProgressiveRender: Detected chunked content, length:', content.length)
+  }
+  
   // 先清理内容
   const cleanedContent = cleanHtmlContent(content)
+  
+  // 检查是否为空或无效的HTML片段
+  if (!cleanedContent || cleanedContent.trim().length < 10) {
+    console.log('[FRONTEND] wrapWithProgressiveRender: Empty or invalid HTML content, returning empty')
+    return '<div style="height: 100px; background: #f9f8f5; display: flex; align-items: center; justify-content: center; color: #666; font-family: sans-serif;">HTML预览内容尚未准备好...</div>'
+  }
   
   // 检查是否已经包含完整的 HTML 文档结构
   const hasDoctype = /<!DOCTYPE\s+html>/i.test(cleanedContent)
@@ -1598,55 +1636,194 @@ const wrapWithProgressiveRender = (content: string): string => {
   const hasHead = /<head[^>]*>/i.test(cleanedContent)
   const hasBody = /<body[^>]*>/i.test(cleanedContent)
 
-  // 渐进式渲染脚本
+  // 渐进式渲染脚本 - 修复版
   const progressiveScript = `
 <script>
 (function() {
-  // 配置 - 官网风格的流式渲染效果
-  const STAGGER_DELAY = 500; // 每个元素之间的延迟(ms) - 更慢更明显
-  const FADE_DURATION = 800; // 淡入持续时间(ms) - 官网风格
+  // 配置 - 更快、更稳定的渲染效果
+  const STAGGER_DELAY = 150; // 每个元素之间的延迟(ms) - 更快，减少等待
+  const FADE_DURATION = 500; // 淡入持续时间(ms) - 缩短
+  const INITIAL_DELAY = 50;  // 初始延迟 - 缩短
   
-  // 获取所有需要渐进式渲染的元素（包括嵌套元素）
+  // 防止重复执行 - 但允许最终渲染
+  if (window.__progressiveRenderExecuted && !window.__finalRenderTriggered) return;
+  
+  // 标记是否已经执行过初始渲染
+  if (!window.__progressiveRenderExecuted) {
+    window.__progressiveRenderExecuted = true;
+  }
+  
+  // 最终渲染标志
+  const isFinalRender = window.__finalRenderTriggered || false;
+  
+  // 1. 立即设置页面可见，避免白色闪烁
+  document.body.style.opacity = '1';
+  document.body.style.visibility = 'visible';
+  document.body.style.transition = 'opacity 0.3s ease';
+  
+  // 如果是最终渲染，重置所有元素的样式状态
+  if (isFinalRender) {
+    // 移除所有渐进式渲染的样式，让元素回归自然状态
+    const allStyledElements = document.querySelectorAll('*[style*="opacity"]');
+    allStyledElements.forEach(el => {
+      el.style.opacity = '';
+      el.style.transform = '';
+      el.style.transition = '';
+      el.style.transitionDelay = '';
+    });
+    
+    // 重新应用所有CSS样式
+    setTimeout(() => {
+      // 触发样式重新计算
+      document.body.classList.add('final-render');
+      
+      // 重新执行所有内联脚本
+      const scripts = document.querySelectorAll('script:not([src])');
+      scripts.forEach(script => {
+        try {
+          eval(script.textContent);
+        } catch (e) {
+          console.log('Script execution error:', e);
+        }
+      });
+      
+      // 触发CSS样式重新应用
+      document.querySelectorAll('link[rel="stylesheet"]').forEach(link => {
+        const href = link.href;
+        link.href = '';
+        link.href = href;
+      });
+      
+      // 重新计算样式
+      document.body.offsetHeight;
+    }, 100);
+  }
+  
+  // 2. 获取所有需要渐进式渲染的元素
   const allElements = Array.from(document.querySelectorAll('body *:not(script):not(style):not(link):not(meta):not(title)'));
-  // 按深度排序：外层元素先显示
-  const elementsWithDepth = allElements.map(el => {
-    let depth = 0;
-    let parent = el.parentElement;
-    while (parent && parent !== document.body) {
-      depth++;
-      parent = parent.parentElement;
-    }
-    return { el, depth };
-  });
-  elementsWithDepth.sort((a, b) => a.depth - b.depth);
-  const ELEMENTS = elementsWithDepth.map(item => item.el);
   
-  // 初始状态：所有元素透明且略微上移并缩小
-  ELEMENTS.forEach((el, index) => {
-    el.style.opacity = '0';
-    el.style.transform = 'translateY(30px) scale(0.95)'; // 添加轻微缩放效果
-    el.style.transition = \`opacity \${FADE_DURATION}ms cubic-bezier(0.4, 0, 0.2, 1), transform \${FADE_DURATION}ms cubic-bezier(0.4, 0, 0.2, 1)\`;
-    el.style.transitionDelay = \`\${index * STAGGER_DELAY}ms\`;
+  // 按类型和深度分组渲染
+  const groupedElements = {
+    structural: [], // 结构性元素：div, section, article, main, header, footer, nav
+    content: [],    // 内容元素：p, h1-h6, span, a
+    media: [],      // 媒体元素：img, video, iframe
+    form: [],       // 表单元素：input, button, form, textarea, select
+    list: [],       // 列表元素：ul, ol, li
+    table: []       // 表格元素：table, tr, td, th
+  };
+  
+  // 分类元素
+  allElements.forEach(el => {
+    const tagName = el.tagName.toLowerCase();
+    
+    if (['div', 'section', 'article', 'main', 'header', 'footer', 'nav'].includes(tagName)) {
+      groupedElements.structural.push(el);
+    } else if (['p', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'span', 'a'].includes(tagName)) {
+      groupedElements.content.push(el);
+    } else if (['img', 'video', 'iframe'].includes(tagName)) {
+      groupedElements.media.push(el);
+    } else if (['input', 'button', 'form', 'textarea', 'select', 'label'].includes(tagName)) {
+      groupedElements.form.push(el);
+    } else if (['ul', 'ol', 'li'].includes(tagName)) {
+      groupedElements.list.push(el);
+    } else if (['table', 'tr', 'td', 'th', 'thead', 'tbody', 'tfoot'].includes(tagName)) {
+      groupedElements.table.push(el);
+    } else {
+      groupedElements.structural.push(el); // 默认归为结构性元素
+    }
   });
-
+  
+  // 按深度排序每个组
+  const sortByDepth = (elements) => {
+    return elements.map(el => {
+      let depth = 0;
+      let parent = el.parentElement;
+      while (parent && parent !== document.body) {
+        depth++;
+        parent = parent.parentElement;
+      }
+      return { el, depth };
+    }).sort((a, b) => a.depth - b.depth).map(item => item.el);
+  };
+  
+  // 分组排序
+  Object.keys(groupedElements).forEach(key => {
+    groupedElements[key] = sortByDepth(groupedElements[key]);
+  });
+  
+  // 设置初始状态 - 分阶段
+  let elementIndex = 0;
+  
+  // 阶段1: 结构性元素（框架）
+  groupedElements.structural.forEach((el, index) => {
+    el.style.opacity = '0';
+    el.style.transform = 'translateY(10px) scale(1)'; // 减少移动距离
+    el.style.transition = \`opacity \${FADE_DURATION}ms ease, transform \${FADE_DURATION}ms ease\`;
+    el.style.transitionDelay = \`\${INITIAL_DELAY + index * (STAGGER_DELAY * 0.5)}ms\`; // 结构性元素更快
+  });
+  
+  // 阶段2: 内容元素
+  groupedElements.content.forEach((el, index) => {
+    el.style.opacity = '0';
+    el.style.transform = 'translateY(15px)';
+    el.style.transition = \`opacity \${FADE_DURATION}ms ease, transform \${FADE_DURATION}ms ease\`;
+    el.style.transitionDelay = \`\${INITIAL_DELAY + 100 + index * STAGGER_DELAY}ms\`;
+  });
+  
+  // 阶段3: 其他元素
+  const otherElements = [
+    ...groupedElements.media,
+    ...groupedElements.form,
+    ...groupedElements.list,
+    ...groupedElements.table
+  ];
+  
+  otherElements.forEach((el, index) => {
+    el.style.opacity = '0';
+    el.style.transform = 'translateY(20px)';
+    el.style.transition = \`opacity \${FADE_DURATION}ms ease, transform \${FADE_DURATION}ms ease\`;
+    el.style.transitionDelay = \`\${INITIAL_DELAY + 200 + index * STAGGER_DELAY}ms\`;
+  });
+  
   // 滚动条回顶部
   window.scrollTo(0, 0);
-
-  // 使用 setTimeout 确保元素样式已应用
+  
+  // 分阶段开始动画
   setTimeout(() => {
-    // 逐步显示元素，模仿官网的流式效果
-    ELEMENTS.forEach((el, index) => {
+    // 阶段1: 结构性元素
+    groupedElements.structural.forEach((el, index) => {
       setTimeout(() => {
-        // 强制重排以确保 transition 生效
-        el.offsetHeight;
-        // 设置最终状态
+        el.offsetHeight; // 强制重排
         el.style.opacity = '1';
         el.style.transform = 'translateY(0) scale(1)';
-      }, 50 + index * STAGGER_DELAY); // 额外50ms延迟确保样式已应用
+      }, index * (STAGGER_DELAY * 0.5));
     });
-  }, 100);
-
-  // 额外的延迟加载支持（懒加载图片）
+    
+    // 阶段2: 内容元素（延迟100ms开始）
+    setTimeout(() => {
+      groupedElements.content.forEach((el, index) => {
+        setTimeout(() => {
+          el.offsetHeight;
+          el.style.opacity = '1';
+          el.style.transform = 'translateY(0)';
+        }, index * STAGGER_DELAY);
+      });
+    }, 100);
+    
+    // 阶段3: 其他元素（延迟200ms开始）
+    setTimeout(() => {
+      otherElements.forEach((el, index) => {
+        setTimeout(() => {
+          el.offsetHeight;
+          el.style.opacity = '1';
+          el.style.transform = 'translateY(0)';
+        }, index * STAGGER_DELAY);
+      });
+    }, 200);
+    
+  }, INITIAL_DELAY);
+  
+  // 懒加载图片
   const lazyImages = document.querySelectorAll('img[data-src]');
   if (lazyImages.length > 0) {
     const imageObserver = new IntersectionObserver((entries) => {
@@ -1661,34 +1838,121 @@ const wrapWithProgressiveRender = (content: string): string => {
     });
     lazyImages.forEach(img => imageObserver.observe(img));
   }
-
-  // 元素进入视口时的动画
-  const animateOnScroll = new IntersectionObserver((entries) => {
-    entries.forEach(entry => {
-      if (entry.isIntersecting) {
-        entry.target.classList.add('animate-in-view');
-      }
-    });
-  }, { threshold: 0.1 });
-
-  document.querySelectorAll('[data-animate]').forEach(el => {
-    animateOnScroll.observe(el);
-  });
 })();
+
+// 全局函数：触发最终渲染
+window.triggerFinalRender = function() {
+  window.__finalRenderTriggered = true;
+  
+  // 移除所有渐进式渲染的样式
+  const allStyledElements = document.querySelectorAll('*[style*="opacity"]');
+  allStyledElements.forEach(el => {
+    el.style.opacity = '';
+    el.style.transform = '';
+    el.style.transition = '';
+    el.style.transitionDelay = '';
+  });
+  
+  // 重新执行所有内联脚本
+  const scripts = document.querySelectorAll('script:not([src])');
+  scripts.forEach(script => {
+    try {
+      eval(script.textContent);
+    } catch (e) {
+      console.log('Script execution error:', e);
+    }
+  });
+  
+  // 重新加载样式
+  document.querySelectorAll('link[rel="stylesheet"]').forEach(link => {
+    const href = link.href;
+    link.href = '';
+    link.href = href;
+  });
+  
+  // 强制重新计算样式
+  document.body.offsetHeight;
+  
+  console.log('Final render triggered and completed');
+};
+
+// 页面加载后自动触发最终渲染
+setTimeout(() => {
+  console.log('Auto triggering final render after page load...');
+  
+  // 移除所有渐进式渲染的样式
+  const allStyledElements = document.querySelectorAll('*[style*="opacity"]');
+  allStyledElements.forEach(el => {
+    el.style.opacity = '';
+    el.style.transform = '';
+    el.style.transition = '';
+    el.style.transitionDelay = '';
+  });
+  
+  // 重新执行所有内联脚本
+  const scripts = document.querySelectorAll('script:not([src])');
+  scripts.forEach(script => {
+    try {
+      eval(script.textContent);
+    } catch (e) {
+      console.log('Script execution error:', e);
+    }
+  });
+  
+  // 重新加载样式
+  document.querySelectorAll('link[rel="stylesheet"]').forEach(link => {
+    const href = link.href;
+    link.href = '';
+    link.href = href;
+  });
+  
+  // 强制重新计算样式
+  document.body.offsetHeight;
+  
+  console.log('Final render auto-trigger completed');
+}, 1000);
+};
 <\\/script>
 <style>
-@keyframes fadeInUp {
+/* 基础动画 */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideInUp {
   from {
     opacity: 0;
-    transform: translateY(30px) scale(0.95);
+    transform: translateY(20px);
   }
   to {
     opacity: 1;
-    transform: translateY(0) scale(1);
+    transform: translateY(0);
   }
 }
-.animate-in-view {
-  animation: fadeInUp 0.7s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+
+@keyframes scaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* 预加载样式，避免闪烁 */
+body {
+  opacity: 1 !important;
+  visibility: visible !important;
+  animation: fadeIn 0.3s ease !important;
+}
+
+/* 确保内容在动画期间可见 */
+.preview-content {
+  opacity: 1 !important;
+  min-height: 50px !important; /* 确保有最小高度，避免空白 */
 }
 <\\/style>`
 
@@ -1729,6 +1993,10 @@ const wrapWithProgressiveRender = (content: string): string => {
     extraCss = cleanedContent
     bodyContent = '<div class="preview-content">CSS 样式已应用</div>'
     console.log('[FRONTEND] wrapWithProgressiveRender: CSS content detected, moving to style tag')
+  } else if (isChunkedContent && !hasHtmlTags) {
+    // 分块内容且没有HTML标签，可能是部分内容，直接包装
+    console.log('[FRONTEND] wrapWithProgressiveRender: Chunked content detected, wrapping in div')
+    bodyContent = `<div class="preview-content">${cleanedContent}</div>`
   }
   
   return `<!DOCTYPE html>
@@ -1753,30 +2021,38 @@ const wrapWithProgressiveRender = (content: string): string => {
       background: white;
     }
     
-    /* 消除 iframe 滚动条 */
-    iframe {
-      display: block;
-      width: 100%;
-      min-height: 300px;
-      height: auto;
-      border: none;
-      overflow: hidden !important;
-    }
-    
-    /* 确保 iframe 内部也没有滚动条 */
+    /* 让 iframe 内容自适应，不限制高度 */
     html, body {
-      overflow: hidden !important;
       width: 100% !important;
       min-width: 100% !important;
       max-width: 100% !important;
       margin: 0 !important;
       padding: 0 !important;
+      height: auto !important;
+      min-height: auto !important;
+      max-height: none !important;
+      overflow: visible !important;
+      overflow-y: auto !important;
     }
     
-    /* 确保 iframe 内部元素不会导致溢出 */
+    /* 页面加载初始状态 - 避免白色闪烁 */
+    body {
+      opacity: 1 !important;
+      visibility: visible !important;
+      background: #f9f8f5 !important; /* 立即设置背景色 */
+      transition: opacity 0.3s ease !important;
+      min-height: 100px !important; /* 确保有最小高度 */
+    }
+    
+    /* 确保所有元素使用 border-box */
     html, body, body * {
       box-sizing: border-box !important;
       max-width: 100% !important;
+    }
+    
+    /* 允许滚动但不显示滚动条 */
+    body {
+      -webkit-overflow-scrolling: touch !important;
     }
     
     /* 隐藏所有滚动条 */
@@ -1788,6 +2064,13 @@ const wrapWithProgressiveRender = (content: string): string => {
     * {
       scrollbar-width: none !important;
     }
+    
+    /* 内容区域确保可见 */
+    .preview-content {
+      opacity: 1 !important;
+      min-height: 50px !important;
+      transition: opacity 0.5s ease !important;
+    }
   </style>
 </head>
 <body>
@@ -1795,6 +2078,7 @@ ${bodyContent}
 ${progressiveScript}
 </body>
 </html>`
+  console.log('[FRONTEND] wrapWithProgressiveRender: Finished, returning wrapped HTML')
 }
 
 /** 获取制品预览内容（带渐进式渲染） */
@@ -2064,19 +2348,31 @@ const handleSend = async () => {
         if (tempMsg && (tempMsg as any)._htmlChunks && (tempMsg as any)._htmlChunks.length > 0) {
           const chunks = (tempMsg as any)._htmlChunks
           const combinedHtml = chunks.join('\n')
-          // 移除之前的 HTML_PREVIEW 标记
-          const htmlPreviewRegex = /(\n\n\[HTML_PREVIEW\][\s\S]*?\[\/HTML_PREVIEW\])/g
-          tempMsg.content = tempMsg.content.replace(htmlPreviewRegex, '')
-          // 添加新的预览
-          const htmlPreview = `\n\n[HTML_PREVIEW]\n${combinedHtml}\n[/HTML_PREVIEW]`
-          tempMsg.content += htmlPreview
-          console.log(`[FRONTEND] Finalized HTML preview with ${chunks.length} chunks after DONE event`)
+          
+          // 检查累积的HTML是否有效
+          const hasValidHtmlStructure = /<[^>]+>/.test(combinedHtml) && 
+            (combinedHtml.includes('<div') || combinedHtml.includes('<p') || 
+             combinedHtml.includes('<h') || combinedHtml.includes('<body') ||
+             combinedHtml.includes('<html') || combinedHtml.length > 500)
+          
+          if (hasValidHtmlStructure) {
+            // 移除之前的 HTML_PREVIEW 标记
+            const htmlPreviewRegex = /(\n\n\[HTML_PREVIEW\][\s\S]*?\[\/HTML_PREVIEW\])/g
+            tempMsg.content = tempMsg.content.replace(htmlPreviewRegex, '')
+            // 添加新的预览
+            const htmlPreview = `\n\n[HTML_PREVIEW]\n${combinedHtml}\n[/HTML_PREVIEW]`
+            tempMsg.content += htmlPreview
+            console.log(`[FRONTEND] Finalized HTML preview with ${chunks.length} chunks after DONE event`)
+          } else {
+            console.log(`[FRONTEND] Skipping final preview - invalid HTML structure: length=${combinedHtml.length}`)
+          }
           // 清空累积块
           (tempMsg as any)._htmlChunks = []
         }
         // 流式完成，刷新对话列表（不调用 openDialog 避免清空消息）
         await appStore.fetchDialogList()
-        break
+        // 不要 break，继续处理后续事件（如 HTML render 事件可能跟在 done 之后）
+        continue
       } else if (event.type === 'render') {
         console.log(`[FRONTEND] received RENDER event, html content length: ${event.html?.length}, chunk: ${event.chunk}`)
         console.log(`[FRONTEND] RENDER event html sample:`, event.html?.substring(0, 200))
@@ -2086,9 +2382,9 @@ const handleSend = async () => {
           // 清理 HTML 内容
           const cleanedHtml = cleanHtmlContent(event.html as string)
           console.log(`[FRONTEND] cleanHtmlContent result length: ${cleanedHtml?.length}, sample:`, cleanedHtml?.substring(0, 200))
-          if (!cleanedHtml) {
-            console.log(`[FRONTEND] cleanHtmlContent returned empty, skipping`)
-            return
+          if (!cleanedHtml || cleanedHtml.trim().length < 10) {
+            console.log(`[FRONTEND] cleanHtmlContent returned empty or invalid HTML (length: ${cleanedHtml?.length}), skipping`)
+            continue
           }
           
           // 初始化 HTML 块累积器
@@ -2096,25 +2392,47 @@ const handleSend = async () => {
             (tempMsg as any)._htmlChunks = []
           }
           
-          if (event.chunk) {
-            // 分块模式：累积 HTML 片段
-            (tempMsg as any)._htmlChunks.push(cleanedHtml)
-            console.log(`[FRONTEND] Added HTML chunk, total chunks: ${(tempMsg as any)._htmlChunks.length}`)
-            
-            // 如果累积了多个块，可以逐步更新预览（这里我们先累积，等完整后再显示）
-            // 为了更好的用户体验，我们可以每累积几个块就更新一次预览
-            const chunks = (tempMsg as any)._htmlChunks
-            if (chunks.length % 5 === 0 || cleanedHtml.includes('</html>')) {
-              // 每5个块更新一次预览，或者遇到结束标签时更新
+            if (event.chunk) {
+              // 分块模式：累积 HTML 片段
+              (tempMsg as any)._htmlChunks.push(cleanedHtml)
+              console.log(`[FRONTEND] Added HTML chunk, total chunks: ${(tempMsg as any)._htmlChunks.length}`)
+              
+              // 优化分块渲染策略：减少iframe刷新次数，避免CSS闪烁
+              const chunks = (tempMsg as any)._htmlChunks
+              const chunkSize = chunks.length
+              const chunkContentLength = chunks.join('\n').length
+              
+              // 策略：
+              // 1. 第一个块：只有当包含有效HTML结构时才显示
+              // 2. 小内容：累积到一定规模才更新
+              // 3. 大内容：分批更新
+              // 检查当前累积的内容是否包含有效的HTML结构
               const combinedHtml = chunks.join('\n')
-              // 移除之前的 HTML_PREVIEW 标记
-              const htmlPreviewRegex = /(\n\n\[HTML_PREVIEW\][\s\S]*?\[\/HTML_PREVIEW\])/g
-              tempMsg.content = tempMsg.content.replace(htmlPreviewRegex, '')
-              // 添加新的预览
-              const htmlPreview = `\n\n[HTML_PREVIEW]\n${combinedHtml}\n[/HTML_PREVIEW]`
-              tempMsg.content += htmlPreview
-              console.log(`[FRONTEND] Updated HTML preview with ${chunks.length} chunks, total content length: ${tempMsg.content.length}`)
-            }
+              const hasValidHtmlStructure = /<[^>]+>/.test(combinedHtml) && 
+                (combinedHtml.includes('<div') || combinedHtml.includes('<p') || 
+                 combinedHtml.includes('<h') || combinedHtml.includes('<body') ||
+                 combinedHtml.includes('<html') || combinedHtml.length > 500)
+              
+              // 只有当有有效HTML结构时才更新预览
+              if (hasValidHtmlStructure && (chunkSize === 1 || chunkContentLength >= 500 || chunkSize % 3 === 0)) {
+                // 移除之前的 HTML_PREVIEW 标记
+                const htmlPreviewRegex = /(\n\n\[HTML_PREVIEW\][\s\S]*?\[\/HTML_PREVIEW\])/g
+                tempMsg.content = tempMsg.content.replace(htmlPreviewRegex, '')
+                // 添加新的预览
+                const htmlPreview = `\n\n[HTML_PREVIEW]\n${combinedHtml}\n[/HTML_PREVIEW]`
+                tempMsg.content += htmlPreview
+                console.log(`[FRONTEND] Updated HTML preview with ${chunks.length} chunks, total content length: ${tempMsg.content.length}`)
+              } else if (chunkSize > 10 || chunkContentLength > 5000) {
+                // 强制更新：当块数太多或内容太长时
+                const htmlPreviewRegex = /(\n\n\[HTML_PREVIEW\][\s\S]*?\[\/HTML_PREVIEW\])/g
+                tempMsg.content = tempMsg.content.replace(htmlPreviewRegex, '')
+                const htmlPreview = `\n\n[HTML_PREVIEW]\n${combinedHtml}\n[/HTML_PREVIEW]`
+                tempMsg.content += htmlPreview
+                console.log(`[FRONTEND] Forced update HTML preview at chunk ${chunkSize}, length ${chunkContentLength}`)
+              } else {
+                console.log(`[FRONTEND] Skipping preview update - waiting for more content: chunks=${chunkSize}, length=${chunkContentLength}, hasValidHtml=${hasValidHtmlStructure}`)
+              }
+              // 其他情况：继续累积，不更新预览（减少iframe刷新）
           } else {
             // 完整 HTML 模式：替换现有预览（如果存在）
             // 清除累积的块，因为完整 HTML 会替换它们
@@ -2562,6 +2880,61 @@ const onIframeLoad = (messageId: string) => {
   console.log(`[FRONTEND] iframe loaded for message ${messageId}`)
   // 注意：渐进式渲染已经在wrapWithProgressiveRender函数中实现
   // iframe加载后会自动执行渐进式渲染脚本
+  
+  // 延迟触发最终渲染，确保所有内容都已加载
+  setTimeout(() => {
+    // 找到对应messageId的iframe
+    const iframes = document.querySelectorAll(`iframe[data-message-id="${messageId}"]`)
+    if (iframes.length > 0) {
+      const iframe = iframes[0] as HTMLIFrameElement
+      try {
+        // 触发iframe内的最终渲染
+        const iframeWindow = iframe.contentWindow
+        if (iframeWindow && typeof iframeWindow.triggerFinalRender === 'function') {
+          console.log(`[FRONTEND] Triggering final render for message ${messageId}`)
+          iframeWindow.triggerFinalRender()
+        }
+      } catch (e) {
+        console.log(`[FRONTEND] Could not trigger final render for iframe:`, e)
+      }
+    }
+  }, 500) // 等待500ms确保内容完全加载
+  
+  // 动态计算iframe内容高度
+  setTimeout(() => {
+    // 找到对应messageId的iframe
+    const iframes = document.querySelectorAll(`iframe[data-message-id="${messageId}"]`)
+    if (iframes.length > 0) {
+      const iframe = iframes[0] as HTMLIFrameElement
+      try {
+        // 获取iframe内容的高度
+        const iframeDoc = iframe.contentDocument || iframe.contentWindow?.document
+        if (iframeDoc && iframeDoc.body && iframeDoc.documentElement) {
+          const height = Math.max(
+            iframeDoc.body.scrollHeight,
+            iframeDoc.body.offsetHeight,
+            iframeDoc.documentElement.clientHeight,
+            iframeDoc.documentElement.scrollHeight,
+            iframeDoc.documentElement.offsetHeight
+          )
+          console.log(`[FRONTEND] Calculated iframe height for message ${messageId}: ${height}px`)
+          
+          // 设置iframe高度，最小高度为300px，最大高度为1000px
+          const finalHeight = Math.max(300, Math.min(height, 1000))
+          iframe.style.height = `${finalHeight}px`
+          console.log(`[FRONTEND] Set iframe height to ${finalHeight}px for message ${messageId}`)
+        } else {
+          console.log(`[FRONTEND] Could not access iframe document for message ${messageId}`)
+          // 设置默认高度600px
+          iframe.style.height = "600px"
+        }
+      } catch (error) {
+        console.log(`[FRONTEND] Error calculating iframe height for message ${messageId}:`, error)
+        // 设置默认高度600px
+        iframe.style.height = "600px"
+      }
+    }
+  }, 100) // 延迟100ms确保内容已加载
 }
 
 /** 分享 */
@@ -3394,6 +3767,11 @@ watch(isAiWaiting, (val) => {
 /* HTML 预览卡片样式 */
 .html-preview-card {
   @apply bg-transparent border-0 shadow-none;
+  height: auto;
+  min-height: 0;
+  max-height: none;
+  display: flex;
+  flex-direction: column;
 }
 .html-preview-header {
   @apply flex items-center justify-between px-4 py-3 border-b border-[#f0ede7] dark:border-white/5;
@@ -3402,7 +3780,11 @@ watch(isAiWaiting, (val) => {
   @apply text-[14px] font-medium text-[#1a1a1a] dark:text-white;
 }
 .html-preview-content {
-  @apply bg-transparent border-0 rounded-none overflow-hidden;
+  @apply bg-transparent border-0 rounded-none overflow-visible;
+  height: auto;
+  min-height: 0;
+  max-height: none;
+  flex: 1;
 }
 .html-preview-footer {
   @apply flex items-center justify-between px-4 py-2 border-t border-[#f0ede7] dark:border-white/5 bg-[#fafaf8] dark:bg-[#252524];
